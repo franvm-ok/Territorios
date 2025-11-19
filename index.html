@@ -1,64 +1,30 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gael Pandas</title>
-
-<style>
-  body {
-    background-color: #fdf5e6;
-    margin: 0;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-  }
-
-  h1 {
-    text-align: center;
-    font-size: 2rem;
-    color: #ff6600;
-    margin-top: 20px;
-  }
-
-  .highlight {
-    color: #ff1a1a;
-    font-weight: bold;
-  }
-
-  /* PANDA REBOTANDO Y RODANDO */
-  .panda {
-    position: absolute;
-    width: 120px;
-    height: 120px;
-    background-image: url('https://i.imgur.com/3h7xS0C.png'); /* panda transparente */
-    background-size: contain;
-    background-repeat: no-repeat;
-    animation: move 6s ease-in-out infinite alternate,
-               spin 1s linear infinite;
-  }
-
-  /* Movimiento rebotando por toda la pantalla */
-  @keyframes move {
-    0%   { top: 0; left: 0; }
-    25%  { top: 70vh; left: 20vw; }
-    50%  { top: 20vh; left: 70vw; }
-    75%  { top: 60vh; left: 40vw; }
-    100% { top: 10vh; left: 90vw; }
-  }
-
-  /* Rotación del panda */
-  @keyframes spin {
-    0%   { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenidos</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-  <h1><span class="highlight">Gael Pandas</span> - tu tienda favorita de accesorios para tu bebé</h1>
+  <div class="container">
 
-  <div class="panda"></div>
+    <h1>BIENVENIDOS a nuestra App de reportes de territorio</h1>
 
+    <h2>CONGREGACIÓN</h2>
+    <h3>CUATRO PLAZAS</h3>
+
+    <p class="versiculo">
+      <strong>“Pero que todo se haga decentemente y con orden.”</strong><br>
+      — 1 Corintios 14:40 (Traducción del Nuevo Mundo)
+    </p>
+
+    <button class="boton" onclick="comenzar()">COMENZAR</button>
+
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
