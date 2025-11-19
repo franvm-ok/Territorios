@@ -1,77 +1,54 @@
-// Definición de los datos de los territorios
-const territorios = [
-    {
-        numero: 1,
-        barrio: "Centro",
-        callesClave: "Av. Principal, Calle 15",
-        estado: "Disponible", // Puede ser 'Disponible', 'En trabajo', 'Asignado'
-        asignadoA: null
-    },
-    {
-        numero: 2,
-        barrio: "Las Acacias",
-        callesClave: "Los Álamos, Las Flores",
-        estado: "En trabajo",
-        asignadoA: "Hermano Pérez"
-    },
-    {
-        numero: 3,
-        barrio: "San Blas",
-        callesClave: "Ruta Nacional, Pasaje 8",
-        estado: "Disponible",
-        asignadoA: null
-    },
-    {
-        numero: 4,
-        barrio: "Villa Céntrica",
-        callesClave: "Plaza Central, Bv. Libertad",
-        estado: "Asignado",
-        asignadoA: "Familia García"
-    }
-    // Añade más territorios aquí...
-];
+// Variable para apuntar al contenedor principal de la aplicación
+const contenido = document.getElementById('contenido');
 
-// --- FUNCIONALIDAD PARA MOSTRAR LOS TERRITORIOS ---
-
-const listaTerritorios = document.getElementById('listaTerritorios');
-const inputBusqueda = document.getElementById('inputBusqueda');
-
-function renderizarTerritorios(data) {
-    // Limpia la lista anterior
-    listaTerritorios.innerHTML = ''; 
-
-    data.forEach(territorio => {
-        const estadoClase = territorio.estado.toLowerCase().replace(' ', '-');
-        
-        const elemento = document.createElement('li');
-        elemento.classList.add('territorio-item', estadoClase);
-        
-        elemento.innerHTML = `
-            <div class="num-estado">
-                <span class="numero">T-${territorio.numero}</span>
-                <span class="estado ${estadoClase}">${territorio.estado}</span>
-            </div>
-            <div class="detalle">
-                <strong>Barrio:</strong> ${territorio.barrio} (${territorio.callesClave})
-                ${territorio.asignadoA ? `— Asignado a: ${territorio.asignadoA}` : ''}
+// --- 1. FUNCIÓN PARA EL BOTÓN "TERRITORIO" (Con 32 Tarjetas) ---
+function mostrarTerritorios() {
+    let htmlTarjetas = '<h2>Selección de Territorio (32 Tarjetas)</h2><div class="grid-territorios">';
+    
+    // Genera las 32 tarjetas
+    for (let i = 1; i <= 32; i++) {
+        htmlTarjetas += `
+            <div class="tarjeta-territorio" onclick="seleccionarTerritorio(${i})">
+                T-${i}
+                <span>Estado: Disponible</span>
             </div>
         `;
-        listaTerritorios.appendChild(elemento);
-    });
+    }
+
+    htmlTarjetas += '</div>';
+    
+    // Inserta el código HTML en el área de contenido
+    contenido.innerHTML = htmlTarjetas;
 }
 
-// Implementación del buscador/filtro
-inputBusqueda.addEventListener('keyup', (e) => {
-    const busqueda = e.target.value.toLowerCase();
-    const resultados = territorios.filter(t => 
-        t.barrio.toLowerCase().includes(busqueda) ||
-        t.callesClave.toLowerCase().includes(busqueda) ||
-        String(t.numero).includes(busqueda)
-    );
-    renderizarTerritorios(resultados);
-});
+// Función que se ejecuta al hacer clic en una tarjeta (por ahora solo muestra un mensaje)
+function seleccionarTerritorio(numero) {
+    alert(`Has seleccionado el Territorio T-${numero}. Aquí se abrirá el formulario de reporte.`);
+}
 
-// Renderiza todos los territorios al cargar la página
-window.onload = () => {
-    renderizarTerritorios(territorios);
-};
+
+// --- 2. FUNCIÓN PARA EL BOTÓN "REPORTE DE TERRITORIO" ---
+function mostrarReporte() {
+    // Aquí puedes poner el formulario o la tabla para reportar
+    contenido.innerHTML = `
+        <h2>📝 Formulario de Reporte de Territorio</h2>
+        <p>Próximamente: Se cargará una interfaz para ingresar las fechas de salida y retorno del territorio.</p>
+        <form style="padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+            <label for="numTerr">Número de Territorio:</label><br>
+            <input type="number" id="numTerr" name="numTerr" style="width: 100%; padding: 8px; margin-bottom: 10px;" required><br>
+            
+            <label for="fechaSalida">Fecha de Salida:</label><br>
+            <input type="date" id="fechaSalida" name="fechaSalida" style="width: 100%; padding: 8px; margin-bottom: 20px;" required><br>
+            
+            <button type="submit" style="background-color: #28a745;">Guardar Reporte</button>
+        </form>
+    `;
+}
+
+// --- 3. FUNCIÓN PARA LOS BOTONES "PRÓXIMAMENTE" ---
+function mostrarProximamente(nombre) {
+    contenido.innerHTML = `
+        <h2>${nombre}</h2>
+        <p>🛠️ Esta función está en desarrollo. Pronto estará disponible para la Congregación Cuatro Plazas.</p>
+    `;
+}
