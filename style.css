@@ -1,65 +1,84 @@
-/* Estilos básicos para que se vea bien en el móvil y la PC */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-    line-height: 1.6;
-}
-
-header {
-    background-color: #007bff;
-    color: white;
+/* Estilos para el buscador */
+.buscador {
+    margin-bottom: 25px;
     padding: 20px;
-    text-align: center;
-}
-
-h1 {
-    margin-top: 0;
-}
-
-main {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-section {
-    background-color: white;
-    padding: 20px;
-    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    background-color: #e9eff5;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-button {
-    background-color: #28a745;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-button:hover {
-    background-color: #218838;
-}
-
-footer {
-    text-align: center;
-    padding: 10px;
-    background-color: #ddd;
-    font-size: 0.8em;
-    position: fixed; /* Opcional: fija el pie de página */
-    bottom: 0;
+#inputBusqueda {
     width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Incluye padding en el ancho */
+    font-size: 1em;
 }
 
-#mensaje {
-    margin-top: 15px;
+/* Estilos para la lista de territorios */
+.lista-contenedor {
+    padding: 0;
+}
+
+#listaTerritorios {
+    list-style: none; /* Quita los puntos de la lista */
+    padding: 0;
+}
+
+.territorio-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.territorio-item:hover {
+    transform: translateY(-2px);
+}
+
+.num-estado {
+    flex-basis: 20%; /* Reserva espacio para el número y el estado */
+    text-align: center;
+}
+
+.detalle {
+    flex-basis: 75%;
+    font-size: 0.95em;
+}
+
+.numero {
+    display: block;
+    font-size: 1.5em;
     font-weight: bold;
     color: #007bff;
+}
+
+.estado {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+/* Colores según el estado */
+.disponible {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.en-trabajo {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.asignado {
+    background-color: #f8d7da;
+    color: #721c24;
 }
