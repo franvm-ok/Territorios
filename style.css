@@ -1,49 +1,113 @@
-/* Fuente por defecto */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: Calibri, Arial, sans-serif;
-    background-color: #e5e5e5; /* gris tenue */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    text-align: center;
-    color: #003399; /* azul */
+/* variables */
+:root{
+  --azul: #003399;
+  --azul-oscuro: #001f66;
+  --gris-fondo: #e6e9ee;
+  --card-bg: #ffffff;
+  --max-width: 900px;
+  --padding: 28px;
+  --radius: 12px;
+  --btn-height: 56px;
+  --btn-font: 1.05rem;
 }
 
-.contenedor {
-    max-width: 90%;
-    width: 600px;
-    padding: 20px;
+/* reset mínimo */
+*{ box-sizing: border-box; }
+html,body{ height:100%; margin:0; padding:0; }
+
+/* página */
+body{
+  font-family: "Calibri", "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--gris-fondo);
+  color: var(--azul);
+  -webkit-font-smoothing:antialiased;
+  display:flex;
+  align-items:center;      /* centrado vertical */
+  justify-content:center;  /* centrado horizontal */
+  padding: 20px;
 }
 
-h1 {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
+/* tarjeta central */
+.card{
+  width: 100%;
+  max-width: var(--max-width);
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: var(--padding);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+  text-align: center; /* TITULO CENTRADO */
 }
 
-h2, h3 {
-    margin: 5px 0;
+/* titulos */
+h1{
+  margin: 0 0 8px 0;
+  font-size: clamp(1.3rem, 3.6vw, 1.9rem);
+  letter-spacing: 0.2px;
+  font-weight: 700;
+  color: var(--azul);
 }
 
-.texto-biblico {
-    margin-top: 25px;
-    font-size: 1.2rem;
-    color: #002266;
+h2{ margin: 6px 0 2px; font-size: clamp(1rem, 2.6vw, 1.3rem); font-weight:600; color:var(--azul); }
+h3{ margin: 2px 0 18px; font-size: clamp(.95rem, 2.2vw, 1.1rem); font-weight:700; color:var(--azul); }
+
+/* versiculo */
+.texto-biblico{
+  margin: 18px auto;
+  max-width: 720px;
+  background: #f6f8fb;
+  border: 1px solid rgba(0,51,153,0.06);
+  padding: 14px 16px;
+  border-radius: 10px;
+  color: #213044;
+  font-size: clamp(.98rem, 2.2vw, 1.1rem);
+  line-height: 1.45;
 }
 
-.boton {
-    margin-top: 30px;
-    padding: 15px 30px;
-    font-size: 1.1rem;
-    background-color: #0055ff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
+/* acciones / botones */
+.acciones{
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 22px;
+  flex-wrap: wrap;
 }
 
-.boton:hover {
-    background-color: #003bb3;
+/* boton base */
+.btn{
+  min-width: 190px;
+  height: var(--btn-height);
+  font-size: var(--btn-font);
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  padding: 0 18px;
+  font-weight: 700;
+  transition: transform .12s ease, box-shadow .12s ease;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* primary y secondary */
+.btn-primary{
+  background: var(--azul);
+  color: white;
+}
+
+.btn-primary:hover{ background: var(--azul-oscuro); transform: translateY(-2px); }
+.btn-primary:focus{ outline: 3px solid rgba(0,51,153,0.16); }
+
+.btn-secondary{
+  background: white;
+  color: var(--azul);
+  border: 2px solid rgba(0,51,153,0.12);
+}
+
+.btn-secondary:hover{ transform: translateY(-2px); }
+.btn-secondary:focus{ outline: 3px solid rgba(0,51,153,0.12); }
+
+/* optimización para pantallas pequeñas */
+@media (max-width: 520px){
+  .btn { min-width: 100%; max-width: 420px; height: 56px; }
+  .acciones { gap: 12px; }
+  .card { padding: 20px; }
 }
