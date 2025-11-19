@@ -1,23 +1,37 @@
-<header>
-    <h1>🗺️ Territorios - Cong. Cuatro Plazas</h1>
-    <p>Consulta rápida del estado de los territorios.</p>
-</header>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departamento de Territorios - Cuatro Plazas</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    
+    <header>
+        <h1>Bienvenida al Departamento de Territorios</h1>
+        <p>CONGREGACIÓN CUATRO PLAZAS</p>
+    </header>
 
-<main>
-    <section class="buscador">
-        <label for="inputBusqueda">Buscar Territorio por Número o Barrio:</label>
-        <input type="text" id="inputBusqueda" placeholder="Ej: 2, San Blas, Flores...">
-    </section>
+    <main>
+        <div class="menu-principal">
+            <button onclick="mostrarTerritorios()">🗺️ TERRITORIO</button>
+            <button onclick="mostrarReporte()">📝 REPORTE DE TERRITORIO</button>
+            <button onclick="mostrarProximamente('Asignar Territorio')">👤 ASIGNAR</button>
+            <button onclick="mostrarProximamente('Mapa General')">📍 MAPA GENERAL</button>
+            <button onclick="mostrarProximamente('Estadísticas')">📊 ESTADÍSTICAS</button>
+            <button onclick="mostrarProximamente('Configuración')">⚙️ CONFIGURACIÓN</button>
+        </div>
 
-    <section class="lista-contenedor">
-        <h2>Listado de Territorios</h2>
-        <ul id="listaTerritorios">
-            </ul>
-    </section>
-</main>
+        <div id="contenido">
+            <h2>Selecciona una opción del menú principal para comenzar.</h2>
+        </div>
+    </main>
 
-<footer>
-    <p>© 2025 Mi App. Datos confidenciales (ejemplo).</p>
-</footer>
+    <footer>
+        <p>Desarrollado para la Cong. Cuatro Plazas. © 2025.</p>
+    </footer>
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
