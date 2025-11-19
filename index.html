@@ -8,7 +8,6 @@
     body {
       background-color: #ffe6e6; /* fondo suave */
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
@@ -17,32 +16,23 @@
     }
 
     h1 {
-      font-size: 3rem;
+      font-size: 4rem;
       color: #ff1a1a; /* rojo intenso */
-      margin-bottom: 20px;
     }
 
     .heart {
-      font-size: 4rem;
-      color: #ff1a1a;
       animation: pulse 1s infinite;
+      display: inline-block;
     }
 
     @keyframes pulse {
       0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
+      50% { transform: scale(1.3); }
       100% { transform: scale(1); }
-    }
-
-    p {
-      font-size: 1.5rem;
-      color: #333;
-      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <h1>Melu TE AMO <span class="heart">❤️</span></h1>
-  <p>Siempre en mi corazón ❤️</p>
 </body>
 </html>
