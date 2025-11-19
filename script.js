@@ -1,4 +1,6 @@
-document.getElementById("btnComenzar").onclick = function () {
-  // Redirige a tu página "Territorios"
-  window.location.href = "Territorios.html";
-};
+function openTerritorio(numero) {
+  alert("Abrir Territorio " + numero);
+
+  // Acá podés redirigir a páginas por cada territorio:
+  // window.location.href = "territorio" + numero + ".html";
+}
