@@ -1,4 +1,86 @@
-document.getElementById("btnComenzar").onclick = function() {
-  // Redirige a tu página Territorios
-  window.location.href = "Territorios.html";
-};
+:root {
+  --azul: #003399;
+  --azul-oscuro: #001d5c;
+  --gris-fondo: #dfe3e8;
+}
+
+/* Centrado general */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--gris-fondo);
+  font-family: Calibri, Arial, sans-serif;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tarjeta principal */
+.card {
+  width: 92%;
+  max-width: 720px;
+  background: #fff;
+  padding: 35px 25px;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  text-align: center;
+}
+
+/* Títulos escalables */
+h1 {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  margin: 0 0 15px;
+  color: var(--azul);
+  font-weight: 700;
+}
+
+h2 {
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  color: var(--azul);
+  margin: 10px 0 5px;
+}
+
+h3 {
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  color: var(--azul);
+  margin: 5px 0 20px;
+}
+
+/* Versículo */
+.versiculo {
+  background: #f2f4f7;
+  border: 1px solid #c3c7ce;
+  padding: 20px 18px;
+  border-radius: 12px;
+  font-size: clamp(1rem, 2.4vw, 1.2rem);
+  line-height: 1.5;
+  margin-bottom: 30px;
+}
+
+/* Botón grande y accesible */
+.btn {
+  background: var(--azul);
+  color: white;
+  padding: 16px 38px;
+  border: none;
+  border-radius: 10px;
+  font-size: clamp(1.1rem, 3vw, 1.3rem);
+  cursor: pointer;
+  transition: 0.2s;
+  width: 80%;
+  max-width: 260px;
+}
+
+.btn:hover {
+  background: var(--azul-oscuro);
+  transform: scale(1.03);
+}
+
+/* Para dispositivos muy pequeños */
+@media (max-width: 480px) {
+  .card {
+    padding: 25px 15px;
+  }
+}
