@@ -1,26 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Territorios - Inicio</title>
-    <link rel="stylesheet" href="css/estilos.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inicio - App de Territorios</title>
+  <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
+  <main class="page" role="main" aria-labelledby="titulo-principal">
 
-    <div class="contenedor">
-        <h1>BIENVENIDOS a nuestra App de reportes de territorio</h1>
+    <section class="card" role="region" aria-labelledby="titulo-principal">
+      <h1 id="titulo-principal">BIENVENIDOS a nuestra App de reportes de territorio</h1>
+
+      <div class="subtitles" aria-hidden="false">
         <h2>CONGREGACIÓN</h2>
         <h3>CUATRO PLAZAS</h3>
+      </div>
 
-        <p class="texto-biblico">
-            “Pero que todo se haga decentemente y con orden.”<br>
-            — 1 Corintios 14:40 (Traducción del Nuevo Mundo)
-        </p>
+      <p class="texto-biblico" aria-live="polite">
+        <strong>“Pero que todo se haga decentemente y con orden.”</strong><br>
+        — 1 Corintios 14:40 (Traducción del Nuevo Mundo)
+      </p>
 
-        <button class="boton" onclick="irA('territorios.html')">COMENZAR</button>
-    </div>
+      <nav class="acciones" aria-label="Navegación principal">
+        <button class="btn btn-primary" id="btnTerritorio" aria-label="Ir a Territorios">Territorio</button>
+        <button class="btn btn-primary" id="btnReportes" aria-label="Ir a Reportes">Reportes</button>
+        <button class="btn btn-secondary" id="btnSugerencias" aria-label="Ir a Sugerencias de próximas salidas">Sugerencias de próximas salidas</button>
+      </nav>
+    </section>
 
-    <script src="js/app.js"></script>
+  </main>
+
+  <script src="js/app.js"></script>
 </body>
 </html>
