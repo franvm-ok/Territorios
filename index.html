@@ -1,30 +1,110 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bienvenidos</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BIENVENIDOS - App de reportes</title>
 
+  <style>
+    :root{
+      --azul: #003399;
+      --azul-oscuro: #002266;
+      --fondo: #dfe3e8;  /* FONDO GRIS SUAVE */
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Calibri, Roboto, Arial, sans-serif;
+      background: var(--fondo);
+      display: flex;
+      align-items: center;     /* CENTRADO VERTICAL */
+      justify-content: center; /* CENTRADO HORIZONTAL */
+    }
+
+    .card {
+      width: 90%;
+      max-width: 700px;
+      background: white;
+      padding: 35px 30px;
+      text-align: center;
+      border-radius: 14px;
+      box-shadow: 0 7px 25px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.8rem;
+      color: var(--azul);
+      font-weight: 700;
+    }
+
+    h2 {
+      margin-top: 8px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--azul);
+    }
+
+    h3 {
+      margin: 5px 0 18px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--azul);
+    }
+
+    .versiculo {
+      background: #f0f3f7;
+      padding: 18px 20px;
+      border-radius: 10px;
+      border: 1px solid #c7cdd6;
+      margin: 22px auto;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    .btn {
+      background: var(--azul);
+      color: white;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: 0.15s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover {
+      background: var(--azul-oscuro);
+      transform: scale(1.02);
+    }
+
+  </style>
+</head>
 <body>
 
-  <div class="container">
-
+  <div class="card">
     <h1>BIENVENIDOS a nuestra App de reportes de territorio</h1>
 
     <h2>CONGREGACIÓN</h2>
     <h3>CUATRO PLAZAS</h3>
 
-    <p class="versiculo">
+    <div class="versiculo">
       <strong>“Pero que todo se haga decentemente y con orden.”</strong><br>
       — 1 Corintios 14:40 (Traducción del Nuevo Mundo)
-    </p>
+    </div>
 
-    <button class="boton" onclick="comenzar()">COMENZAR</button>
-
+    <button class="btn" id="btnComenzar">COMENZAR</button>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    document.getElementById("btnComenzar").onclick = function() {
+      window.location.href = "Territorios.html";
+    }
+  </script>
+
 </body>
 </html>
