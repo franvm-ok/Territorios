@@ -15,13 +15,12 @@
       font-family: Arial, sans-serif;
       text-align: center;
       overflow: hidden;
-      padding: 20px;
     }
 
     h1 {
       font-size: 2rem;
       color: #ff6600;
-      margin-bottom: 40px;
+      margin-bottom: 50px;
     }
 
     .highlight {
@@ -29,37 +28,24 @@
       font-weight: bold;
     }
 
-    /* Panda */
+    /* Panda rodando */
     .panda {
-      width: 100px;
-      height: 100px;
-      background-image: url('https://i.imgur.com/L2wC8C9.png'); /* panda rodando */
-      background-size: contain;
-      background-repeat: no-repeat;
-      animation: roll 3s linear infinite;
+      font-size: 4rem;
+      display: inline-block;
+      animation: roll 4s linear infinite;
     }
 
     @keyframes roll {
-      0% {
-        transform: rotate(0deg) translateX(0px);
-      }
-      25% {
-        transform: rotate(90deg) translateX(50px);
-      }
-      50% {
-        transform: rotate(180deg) translateX(100px);
-      }
-      75% {
-        transform: rotate(270deg) translateX(50px);
-      }
-      100% {
-        transform: rotate(360deg) translateX(0px);
-      }
+      0%   { transform: translateX(0) rotate(0deg); }
+      25%  { transform: translateX(100px) rotate(90deg); }
+      50%  { transform: translateX(200px) rotate(180deg); }
+      75%  { transform: translateX(100px) rotate(270deg); }
+      100% { transform: translateX(0) rotate(360deg); }
     }
   </style>
 </head>
 <body>
   <h1><span class="highlight">Gael Pandas</span> - tu tienda favorita de accesorios para tu bebé</h1>
-  <div class="panda"></div>
+  <div class="panda">🐼</div>
 </body>
 </html>
