@@ -1,86 +1,51 @@
 :root {
   --azul: #003399;
-  --azul-oscuro: #001d5c;
+  --azul-oscuro: #002266;
   --gris-fondo: #dfe3e8;
 }
 
-/* Centrado general */
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
   background: var(--gris-fondo);
   font-family: Calibri, Arial, sans-serif;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Tarjeta principal */
-.card {
-  width: 92%;
-  max-width: 720px;
-  background: #fff;
-  padding: 35px 25px;
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 30px 20px;
   text-align: center;
 }
 
-/* Títulos escalables */
 h1 {
-  font-size: clamp(1.4rem, 4vw, 2rem);
-  margin: 0 0 15px;
   color: var(--azul);
-  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2.3rem);
+  margin-bottom: 25px;
 }
 
-h2 {
-  font-size: clamp(1.2rem, 3vw, 1.6rem);
-  color: var(--azul);
-  margin: 10px 0 5px;
+/* Grid responsive */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 18px;
 }
 
-h3 {
-  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-  color: var(--azul);
-  margin: 5px 0 20px;
-}
-
-/* Versículo */
-.versiculo {
-  background: #f2f4f7;
-  border: 1px solid #c3c7ce;
-  padding: 20px 18px;
+/* Tarjetas */
+.card {
+  background: white;
+  padding: 22px 10px;
   border-radius: 12px;
-  font-size: clamp(1rem, 2.4vw, 1.2rem);
-  line-height: 1.5;
-  margin-bottom: 30px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.18s;
+  color: var(--azul);
 }
 
-/* Botón grande y accesible */
-.btn {
+.card:hover {
   background: var(--azul);
   color: white;
-  padding: 16px 38px;
-  border: none;
-  border-radius: 10px;
-  font-size: clamp(1.1rem, 3vw, 1.3rem);
-  cursor: pointer;
-  transition: 0.2s;
-  width: 80%;
-  max-width: 260px;
-}
-
-.btn:hover {
-  background: var(--azul-oscuro);
-  transform: scale(1.03);
-}
-
-/* Para dispositivos muy pequeños */
-@media (max-width: 480px) {
-  .card {
-    padding: 25px 15px;
-  }
+  transform: scale(1.05);
 }
