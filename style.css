@@ -1,84 +1,114 @@
-/* Estilos para el buscador */
-.buscador {
-    margin-bottom: 25px;
+/* Estilos Globales y Tipografía */
+body {
+    font-family: Calibri, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    /* Fondo con tonalidad gris-azul */
+    background-color: #e6eef5; 
+    color: #333;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #2c3e50; /* Azul oscuro elegante */
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.2em;
+    font-weight: 300;
+}
+
+/* Contenedor Principal */
+main {
     padding: 20px;
-    border: 1px solid #ddd;
-    background-color: #e9eff5;
+    max-width: 1200px;
+    margin: 30px auto;
+    background-color: #fff;
     border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-#inputBusqueda {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Incluye padding en el ancho */
-    font-size: 1em;
-}
-
-/* Estilos para la lista de territorios */
-.lista-contenedor {
-    padding: 0;
-}
-
-#listaTerritorios {
-    list-style: none; /* Quita los puntos de la lista */
-    padding: 0;
-}
-
-.territorio-item {
+/* Estilos de los Botones Principales */
+.menu-principal {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
 }
 
-.territorio-item:hover {
+.menu-principal button {
+    flex-grow: 1;
+    min-width: 150px;
+    padding: 15px 20px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: white;
+    background-color: #3498db; /* Azul institucional */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.menu-principal button:hover {
+    background-color: #2980b9;
     transform: translateY(-2px);
 }
 
-.num-estado {
-    flex-basis: 20%; /* Reserva espacio para el número y el estado */
+/* Estilos del Área de Contenido Dinámico */
+#contenido {
+    padding: 20px;
+}
+
+/* Estilos para las Tarjetas de Territorio */
+.grid-territorios {
+    display: grid;
+    /* 4 columnas en PC, 2 en tablets/móviles */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+    gap: 15px;
+    padding-top: 10px;
+}
+
+.tarjeta-territorio {
+    padding: 20px;
+    background-color: #f8f9fa; /* Gris claro */
+    border: 1px solid #ddd;
+    border-left: 5px solid #3498db; /* Barra azul distintiva */
+    border-radius: 6px;
     text-align: center;
-}
-
-.detalle {
-    flex-basis: 75%;
-    font-size: 0.95em;
-}
-
-.numero {
-    display: block;
-    font-size: 1.5em;
     font-weight: bold;
-    color: #007bff;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
-.estado {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
+.tarjeta-territorio:hover {
+    background-color: #e9ecef;
+    border-left-color: #2980b9;
+}
+
+.tarjeta-territorio span {
+    display: block;
     font-size: 0.8em;
-    font-weight: 600;
+    color: #7f8c8d; /* Gris sutil */
+    margin-top: 5px;
 }
 
-/* Colores según el estado */
-.disponible {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.en-trabajo {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.asignado {
-    background-color: #f8d7da;
-    color: #721c24;
+/* Footer */
+footer {
+    text-align: center;
+    padding: 15px;
+    background-color: #bdc3c7; /* Gris medio */
+    color: #2c3e50;
+    font-size: 0.85em;
+    margin-top: 30px;
 }
