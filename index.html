@@ -1,37 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Departamento de Territorios - Cuatro Plazas</title>
-    <link rel="stylesheet" href="style.css"> 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Departamento de Territorio - Cuatro Plazas</title>
+  <style>
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f0f8ff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #1e3d59;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+      color: #333;
+      max-width: 500px;
+    }
+
+    .btn-comenzar {
+      background-color: #1e3d59;
+      color: #fff;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .btn-comenzar:hover {
+      background-color: #16324b;
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 <body>
-    
-    <header>
-        <h1>Bienvenida al Departamento de Territorios</h1>
-        <p>CONGREGACIÓN CUATRO PLAZAS</p>
-    </header>
+  <h1>Departamento de Territorio</h1>
+  <p>Bienvenido a la página del Departamento de Territorio de la congregación Cuatro Plazas. Para iniciar, haga clic en el botón "Comenzar".</p>
+  <button class="btn-comenzar" onclick="comenzar()">Comenzar</button>
 
-    <main>
-        <div class="menu-principal">
-            <button onclick="mostrarTerritorios()">🗺️ TERRITORIO</button>
-            <button onclick="mostrarReporte()">📝 REPORTE DE TERRITORIO</button>
-            <button onclick="mostrarProximamente('Asignar Territorio')">👤 ASIGNAR</button>
-            <button onclick="mostrarProximamente('Mapa General')">📍 MAPA GENERAL</button>
-            <button onclick="mostrarProximamente('Estadísticas')">📊 ESTADÍSTICAS</button>
-            <button onclick="mostrarProximamente('Configuración')">⚙️ CONFIGURACIÓN</button>
-        </div>
-
-        <div id="contenido">
-            <h2>Selecciona una opción del menú principal para comenzar.</h2>
-        </div>
-    </main>
-
-    <footer>
-        <p>Desarrollado para la Cong. Cuatro Plazas. © 2025.</p>
-    </footer>
-
-    <script src="script.js"></script>
+  <script>
+    function comenzar() {
+      // Aquí puedes redirigir a otra página o mostrar más contenido
+      alert("¡Bienvenido! Ahora puede acceder a los territorios.");
+      // Si quieres redirigir a otra página, usa:
+      // window.location.href = "territorios.html";
+    }
+  </script>
 </body>
 </html>
