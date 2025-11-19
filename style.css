@@ -1,114 +1,47 @@
-/* Estilos Globales y Tipografía */
+/* Fondo tenue gris */
 body {
-    font-family: Calibri, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    /* Fondo con tonalidad gris-azul */
-    background-color: #e6eef5; 
-    color: #333;
-    line-height: 1.6;
+  background-color: #e6e6e6;
+  margin: 0;
+  padding: 0;
+  font-family: Calibri, Arial, sans-serif; /* Fuente Calibri */
+  color: #003399; /* Azul */
+  text-align: center;
 }
 
-header {
-    background-color: #2c3e50; /* Azul oscuro elegante */
-    color: white;
-    padding: 30px 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.container {
+  padding: 40px 20px;
 }
 
 h1 {
-    margin: 0;
-    font-size: 2.2em;
-    font-weight: 300;
+  font-size: 2rem;
+  margin-bottom: 15px;
 }
 
-/* Contenedor Principal */
-main {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 30px auto;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+h2, h3 {
+  font-size: 1.6rem;
+  margin: 10px 0;
 }
 
-/* Estilos de los Botones Principales */
-.menu-principal {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 20px 0;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
+.versiculo {
+  font-size: 1.2rem;
+  margin: 30px auto;
+  max-width: 600px;
+  line-height: 1.4;
 }
 
-.menu-principal button {
-    flex-grow: 1;
-    min-width: 150px;
-    padding: 15px 20px;
-    font-size: 1.1em;
-    font-weight: bold;
-    color: white;
-    background-color: #3498db; /* Azul institucional */
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.1s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Botón */
+.boton {
+  background-color: #003399;
+  color: white;
+  padding: 15px 40px;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 30px;
+  transition: 0.3s;
 }
 
-.menu-principal button:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-}
-
-/* Estilos del Área de Contenido Dinámico */
-#contenido {
-    padding: 20px;
-}
-
-/* Estilos para las Tarjetas de Territorio */
-.grid-territorios {
-    display: grid;
-    /* 4 columnas en PC, 2 en tablets/móviles */
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-    gap: 15px;
-    padding-top: 10px;
-}
-
-.tarjeta-territorio {
-    padding: 20px;
-    background-color: #f8f9fa; /* Gris claro */
-    border: 1px solid #ddd;
-    border-left: 5px solid #3498db; /* Barra azul distintiva */
-    border-radius: 6px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
-}
-
-.tarjeta-territorio:hover {
-    background-color: #e9ecef;
-    border-left-color: #2980b9;
-}
-
-.tarjeta-territorio span {
-    display: block;
-    font-size: 0.8em;
-    color: #7f8c8d; /* Gris sutil */
-    margin-top: 5px;
-}
-
-/* Footer */
-footer {
-    text-align: center;
-    padding: 15px;
-    background-color: #bdc3c7; /* Gris medio */
-    color: #2c3e50;
-    font-size: 0.85em;
-    margin-top: 30px;
+.boton:hover {
+  background-color: #001f66;
 }
