@@ -4,12 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pantalla Principal</title>
+
   <style>
+    /* ====== ESTILOS QUE YA TENÍAS ====== */
     body {
       margin: 0;
       padding: 0;
       background: #e5e5e5; /* gris suave */
-      font-family: Arial, sans-serif;
+      font-family: Calibri, Arial, sans-serif;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -17,26 +19,57 @@
       height: 100vh;
     }
 
-    h1 {
+    /* CONTENEDOR PRINCIPAL */
+    .container {
+      background: #f8f9fa; /* gris claro */
+      padding: 45px;
+      border-radius: 25px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      border: 2px solid #2e3d37; /* verde oscuro */
+      width: 90%;
+      max-width: 450px;
       text-align: center;
-      color: #1b1b1b;
-      margin-bottom: 40px;
-      font-size: 2rem;
     }
 
+    /* TITULOS */
+    h1 {
+      text-align: center;
+      color: #003b6f;
+      margin-bottom: 5px;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    h2, h3 {
+      color: #2e3d37; /* verde oscuro apagado */
+      margin: 4px 0;
+      font-weight: 600;
+    }
+
+    /* TEXTO BÍBLICO */
+    .versiculo {
+      margin-top: 18px;
+      color: #333;
+      font-size: 1rem;
+      line-height: 1.4;
+      font-style: italic;
+    }
+
+    /* BOTONES */
     .btn {
       width: 220px;
       padding: 15px 20px;
-      margin: 12px;
+      margin: 12px auto;
       background: #1e88e5; /* azul profesional */
       color: white;
       border: none;
-      border-radius: 18px; /* más redondeado */
+      border-radius: 18px; /* redondeado */
       font-size: 1.1rem;
       cursor: pointer;
       font-weight: 600;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       transition: 0.2s ease;
+      display: block;
     }
 
     .btn:hover {
@@ -44,22 +77,27 @@
       transform: translateY(-2px);
     }
 
-    .container {
-      background: #f8f9fa;        /* gris muy claro */
-      padding: 40px;
-      border-radius: 25px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-      border: 2px solid #2e3d37; /* borde verde oscuro apagado */
-    }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h1>Menú Principal</h1>
+
+    <h1>BIENVENIDOS</h1>
+    <h2>a nuestra App de reportes de territorio</h2>
+    <h3>CONGREGACIÓN</h3>
+    <h3>CUATRO PLAZAS</h3>
+
+    <p class="versiculo">
+      “Pero que todo se haga decentemente y con orden.”<br>
+      — 1 Corintios 14:40, Traducción del Nuevo Mundo.
+    </p>
+
     <button class="btn">Reportes</button>
     <button class="btn">Territorios</button>
     <button class="btn">Mapa</button>
     <button class="btn">Estadísticas</button>
+
   </div>
 </body>
 </html>
