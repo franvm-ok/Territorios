@@ -1,926 +1,298 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Departamento de Territorio - Conductores</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>App de Territorios</title>
 
 <style>
-    /* --------------------------------- */
-    /* ESTILOS GENERALES Y LAYOUT BASE */
-    /* --------------------------------- */
     body {
-        font-family: 'Inter', sans-serif;
-        background: #f2f4f1;
         margin: 0;
-        padding: 0;
-        text-align: center;
-        color: #333;
+        font-family: Arial, sans-serif;
+        background: #f4f8f4;
     }
 
-    h1 {
-        margin-top: 40px;
-        font-size: 32px;
-        color: #35503b;
-    }
-
-    h2 {
-        color: #35503b;
-        margin-top: 10px;
-    }
-
-    .sub {
-        font-size: 15px;
-        margin-bottom: 25px;
-        color: #4b6a55;
-    }
-
-    /* --------------------------------- */
-    /* DASHBOARD Y TARJETAS PRINCIPALES */
-    /* --------------------------------- */
-    .dashboard {
-        width: 90%;
-        max-width: 800px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 18px;
-    }
-
-    .card {
-        background: #5f775f;
-        padding: 20px;
-        color: white;
-        font-size: 20px;
-        border-radius: 12px;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-        cursor: pointer;
-        transition: 0.2s;
-        text-transform: uppercase;
-        font-weight: bold;
-    }
-
-    .card:hover {
-        background: #4e634e;
-        transform: scale(1.02);
-    }
-
-    /* --------------------------------- */
-    /* PANTALLAS SECUNDARIAS Y NAVEGACIÓN */
-    /* --------------------------------- */
-    .pantalla {
-        display: none;
-        padding: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-        text-align: left;
-    }
-
-    .volver-container {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
-
-    .btn-volver {
-        background: #5f775f;
-        padding: 10px 18px;
-        border-radius: 10px;
-        color: white;
-        text-decoration: none;
-        cursor: pointer;
-        font-size: 15px;
-        transition: 0.2s;
-    }
-
-    .btn-volver:hover {
-        background: #4e634e;
-    }
-
-    .box {
-        margin-top: 20px;
-        font-size: 17px;
-        background: #e8eee8;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-
-    /* Botón de acción principal */
-    .btn-accion {
-        padding: 10px 20px;
-        background: #35503b;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background 0.2s;
-    }
-    .btn-accion:hover { background: #4b6a55; }
-    
-    /* --------------------------------- */
-    /* ESTILOS ESPECÍFICOS DE TARJETAS DE TERRITORIO */
-    /* --------------------------------- */
-    .contenedor-territorios {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 30px;
-    }
-
-    .territorio-card {
+    header {
+        background: #2d6a4f;
         padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        color: white;
         text-align: center;
-        font-size: 14px;
-        transition: transform 0.1s;
-        min-height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        cursor: pointer;
-        color: #333;
+        font-size: 22px;
+        font-weight: bold;
     }
-    
-    .territorio-card:hover { transform: translateY(-2px); }
-    
-    .territorio-title {
+
+    .container {
+        margin: 20px;
+    }
+
+    /* Tarjetas del Dashboard */
+    .card {
+        background: white;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 12px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        cursor: pointer;
+        transition: 0.2s;
         font-size: 18px;
         font-weight: bold;
-        margin-bottom: 5px;
     }
-    
-    .cronometro {
-        margin-top: 10px;
-        padding: 5px;
-        border-radius: 5px;
-        font-weight: bold;
-    }
-    
-    .asignado-info {
-        font-size: 12px;
-        padding: 5px;
-        color: #555;
-        min-height: 25px; /* Evitar CLS */
-    }
-    
-    /* COLORES DE ESTADO */
-    .card-green { background-color: #c8e6c9; border: 2px solid #388e3c; } /* Completado */
-    .card-yellow { background-color: #fff9c4; border: 2px solid #fbc02d; } /* Asignado < 10 días */
-    .card-red { background-color: #ffcdd2; border: 2px solid #d32f2f; } /* Excede 10 días */
-    
-    .cronometro-green { background-color: #4caf50; color: white; }
-    .cronometro-yellow { background-color: #ffeb3b; color: #333; }
-    .cronometro-red { background-color: #e53935; color: white; }
-    
-    
-    /* --------------------------------- */
-    /* ESTILOS DEL MODAL/DETALLE DE MANZANAS */
-    /* --------------------------------- */
-    #detalleTerritorioModal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        display: none; /* Oculto por defecto */
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
+    .card:hover {
+        background: #eaf4ea;
     }
 
-    .modal-content {
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        max-width: 90%;
-        max-height: 90%;
-        overflow-y: auto;
-        position: relative;
-        text-align: left;
-    }
-
-    .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 20px;
-        font-size: 30px;
-        font-weight: bold;
-        cursor: pointer;
-        color: #d32f2f;
-    }
-
-    .manzana-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-top: 20px;
-        padding-bottom: 20px;
-    }
-
-    .manzana-item {
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 8px;
-        text-align: center;
-        transition: background-color 0.2s;
-    }
-    
-    .manzana-status {
-        display: flex;
-        justify-content: space-around;
-        margin-top: 10px;
-    }
-
-    .status-option {
-        cursor: pointer;
-        padding: 5px 10px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        transition: all 0.2s;
-        font-size: 12px;
-    }
-
-    /* Estilos de Manzana: Completado, Incompleto, No Realizado */
-    .status-done { background: #e8f5e9; border-color: green; }
-    .status-incomplete { background: #fffde7; border-color: #ffeb3b; }
-    .status-pending { background: #fbecec; border-color: #d32f2f; }
-
-    .manzana-incomplete-details {
-        margin-top: 10px;
+    /* Vista oculta */
+    .hidden {
         display: none;
     }
-    .manzana-incomplete-details textarea {
-        width: 100%;
-        resize: none;
-        border-radius: 5px;
-        padding: 5px;
-        border: 1px solid #fbc02d;
-    }
-    
-    /* --------------------------------- */
-    /* ESTILOS DE REPORTES Y SUGERENCIAS */
-    /* --------------------------------- */
-    .reporte-item {
-        border: 1px solid #ddd;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        background: white;
-    }
-    .reporte-manzanas-list {
-        margin-left: 20px;
-        margin-top: 5px;
-    }
-    
-    .suggestion-item {
-        border: 2px solid #d32f2f;
-        padding: 15px;
+
+    /* Formularios */
+    label {
+        font-weight: bold;
         margin-top: 10px;
+        display: block;
+    }
+    select, input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 8px;
+        border: 1px solid #aaa;
+        font-size: 16px;
+    }
+    button {
+        background: #2d6a4f;
+        color: white;
+        padding: 12px;
+        border: none;
+        width: 100%;
+        font-size: 18px;
+        margin-top: 20px;
         border-radius: 10px;
-        background: #fff8f8;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #22543d;
     }
 
+    .back-btn {
+        margin-top: 25px;
+        background: #555;
+    }
+
+    /* Tabla reportes */
+    table {
+        width: 100%;
+        background: white;
+        margin-top: 20px;
+        border-collapse: collapse;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #e1e1e1;
+    }
+    th {
+        background: #2d6a4f;
+        color: white;
+    }
 </style>
 </head>
 
 <body>
 
-<!-- ========================================= -->
-<!--               DASHBOARD PRINCIPAL         -->
-<!-- ========================================= -->
+<header>Departamento de Territorio</header>
 
-<div id="dashboard">
-    <h1>🏠🙂🧳<br>Bienvenido al Departamento de Territorio</h1>
-    <div class="sub">Gestión, seguimiento y organización de la predicación territorial.</div>
+<div class="container">
 
-    <div class="dashboard">
-        <div class="card" onclick="abrir('pantallaConductores')">👤 CONDUCTORES</div>
-        <div class="card" onclick="abrir('pantallaMapa')">📍 Mapa</div>
-        <div class="card" onclick="abrir('pantallaEstadisticas')">📊 Estadísticas</div>
-        <div class="card" onclick="abrir('pantallaReportes')">📝 Reportes</div>
+    <!-- Dashboard -->
+    <div id="menu-principal">
+        <div class="card" onclick="abrirReportar()">📋 Reportar Predicación</div>
+        <div class="card" onclick="abrirReportes()">📑 Ver Reportes</div>
     </div>
+
+    <!-- Reportar predicación -->
+    <div id="pantalla-reportar" class="hidden">
+
+        <label>Territorio</label>
+        <select id="territorio" onchange="cargarManzanas()">
+            <option value="">Seleccionar...</option>
+        </select>
+
+        <label>Manzana</label>
+        <select id="manzana">
+            <option value="">Seleccionar...</option>
+        </select>
+
+        <label>Predicador</label>
+        <input type="text" id="predicador" placeholder="Nombre del conductor">
+
+        <label>Fecha</label>
+        <input type="date" id="fecha">
+
+        <button onclick="guardarReporte()">Guardar Reporte</button>
+        <button class="back-btn" onclick="volver()">Volver</button>
+    </div>
+
+    <!-- Listado de reportes -->
+    <div id="pantalla-reportes" class="hidden">
+        <h2>Reportes Realizados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Territorio</th>
+                    <th>Manzana</th>
+                    <th>Predicador</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-reportes"></tbody>
+        </table>
+
+        <button class="back-btn" onclick="volver()">Volver</button>
+    </div>
+
 </div>
 
-<!-- ========================================= -->
-<!--          PANTALLA: CONDUCTORES (TERRITORIOS)      -->
-<!-- ========================================= -->
-<div id="pantallaConductores" class="pantalla">
-    <div class="volver-container">
-        <div class="btn-volver" onclick="volver()">← Volver</div>
-        <div class="btn-volver" onclick="menu()">🏠 Menú principal</div>
-    </div>
+<script>
+// =========================
+// DATOS DE LOS TERRITORIOS
+// =========================
 
-    <h2>👤 Conductores: Gestión de Territorios</h2>
-    <p style="font-size: 12px;">**ID de Usuario: <span id="userIdDisplay">Cargando...</span></p>
+const territorios = {
+    1: 4,
+    2: 4,
+    3: 4,
+    4: 5,
+    5: 8,
+    6: 6,
+    7: 6,
+    8: 6,
+    9: 8,
+    10: 6,
+    11: 8,
+    12: 7,
+    13: 4,
+    14: 8,
+    15: 6,
+    16: 6,
+    17: 4,
+    18: 6,
+    19: 4,
+    20: 4,
+    21: 5,
+    22: 4,
+    23: 4,
+    24: 4,
+    25: 4,
+    26: 4,
+    27: 4,
+    28: 6,
+    29: 4,
+    30: 4,
+    31: 5,
+    32: 6
+};
 
-    <div class="box">
-        <p><strong>ESTADO GENERAL DE LOS TERRITORIOS:</strong></p>
-        <span id="resumenCompletados" style="color: #388e3c; font-weight: bold;">[0] Completados</span> | 
-        <span id="resumenActivos" style="color: #fbc02d; font-weight: bold;">[0] Activos (&lt; 10 días)</span> | 
-        <span id="resumenUrgentes" style="color: #d32f2f; font-weight: bold;">[0] Urgentes (&gt; 10 días)</span>
-        <button class="btn-accion" style="background: #35503b; margin-left: 20px;" disabled>+ Asignar Nuevo (Solo Siervo)</button>
-    </div>
+// cargar territorios en el select
+let territorioSelect = document.getElementById("territorio");
+Object.keys(territorios).forEach(num => {
+    let op = document.createElement("option");
+    op.value = num;
+    op.textContent = "Territorio " + num;
+    territorioSelect.appendChild(op);
+});
 
-    <h3>Listado de Territorios</h3>
-    <div id="authStatus" style="color: red; margin-bottom: 15px;">Conectando a Firebase...</div>
-    
-    <!-- CONTENEDOR DONDE SE GENERARÁN LAS 32 TARJETAS -->
-    <div id="contenedorTerritorios" class="contenedor-territorios">
-        <p style="text-align: center;">Cargando territorios...</p>
-    </div>
-</div>
+// =========================
+// FUNCIONES DE LA APP
+// =========================
 
-<!-- ========================================= -->
-<!-- MODAL/DETALLE DE MANZANAS PARA REPORTE -->
-<!-- ========================================= -->
-<div id="detalleTerritorioModal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="cerrarDetalle()">&times;</span>
-        <h2 id="modalTerritorioTitle">Reporte de Territorio T-XXX</h2>
-        <div class="sub">Marque el estado de cada manzana (cuadrante) y envíe el reporte.</div>
-        
-        <div id="manzanaGrid" class="manzana-grid">
-            <!-- Contenido de manzanas inyectado por JS -->
-        </div>
-        
-        <div style="text-align: center; margin-top: 20px;">
-            <button class="btn-accion" id="btnEnviarReporte">Enviar Reporte</button>
-        </div>
-        
-        <!-- Mensaje de éxito y opciones post-envío -->
-        <div id="reporteSuccess" style="display: none; margin-top: 20px; padding: 20px; border: 1px solid #4caf50; background: #e8f5e9; border-radius: 8px; text-align: center;">
-            <p style="color: #35503b; font-weight: bold; font-size: 1.1em;">
-                ¡Su reporte ha sido enviado al Siervo de Territorio! Gracias por su colaboración.
-            </p>
-            <!-- El enlace usa el protocolo 'tel:' para forzar la llamada/app de contacto. En un entorno real se usaría la API de WhatsApp si estuviera disponible. -->
-            <button class="btn-accion" onclick="cerrarDetalle(); abrir('pantallaConductores');" style="margin-top: 10px; background: #5f775f;">Realizar otro reporte</button>
-            <a href="tel:3416715020" class="btn-accion" style="margin-top: 10px; background: #4b6a55;">Notificar a Siervo (WhatsApp)</a>
-            <button class="btn-accion" onclick="menu()" style="margin-top: 10px; background: #35503b;">Menú Principal</button>
-        </div>
-    </div>
-</div>
+function abrirReportar() {
+    document.getElementById("menu-principal").classList.add("hidden");
+    document.getElementById("pantalla-reportar").classList.remove("hidden");
+}
 
-<!-- ========================================= -->
-<!--               PANTALLA: MAPA -->
-<!-- ========================================= -->
+function abrirReportes() {
+    document.getElementById("menu-principal").classList.add("hidden");
+    document.getElementById("pantalla-reportes").classList.remove("hidden");
+    cargarTabla();
+}
 
-<div id="pantallaMapa" class="pantalla">
-    <div class="volver-container">
-        <div class="btn-volver" onclick="volver()">← Volver</div>
-        <div class="btn-volver" onclick="menu()">🏠 Menú principal</div>
-    </div>
-    <h2>📍 Mapa Geográfico de Territorios</h2>
-    <div class="box">
-        [Aquí se mostraría un Mapa Interactivo con límites de territorios y marcadores]
-    </div>
-</div>
+function volver() {
+    document.getElementById("pantalla-reportar").classList.add("hidden");
+    document.getElementById("pantalla-reportes").classList.add("hidden");
+    document.getElementById("menu-principal").classList.remove("hidden");
+}
 
-<!-- ========================================= -->
-<!--             PANTALLA: ESTADISTICAS -->
-<!-- ========================================= -->
-<div id="pantallaEstadisticas" class="pantalla">
-    <div class="volver-container">
-        <div class="btn-volver" onclick="volver()">← Volver</div>
-        <div class="btn-volver" onclick="menu()">🏠 Menú principal</div>
-    </div>
-    <h2>📊 Estadísticas y Progreso</h2>
-    <div class="box">
-        [Espacio para Gráfico de Barras o Líneas (Ej: Chart.js)]
-    </div>
-</div>
+function cargarManzanas() {
+    let territorio = document.getElementById("territorio").value;
+    let manzanaSelect = document.getElementById("manzana");
 
-<!-- ========================================= -->
-<!--             PANTALLA: REPORTES -->
-<!-- ========================================= -->
-<div id="pantallaReportes" class="pantalla">
-    <div class="volver-container">
-        <div class="btn-volver" onclick="volver()">← Volver</div>
-        <div class="btn-volver" onclick="menu()">🏠 Menú principal</div>
-    </div>
+    manzanaSelect.innerHTML = `<option value="">Seleccionar...</option>`;
 
-    <h2>📝 Reportes del Territorio</h2>
-    
-    <div class="box" style="text-align: left;">
-        <h3>Sugerencias para las próximas salidas <span style="color: #d32f2f;">(Manzanas Pendientes)</span></h3>
-        <div id="sugerenciasList">Cargando sugerencias de reportes...</div>
-    </div>
-    
-    <h2>Historial de Reportes Enviados</h2>
-    <div id="reportesHistorial">Cargando historial de reportes...</div>
-</div>
-
-
-<!-- ========================================= -->
-<!--               JAVASCRIPT FIREBASE Y LÓGICA DE DATOS    -->
-<!-- ========================================= -->
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, collection, query, onSnapshot, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Variables globales de Firebase
-    let db;
-    let auth;
-    let userId;
-    let conductorName = "Conductor Invitado"; // Nombre por defecto
-
-    // Configuración obligatoria del entorno
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
-    
-    // Rutas de Firestore (Público para datos de territorios y reportes)
-    const TERRITORIES_PATH = `artifacts/${appId}/public/data/territories`;
-    const REPORTS_PATH = `artifacts/${appId}/public/data/reports`;
-
-    // --- MOCK DATA INICIAL PARA INICIALIZAR FIREBASE (SOLO SI NO HAY DATOS) ---
-    // Usaremos 12 manzanas por territorio para el demo.
-    const initialTerritories = Array.from({length: 32}, (_, i) => {
-        const idNum = i + 1;
-        let assignmentDate = null;
-        let isCompleted = true;
-        let assignedTo = 'N/A';
-
-        // Simular algunos asignados para demo
-        if (idNum % 5 === 0) { // 5, 10, 15, 20, 25, 30
-            const daysAgo = idNum === 5 ? 15 : (idNum === 10 ? 5 : 0);
-            const date = new Date(new Date().setDate(new Date().getDate() - daysAgo));
-            assignmentDate = date.toISOString().split('T')[0];
-            isCompleted = false;
-            assignedTo = `Hermano ${String.fromCharCode(65 + i)}`; // A, B, C, etc.
+    if (territorio !== "") {
+        let cantidad = territorios[territorio];
+        for (let i = 1; i <= cantidad; i++) {
+            let op = document.createElement("option");
+            op.value = i;
+            op.textContent = "Manzana " + i;
+            manzanaSelect.appendChild(op);
         }
+    }
+}
 
-        return {
-            id: `T-${String(idNum).padStart(2, '0')}`,
-            nombre: `Territorio ${idNum}`,
-            isCompleted: isCompleted,
-            asignadoA: assignedTo,
-            fechaAsignacion: assignmentDate,
-            manzanas: Array.from({length: 12}, (_, m) => ({
-                id: m + 1,
-                estado: 'PENDIENTE', // PENDIENTE, COMPLETADO, INCOMPLETO
-                notas: '',
-                ultimaReporte: null,
-            }))
-        };
+// =========================
+// GUARDAR REPORTE
+// =========================
+
+function guardarReporte() {
+    let territorio = document.getElementById("territorio").value;
+    let manzana = document.getElementById("manzana").value;
+    let predicador = document.getElementById("predicador").value;
+    let fecha = document.getElementById("fecha").value;
+
+    if (!territorio || !manzana || !predicador || !fecha) {
+        alert("Por favor complete todos los campos.");
+        return;
+    }
+
+    let reporte = { territorio, manzana, predicador, fecha };
+
+    // guardar en localStorage
+    let lista = JSON.parse(localStorage.getItem("reportes")) || [];
+    lista.push(reporte);
+    localStorage.setItem("reportes", JSON.stringify(lista));
+
+    alert("Reporte guardado correctamente.");
+
+    // limpiar
+    document.getElementById("territorio").value = "";
+    document.getElementById("manzana").innerHTML = `<option value="">Seleccionar...</option>`;
+    document.getElementById("predicador").value = "";
+    document.getElementById("fecha").value = "";
+}
+
+// =========================
+// MOSTRAR TABLA DE REPORTES
+// =========================
+
+function cargarTabla() {
+    let lista = JSON.parse(localStorage.getItem("reportes")) || [];
+    let tabla = document.getElementById("tabla-reportes");
+    tabla.innerHTML = "";
+
+    lista.forEach(r => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${r.fecha}</td>
+            <td>${r.territorio}</td>
+            <td>${r.manzana}</td>
+            <td>${r.predicador}</td>
+        `;
+        tabla.appendChild(tr);
     });
-
-    // --- ESTADO LOCAL ---
-    let historial = [];
-    const DIAS_LIMITE = 10;
-    let territoriosData = [];
-    let reportsData = [];
-    let selectedTerritoryId = null;
-
-
-    // --- FUNCIONES DE NAVEGACIÓN ---
-
-    function abrir(pantalla) {
-        document.getElementById("dashboard").style.display = "none";
-        document.querySelectorAll('.pantalla').forEach(p => p.style.display = "none");
-
-        document.getElementById(pantalla).style.display = "block";
-        historial.push(pantalla);
-        
-        if (pantalla === 'pantallaConductores' && userId) {
-            // Ya se llama a renderTerritorios en el listener de Firestore
-        }
-        if (pantalla === 'pantallaReportes' && userId) {
-            renderReports(); // Renderiza la pantalla de reportes
-        }
-    }
-
-    function volver() {
-        historial.pop(); 
-        if (historial.length === 0) {
-            menu();
-            return;
-        }
-
-        let anterior = historial[historial.length - 1];
-
-        document.querySelectorAll('.pantalla').forEach(p => p.style.display = "none");
-        document.getElementById(anterior).style.display = "block";
-    }
-
-    function menu() {
-        historial = []; 
-        document.querySelectorAll('.pantalla').forEach(p => p.style.display = "none");
-        document.getElementById("dashboard").style.display = "block";
-    }
-    
-    // --- LÓGICA DE FIREBASE ---
-
-    async function initFirebase() {
-        try {
-            // setLogLevel('debug'); // Descomentar para debug en consola
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            // Autenticación
-            if (initialAuthToken) {
-                await signInWithCustomToken(auth, initialAuthToken);
-            } else {
-                await signInAnonymously(auth);
-            }
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                    document.getElementById('userIdDisplay').textContent = userId;
-                    document.getElementById('authStatus').style.color = 'green';
-                    document.getElementById('authStatus').textContent = 'Conectado. ID: ' + userId.substring(0, 8) + '...';
-                    
-                    // 1. Inicializar datos si es la primera vez (para demo)
-                    initializeTerritoriesIfEmpty();
-                    
-                    // 2. Escuchar cambios en territorios y reportes
-                    setupFirestoreListeners();
-                } else {
-                    document.getElementById('authStatus').textContent = 'Desconectado.';
-                    userId = null;
-                }
-            });
-
-        } catch (error) {
-            console.error("Error al inicializar Firebase:", error);
-            document.getElementById('authStatus').textContent = 'Error de conexión: ' + error.message;
-        }
-    }
-
-    // Crea los 32 territorios iniciales solo si la colección está vacía
-    async function initializeTerritoriesIfEmpty() {
-        const q = query(collection(db, TERRITORIES_PATH));
-        const unsubscribe = onSnapshot(q, async (snapshot) => {
-            unsubscribe(); // Detener el primer snapshot después de la carga inicial
-            if (snapshot.empty) {
-                console.log("Inicializando 32 territorios...");
-                for (const terr of initialTerritories) {
-                    await setDoc(doc(db, TERRITORIES_PATH, terr.id), terr);
-                }
-            }
-        });
-    }
-
-    function setupFirestoreListeners() {
-        // Escuchar Territorios
-        const qTerritorios = query(collection(db, TERRITORIES_PATH));
-        onSnapshot(qTerritorios, (snapshot) => {
-            territoriosData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderTerritorios();
-        }, (error) => {
-            console.error("Error al escuchar territorios:", error);
-        });
-        
-        // Escuchar Reportes
-        const qReports = query(collection(db, REPORTS_PATH));
-        onSnapshot(qReports, (snapshot) => {
-            reportsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (document.getElementById('pantallaReportes').style.display === 'block') {
-                renderReports();
-            }
-        }, (error) => {
-            console.error("Error al escuchar reportes:", error);
-        });
-    }
-    
-    // --- LÓGICA DE TERRITORIOS Y CRONÓMETRO ---
-
-    function renderTerritorios() {
-        const contenedor = document.getElementById('contenedorTerritorios');
-        contenedor.innerHTML = '';
-        
-        const HOY = new Date();
-        const MS_POR_DIA = 1000 * 60 * 60 * 24;
-        
-        let completedCount = 0;
-        let activeCount = 0;
-        let overdueCount = 0;
-
-        if (territoriosData.length === 0) {
-             contenedor.innerHTML = '<p style="text-align: center;">No se encontraron territorios.</p>';
-             return;
-        }
-
-        territoriosData.forEach(territorio => {
-            let cardClass = '';
-            let cronometroContent = '';
-            let cronometroClass = '';
-            let asignadoInfo = 'DISPONIBLE para asignación';
-            
-            if (territorio.isCompleted || !territorio.fechaAsignacion) {
-                // VERDE: Completado o Disponible
-                cardClass = 'card-green';
-                cronometroContent = '¡DISPONIBLE!';
-                cronometroClass = 'cronometro-green';
-                completedCount++;
-            } else {
-                const fechaAsignacion = new Date(territorio.fechaAsignacion);
-                const diasTranscurridos = Math.floor((HOY - fechaAsignacion) / MS_POR_DIA);
-                const diasRestantes = DIAS_LIMITE - diasTranscurridos;
-                
-                // Formato de fecha
-                const fechaStr = new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(fechaAsignacion);
-                asignadoInfo = `Asignado a: ${territorio.asignadoA}<br>El día: ${fechaStr}`;
-
-                if (diasRestantes <= 0) {
-                    // ROJO: Excede 10 días
-                    cardClass = 'card-red';
-                    cronometroContent = `¡URGENTE! Excede por ${Math.abs(diasRestantes)} días`;
-                    cronometroClass = 'cronometro-red';
-                    overdueCount++;
-                } else {
-                    // AMARILLO: Dentro de 10 días
-                    cardClass = 'card-yellow';
-                    cronometroContent = `Restan ${diasRestantes} días`;
-                    cronometroClass = 'cronometro-yellow';
-                    activeCount++;
-                }
-            }
-
-            const html = `
-                <div class="territorio-card ${cardClass}" 
-                     data-id="${territorio.id}"
-                     onclick="mostrarDetalleTerritorio('${territorio.id}')"
-                     title="Haga clic para reportar">
-                    <div class="territorio-content">
-                        <div class="territorio-title">${territorio.nombre}</div>
-                        <div class="asignado-info">${asignadoInfo}</div>
-                    </div>
-                    <div class="cronometro ${cronometroClass}">
-                        ${cronometroContent}
-                    </div>
-                </div>
-            `;
-            
-            contenedor.insertAdjacentHTML('beforeend', html);
-        });
-        
-        // Actualizar el resumen en el box
-        document.getElementById('resumenCompletados').innerHTML = `[${completedCount}] Completados`;
-        document.getElementById('resumenActivos').innerHTML = `[${activeCount}] Activos (&lt; ${DIAS_LIMITE} días)`;
-        document.getElementById('resumenUrgentes').innerHTML = `[${overdueCount}] Urgentes (&gt; ${DIAS_LIMITE} días)`;
-    }
-    
-    // --- LÓGICA DE REPORTE DE MANZANAS (MODAL) ---
-
-    window.mostrarDetalleTerritorio = function(territorioId) {
-        if (!userId) {
-            // Reemplazo de alert()
-            alert("Error de autenticación. Por favor, recargue la página."); 
-            return;
-        }
-        
-        selectedTerritoryId = territorioId;
-        const territorio = territoriosData.find(t => t.id === territorioId);
-        if (!territorio) return;
-
-        document.getElementById('modalTerritorioTitle').textContent = `Reporte de ${territorio.nombre}`;
-        document.getElementById('reporteSuccess').style.display = 'none';
-        document.getElementById('btnEnviarReporte').style.display = 'block';
-
-        const grid = document.getElementById('manzanaGrid');
-        grid.innerHTML = '';
-        
-        territorio.manzanas.forEach(manzana => {
-            const estadoActual = manzana.estado || 'PENDIENTE'; // PENDIENTE, COMPLETADO, INCOMPLETO
-            
-            let initialClass = '';
-            if (estadoActual === 'COMPLETADO') initialClass = 'status-done';
-            if (estadoActual === 'INCOMPLETO') initialClass = 'status-incomplete';
-            if (estadoActual === 'PENDIENTE') initialClass = 'status-pending';
-
-            const html = `
-                <div class="manzana-item" data-manzana-id="${manzana.id}">
-                    <div style="font-weight: bold; font-size: 1.1em;">Manzana ${manzana.id}</div>
-                    <div class="manzana-status">
-                        <span class="status-option ${estadoActual === 'COMPLETADO' ? 'status-done' : ''}" 
-                              data-status="COMPLETADO" onclick="cambiarEstado(this, 'COMPLETADO', ${manzana.id})">
-                              ${estadoActual === 'COMPLETADO' ? '✅ Hecha' : 'Hecha'}
-                        </span>
-                        <span class="status-option ${estadoActual === 'INCOMPLETO' ? 'status-incomplete' : ''}" 
-                              data-status="INCOMPLETO" onclick="cambiarEstado(this, 'INCOMPLETO', ${manzana.id})">
-                              ${estadoActual === 'INCOMPLETO' ? '⚠️ Incompleta' : 'Incompleta'}
-                        </span>
-                        <span class="status-option ${estadoActual === 'PENDIENTE' ? 'status-pending' : ''}" 
-                              data-status="PENDIENTE" onclick="cambiarEstado(this, 'PENDIENTE', ${manzana.id})">
-                              ${estadoActual === 'PENDIENTE' ? '❌ Sin Tocar' : 'Sin Tocar'}
-                        </span>
-                    </div>
-                    <div class="manzana-incomplete-details" style="display: ${estadoActual === 'INCOMPLETO' ? 'block' : 'none'};">
-                        <textarea required placeholder="Cara que quedó sin predicar (OBLIGATORIO)">${manzana.notas || ''}</textarea>
-                    </div>
-                </div>
-            `;
-            grid.insertAdjacentHTML('beforeend', html);
-        });
-
-        document.getElementById('detalleTerritorioModal').style.display = 'flex';
-        document.getElementById('btnEnviarReporte').onclick = enviarReporte;
-    }
-
-    window.cerrarDetalle = function() {
-        document.getElementById('detalleTerritorioModal').style.display = 'none';
-        selectedTerritoryId = null;
-    }
-
-    window.cambiarEstado = function(element, newStatus, manzanaId) {
-        const item = element.closest('.manzana-item');
-        const options = item.querySelectorAll('.status-option');
-        const details = item.querySelector('.manzana-incomplete-details');
-        
-        // 1. Limpiar clases de selección
-        options.forEach(opt => opt.classList.remove('status-done', 'status-incomplete', 'status-pending'));
-        
-        // 2. Aplicar clase al seleccionado
-        if (newStatus === 'COMPLETADO') element.classList.add('status-done');
-        if (newStatus === 'INCOMPLETO') element.classList.add('status-incomplete');
-        if (newStatus === 'PENDIENTE') element.classList.add('status-pending');
-
-        // 3. Manejar el campo de texto obligatorio para INCOMPLETO
-        if (newStatus === 'INCOMPLETO') {
-            details.style.display = 'block';
-        } else {
-            details.style.display = 'none';
-            details.querySelector('textarea').value = ''; // Limpiar notas si no es incompleto
-        }
-        
-        // Actualizar el estado temporalmente en el elemento DOM
-        item.setAttribute('data-current-status', newStatus);
-    }
-    
-    async function enviarReporte() {
-        const territorio = territoriosData.find(t => t.id === selectedTerritoryId);
-        if (!territorio || !userId) return;
-
-        const manzanasGrid = document.getElementById('manzanaGrid').children;
-        const report = {
-            territorioId: territorio.id,
-            conductorId: userId,
-            conductorNombre: conductorName,
-            fechaReporte: new Date().toISOString(),
-            manzanasCompletadas: [],
-            manzanasIncompletas: [],
-            manzanasPendientes: []
-        };
-        
-        let isValid = true;
-        
-        // 1. Recoger datos y validar
-        Array.from(manzanasGrid).forEach(item => {
-            const manzanaId = parseInt(item.getAttribute('data-manzana-id'));
-            const statusElement = item.querySelector('.manzana-status .status-option.status-done') ||
-                                  item.querySelector('.manzana-status .status-option.status-incomplete') ||
-                                  item.querySelector('.manzana-status .status-option.status-pending');
-                                  
-            const status = statusElement ? statusElement.getAttribute('data-status') : 'PENDIENTE';
-            const notas = item.querySelector('textarea').value.trim();
-
-            if (status === 'INCOMPLETO' && notas === '') {
-                isValid = false;
-                item.style.border = '2px solid red';
-                // Reemplazo de alert()
-                console.error(`Manzana ${manzanaId} marcada como INCOMPLETA. El campo de notas es obligatorio.`);
-                // Se podría usar un modal o un mensaje en pantalla en lugar de console.error
-            } else {
-                item.style.border = '1px solid #ccc'; // Reset border
-
-                if (status === 'COMPLETADO') {
-                    report.manzanasCompletadas.push(manzanaId);
-                } else if (status === 'INCOMPLETO') {
-                    report.manzanasIncompletas.push({ id: manzanaId, caraPendiente: notas });
-                } else {
-                    report.manzanasPendientes.push(manzanaId);
-                }
-            }
-        });
-
-        if (!isValid) {
-            // Mensaje visible en la UI si la validación falla
-            document.getElementById('modalTerritorioTitle').textContent = `Reporte de ${territorio.nombre} (¡REVISE ERRORES!)`;
-            return;
-        }
-
-        // 2. Guardar reporte en Firestore
-        try {
-            await addDoc(collection(db, REPORTS_PATH), report);
-            
-            // 3. Actualizar el estado del territorio (simulación de re-asignación para evitar que el territorio desaparezca)
-            // Lógica: Se actualiza la fecha de asignación y el conductor, forzando un estado "activo"
-            await updateDoc(doc(db, TERRITORIES_PATH, territorio.id), {
-                fechaAsignacion: new Date().toISOString().split('T')[0], 
-                asignadoA: conductorName,
-                isCompleted: false, 
-            });
-
-            // 4. Mostrar mensaje de éxito y opciones
-            document.getElementById('btnEnviarReporte').style.display = 'none';
-            document.getElementById('reporteSuccess').style.display = 'block';
-
-        } catch (error) {
-            console.error("Error al enviar el reporte:", error);
-            // Reemplazo de alert()
-            console.error("Error al enviar el reporte. Verifique la consola.");
-        }
-    }
-    
-    // --- LÓGICA DE PANTALLA DE REPORTES ---
-    
-    function renderReports() {
-        const historialDiv = document.getElementById('reportesHistorial');
-        const sugerenciasDiv = document.getElementById('sugerenciasList');
-        historialDiv.innerHTML = reportsData.length === 0 ? '<p>No hay reportes en el historial.</p>' : '';
-        sugerenciasDiv.innerHTML = '';
-        
-        const sugerenciasMap = new Map(); // Key: T-ID, Value: { conductor, fecha, pendientes: [] }
-
-        reportsData
-            .sort((a, b) => new Date(b.fechaReporte) - new Date(a.fechaReporte)) // Reporte más reciente primero
-            .forEach(report => {
-            const fechaStr = new Intl.DateTimeFormat('es-ES', { 
-                day: '2-digit', month: '2-digit', year: 'numeric', 
-                hour: '2-digit', minute: '2-digit' 
-            }).format(new Date(report.fechaReporte));
-
-            let completadasList = report.manzanasCompletadas.length > 0 ? `<li>Hechas: ${report.manzanasCompletadas.join(', ')} ✅</li>` : '';
-            let incompletasList = report.manzanasIncompletas.map(m => `<li>Pendiente Manzana ${m.id}: ${m.caraPendiente} ⚠️</li>`).join('');
-            let pendientesList = report.manzanasPendientes.length > 0 ? `<li>Sin Tocar: ${report.manzanasPendientes.join(', ')} ❌</li>` : '';
-
-            // Construir el item del historial
-            const historialHTML = `
-                <div class="reporte-item">
-                    <strong>Fecha:</strong> ${fechaStr} <br>
-                    <strong>Conductor:</strong> ${report.conductorNombre} (${report.conductorId.substring(0, 8)}...) <br>
-                    <strong>Territorio:</strong> ${report.territorioId}
-                    <div class="reporte-manzanas-list">
-                        <ul>
-                            ${completadasList}
-                            ${incompletasList}
-                            ${pendientesList}
-                        </ul>
-                    </div>
-                </div>
-            `;
-            historialDiv.insertAdjacentHTML('beforeend', historialHTML);
-            
-            // Lógica para SUGERENCIAS (solo si hay incompletas o pendientes)
-            const todasPendientes = [
-                ...report.manzanasIncompletas.map(m => ({ id: m.id, detalle: m.caraPendiente, tipo: 'INCOMPLETA' })), 
-                ...report.manzanasPendientes.map(id => ({ id, detalle: 'Completa', tipo: 'PENDIENTE' }))
-            ];
-            
-            if (todasPendientes.length > 0) {
-                // Si ya existe una sugerencia para este territorio (de un reporte más reciente), la saltamos
-                if (!sugerenciasMap.has(report.territorioId)) {
-                    sugerenciasMap.set(report.territorioId, {
-                        conductor: report.conductorNombre,
-                        fecha: fechaStr,
-                        pendientes: todasPendientes,
-                        id: report.territorioId,
-                    });
-                }
-            }
-        });
-        
-        if (sugerenciasMap.size > 0) {
-            sugerenciasDiv.innerHTML = ''; // Limpiar el mensaje de carga
-            sugerenciasMap.forEach(sug => {
-                const manzanasPendientesList = sug.pendientes.map(m => {
-                    const icon = m.tipo === 'INCOMPLETA' ? '⚠️' : '❌';
-                    const text = m.tipo === 'INCOMPLETA' ? `Incompleta: ${m.detalle}` : 'Sin Tocar';
-                    return `<li>Manzana ${m.id} - ${text} ${icon}</li>`;
-                }).join('');
-                
-                const sugHTML = `
-                    <div class="suggestion-item">
-                        <strong>Territorio: ${sug.id}</strong> (Última vez reportado por: ${sug.conductor} el ${sug.fecha})<br>
-                        <strong>Manzanas Pendientes:</strong>
-                        <ul style="list-style: square; margin-left: 20px; margin-top: 5px;">
-                            ${manzanasPendientesList}
-                        </ul>
-                        <span style="font-size: 0.9em; color: #d32f2f;">Se sugiere reasignar a ${sug.conductor} para finalizar estas manzanas.</span>
-                    </div>
-                `;
-                sugerenciasDiv.insertAdjacentHTML('beforeend', sugHTML);
-            });
-        } else {
-            sugerenciasDiv.innerHTML = '<p>🎉 No hay territorios con manzanas pendientes de reportes recientes.</p>';
-        }
-    }
-    
-    // Al cargar la página, inicializar Firebase
-    document.addEventListener('DOMContentLoaded', () => {
-        initFirebase();
-        menu(); 
-    });
+}
 </script>
 
 </body>
