@@ -1,359 +1,284 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Departamento de Territorio</title>
 
 <style>
-/* ------------------------------
-   ESTILO GENERAL
-------------------------------*/
-body {
-  margin: 0;
-  background: #e5e5e5;
-  font-family: Calibri, Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* CONTENEDOR CENTRAL */
-.app {
-  width: 95%;
-  max-width: 500px;
-  background: #f8f9fa;
-  border-radius: 25px;
-  padding: 35px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  border: 2px solid #2e3d37;
-  animation: fade 0.4s ease;
-}
-
-@keyframes fade {
-  from {opacity: 0; transform: scale(0.93);}
-  to   {opacity: 1; transform: scale(1);}
-}
-
-/* LOGO */
-.logo {
-  width: 90px;
-  height: 90px;
-  margin: 0 auto 15px auto;
-  display: block;
-}
-
-/* TITULO */
-h1, h2 {
-  text-align: center;
-  margin: 5px 0;
-  color: #003b6f;
-}
-
-/* BOTONES */
-.btn {
-  width: 100%;
-  padding: 15px;
-  margin: 10px 0;
-  background: #1e88e5;
-  color: white;
-  border-radius: 15px;
-  border: none;
-  font-size: 1.1rem;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.25s ease;
-}
-
-.btn:hover {
-  background: #1565c0;
-  transform: translateY(-2px);
-}
-
-/* MANZANAS */
-.block {
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: center;
-  transition: 0.25s;
-}
-
-/* COLORES DE ESTADO */
-.completo { background: #6cc86c; color: #044a04; }
-.asignado { background: #ffe27a; color: #6b5300; }
-.pendiente { background: #ffb0b0; color: #600; }
-
-/* FORMULARIO */
-input, select, textarea {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #aaa;
-  margin-top: 10px;
-  font-size: 1rem;
-}
-
-label {
-  font-weight: bold;
-  margin-top: 10px;
-  display: block;
-}
-
-footer {
-  margin-top: 20px;
-  text-align: center;
-  font-size: 0.85rem;
-  opacity: 0.7;
-}
-
-/* OCULTO */
-.hide { display: none; }
-</style>
-</head>
-
-<body>
-
-<div class="app">
-
-  <!-- LOGO SVG CREADO -->
-  <svg class="logo" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="45" fill="#1e88e5"/>
-    <rect x="30" y="30" width="40" height="40" fill="#fff" rx="8"/>
-    <circle cx="50" cy="50" r="10" fill="#1e88e5"/>
-  </svg>
-
-  <h1 id="title">Departamento de Territorio</h1>
-
-  <!-- PANTALLA PRINCIPAL -->
-  <div id="menu">
-    <button class="btn" onclick="mostrarTerritorios()">Territorios</button>
-    <button class="btn" onclick="mostrarReportes()">Reportes</button>
-    <button class="btn" onclick="mostrarSugerencias()">Sugerencias</button>
-  </div>
-
-  <!-- PANTALLA TERRITORIOS -->
-  <div id="territorios" class="hide"></div>
-
-  <!-- PANTALLA MANZANAS -->
-  <div id="manzanas" class="hide"></div>
-
-  <!-- FORMULARIO DE REPORTE -->
-  <div id="formulario" class="hide">
-    <h2>Registrar Predicación</h2>
-
-    <label>Fecha</label>
-    <input type="date" id="fecha">
-
-    <label>Publicador</label>
-    <input type="text" id="publicador">
-
-    <label>Territorio</label>
-    <input type="text" id="territorio-field" readonly>
-
-    <label>Manzana</label>
-    <input type="text" id="manzana-field" readonly>
-
-    <label>Dirección</label>
-    <input type="text" id="direccion">
-
-    <label>Observación</label>
-    <textarea id="observacion"></textarea>
-
-    <button class="btn" onclick="guardarReporte()">Guardar Reporte</button>
-    <button class="btn" style="background:#777" onclick="volverMenu()">Cancelar</button>
-  </div>
-
-  <!-- SUGERENCIAS -->
-  <div id="sugerencias" class="hide">
-    <h2>Sugerencias</h2>
-    <div id="lista-sugerencias"></div>
-    <button class="btn" onclick="volverMenu()">Volver</button>
-  </div>
-
-  <footer>Versión 1.0 — App de Territorio</footer>
-</div>
-
-<script>
-/* ------------------------------
-   DATOS DE LOS TERRITORIOS
-------------------------------*/
-const territorios = {
-  1: 4,
-  2: 4,
-  3: 4,
-  4: 5,
-  5: 8,
-  6: 6,
-  7: 6,
-  8: 8,
-  9: 5,
-  10: 4,
-  11: 5,
-  12: 6,
-  13: 6,
-  14: 4,
-  15: 7,
-  16: 8,
-  17: 5,
-  18: 4,
-  19: 6,
-  20: 5,
-  21: 5,
-  22: 4,
-  23: 4,
-  24: 7,
-  25: 8,
-  26: 5,
-  27: 6,
-  28: 4,
-  29: 8,
-  30: 6,
-  31: 4,
-  32: 5
-};
-
-/* Estado de manzanas */
-let estado = JSON.parse(localStorage.getItem("estado")) || {};
-let reportes = JSON.parse(localStorage.getItem("reportes")) || [];
-
-/* ------------------------------
-   FUNCIONES DE NAVEGACIÓN
-------------------------------*/
-function ocultarTodo() {
-  document.getElementById("menu").classList.add("hide");
-  document.getElementById("territorios").classList.add("hide");
-  document.getElementById("manzanas").classList.add("hide");
-  document.getElementById("formulario").classList.add("hide");
-  document.getElementById("sugerencias").classList.add("hide");
-}
-
-function volverMenu() {
-  ocultarTodo();
-  document.getElementById("menu").classList.remove("hide");
-  document.getElementById("title").innerText = "Departamento de Territorio";
-}
-
-/* ------------------------------
-   TERRITORIOS
-------------------------------*/
-function mostrarTerritorios() {
-  ocultarTodo();
-  const cont = document.getElementById("territorios");
-  cont.innerHTML = "<h2>Seleccione un Territorio</h2>";
-
-  Object.keys(territorios).forEach(t => {
-    cont.innerHTML += `<button class="btn" onclick="mostrarManzanas(${t})">Territorio ${t}</button>`;
-  });
-
-  cont.classList.remove("hide");
-}
-
-/* ------------------------------
-   MANZANAS POR TERRITORIO
-------------------------------*/
-function mostrarManzanas(num) {
-  ocultarTodo();
-  const cont = document.getElementById("manzanas");
-  cont.innerHTML = `<h2>¿Qué manzana se predicó? (Territorio ${num})</h2>`;
-
-  const cant = territorios[num];
-
-  for (let m = 1; m <= cant; m++) {
-    const key = `${num}-${m}`;
-    const st = estado[key] || "pendiente";
-
-    cont.innerHTML += `
-      <div class="block ${st}" onclick="seleccionarManzana(${num}, ${m})">
-        Manzana ${m} — ${st.toUpperCase()}
-      </div>`;
+  body {
+    margin: 0;
+    font-family: Calibri, Arial, sans-serif;
+    background: #e5e5e5;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  cont.innerHTML += `<button class="btn" onclick="volverMenu()">Volver</button>`;
-  cont.classList.remove("hide");
-}
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 260px;
+    background: #2e3d37;
+    color: white;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 12px rgba(0,0,0,0.2);
+  }
 
-/* ------------------------------
-   FORMULARIO
-------------------------------*/
-let tSel = null;
-let mSel = null;
+  .logo {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 20px;
+  }
 
-function seleccionarManzana(t, m) {
-  tSel = t;
-  mSel = m;
+  .welcome-text {
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 30px;
+    line-height: 1.3;
+  }
 
-  document.getElementById("territorio-field").value = t;
-  document.getElementById("manzana-field").value = m;
+  .menu-btn {
+    background: #1e88e5;
+    padding: 14px;
+    margin: 8px 0;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: 0.2s;
+    width: 100%;
+  }
 
-  ocultarTodo();
-  document.getElementById("formulario").classList.remove("hide");
-}
+  .menu-btn:hover {
+    background: #1565c0;
+  }
 
-/* ------------------------------
-   GUARDAR REPORTE
-------------------------------*/
-function guardarReporte() {
-  const r = {
-    fecha: document.getElementById("fecha").value,
-    publicador: document.getElementById("publicador").value,
-    territorio: tSel,
-    manzana: mSel,
-    direccion: document.getElementById("direccion").value,
-    obs: document.getElementById("observacion").value,
-    timestamp: Date.now()
-  };
+  /* ===== MAIN CONTENT ===== */
+  .content {
+    flex: 1;
+    padding: 25px;
+    overflow-y: auto;
+  }
 
-  reportes.push(r);
+  .screen {
+    display: none;
+    animation: fade 0.3s ease;
+  }
 
-  const key = `${tSel}-${mSel}`;
-  estado[key] = "completo";
+  @keyframes fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
 
-  localStorage.setItem("estado", JSON.stringify(estado));
-  localStorage.setItem("reportes", JSON.stringify(reportes));
+  /* ===== TARJETAS DE TERRITORIOS ===== */
+  .territorio-card {
+    padding: 18px;
+    background: white;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: 0.2s;
+  }
+  .territorio-card:hover {
+    background: #f0f0f0;
+  }
 
-  volverMenu();
-}
+  /* ESTADOS DE MANZANAS */
+  .manzana {
+    padding: 12px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  }
+  .completo { background: #c8e6c9; }
+  .asignado { background: #fff3cd; }
+  .pendiente { background: #ffcdd2; }
 
-/* ------------------------------
-   SUGERENCIAS
-------------------------------*/
-function mostrarSugerencias() {
-  ocultarTodo();
-  const cont = document.getElementById("lista-sugerencias");
-  cont.innerHTML = "";
+  /* ===== FORMULARIO ===== */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  label {
+    font-weight: bold;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #aaa;
+    margin-top: 5px;
+  }
+  button.enviar {
+    background: #2e3d37;
+    color: white;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    margin-top: 15px;
+    width: 100%;
+    font-size: 1.1rem;
+  }
+  button.enviar:hover {
+    background: #1f2c27;
+  }
 
-  const ahora = Date.now();
-
-  // Territorios con manzanas pendientes
-  cont.innerHTML += "<h3>Manzanas Pendientes</h3>";
-  Object.keys(territorios).forEach(t => {
-    for (let m = 1; m <= territorios[t]; m++) {
-      const key = `${t}-${m}`;
-      if (!estado[key] || estado[key] === "pendiente") {
-        cont.innerHTML += `Territorio ${t}, Manzana ${m}<br>`;
-      }
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 200px;
     }
-  });
-
-  // Territorios que exceden 10 días
-  cont.innerHTML += "<h3>Más de 10 días sin predicar</h3>";
-
-  Object.keys(territorios).forEach(t => {
-    const ult = reportes.filter(r => r.territorio == t).sort((a,b)=>b.timestamp-a.timestamp)[0];
-
-    if (!ult) {
-      cont.innerHTML += `Territorio ${t} — Nunca predicado<br>`;
-    } else {
-      const dias = (ahora - ult.timestamp) / (1000*60*60*24);
-      if (dias >= 10) cont.innerHTML += `Territorio ${t} — ${Math.floor(dias)} días<br>`;
+  }
+  @media (max-width: 550px) {
+    body { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      flex-direction: row;
+      overflow-x: auto;
     }
-  });
+    .menu-btn {
+      flex: 1;
+      margin: 5px;
+      font-size: 0.9rem;
+      padding: 10px;
+    }
+    .welcome-text { display: none; }
+    .logo { display: none; }
+  }
+</style>
 
-  document.getElementById("sugerencias").classList.remove("hide");
+</head>
+<body>
+
+<!-- ===================================== -->
+<!-- SIDEBAR -->
+<!-- ===================================== -->
+<div class="sidebar">
+  <div class="logo">🏠🧑‍💼</div>
+
+  <div class="welcome-text">
+    <strong>Departamento de Territorio</strong><br>
+    Congregación Cuatro Plazas
+  </div>
+
+  <button class="menu-btn" onclick="showScreen('inicio')">Inicio</button>
+  <button class="menu-btn" onclick="showScreen('territorios')">Territorios</button>
+  <button class="menu-btn" onclick="showScreen('reportes')">Reportes</button>
+  <button class="menu-btn" onclick="showScreen('sugerencias')">Sugerencias</button>
+</div>
+
+<!-- ===================================== -->
+<!-- CONTENIDO -->
+<!-- ===================================== -->
+<div class="content">
+
+  <!-- INICIO -->
+  <div id="inicio" class="screen" style="display:block;">
+    <h1>Bienvenidos</h1>
+    <p>“Pero que todo se haga decentemente y con orden.”<br>
+    — 1 Corintios 14:40</p>
+  </div>
+
+
+  <!-- TERRITORIOS -->
+  <div id="territorios" class="screen">
+    <h2>Selecciona un Territorio</h2>
+
+    <div class="territorio-card" onclick="openManzanas(1)">Territorio 1</div>
+    <div class="territorio-card" onclick="openManzanas(2)">Territorio 2</div>
+    <div class="territorio-card" onclick="openManzanas(3)">Territorio 3</div>
+    <div class="territorio-card" onclick="openManzanas(4)">Territorio 4</div>
+  </div>
+
+
+  <!-- MANZANAS -->
+  <div id="manzanas" class="screen">
+    <h2 id="tituloManzana"></h2>
+    <p>¿Qué manzana se predicó?</p>
+
+    <div id="listaManzanas"></div>
+  </div>
+
+
+  <!-- FORMULARIO DE REPORTE -->
+  <div id="reportes" class="screen">
+    <h2>Formulario de Reporte</h2>
+
+    <div class="form-group">
+      <label>Fecha</label>
+      <input type="date">
+    </div>
+
+    <div class="form-group">
+      <label>Predicador</label>
+      <input type="text">
+    </div>
+
+    <div class="form-group">
+      <label>Territorio</label>
+      <select>
+        <option>1</option><option>2</option><option>3</option><option>4</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Manzana</label>
+      <select>
+        <option>1</option><option>2</option><option>3</option><option>4</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Notas</label>
+      <textarea rows="5"></textarea>
+    </div>
+
+    <button class="enviar">Enviar</button>
+  </div>
+
+
+  <!-- SUGERENCIAS -->
+  <div id="sugerencias" class="screen">
+    <h2>Sugerencias automáticas</h2>
+    <p>• Territorios con manzanas pendientes<br>
+       • Territorios sin predicar<br>
+       • Territorios que superan 10 días
+    </p>
+  </div>
+
+</div>
+
+
+<!-- ===================================== -->
+<!-- JAVASCRIPT -->
+<!-- ===================================== -->
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.style.display = "none");
+  document.getElementById(id).style.display = "block";
+}
+
+function openManzanas(num) {
+  showScreen('manzanas');
+  document.getElementById("tituloManzana").innerText = "Territorio " + num;
+
+  let estados = ["completo", "asignado", "pendiente"];
+  let textos = ["Completo", "Asignado", "Pendiente"];
+
+  let html = "";
+  for (let i = 1; i <= 5; i++) {
+    let e = estados[i % 3];
+    html += `<div class="manzana ${e}">Manzana ${i} — ${textos[i % 3]}</div>`;
+  }
+  document.getElementById("listaManzanas").innerHTML = html;
 }
 </script>
 
