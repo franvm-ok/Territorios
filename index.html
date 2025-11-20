@@ -1,36 +1,87 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Inicio - App de Territorios</title>
-  <link rel="stylesheet" href="css/estilos.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantalla de Inicio - Territorios</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        font-family: Calibri, Arial, sans-serif;
+        background-color: #e6e6e6; /* gris tenue */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .contenedor {
+        width: 100%;
+        max-width: 600px;
+        padding: 20px;
+    }
+
+    h1, h2, h3 {
+        color: #003399; /* azul */
+        margin: 10px 0;
+    }
+
+    .versiculo {
+        margin: 20px 0;
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        color: #001f66;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .boton {
+        background-color: #0055ff;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 80%;
+        margin: 10px auto;
+        display: block;
+        transition: 0.2s;
+    }
+
+    .boton:hover {
+        background-color: #003bb3;
+        transform: scale(1.03);
+    }
+</style>
+
+<script>
+    function irA(pagina) {
+        window.location.href = pagina;
+    }
+</script>
+
 </head>
 <body>
-  <main class="page" role="main" aria-labelledby="titulo-principal">
 
-    <section class="card" role="region" aria-labelledby="titulo-principal">
-      <h1 id="titulo-principal">BIENVENIDOS a nuestra App de reportes de territorio</h1>
+<div class="contenedor">
+    <h1>BIENVENIDOS a nuestra App de reportes de territorio</h1>
+    <h2>CONGREGACIÓN</h2>
+    <h3>CUATRO PLAZAS</h3>
 
-      <div class="subtitles" aria-hidden="false">
-        <h2>CONGREGACIÓN</h2>
-        <h3>CUATRO PLAZAS</h3>
-      </div>
-
-      <p class="texto-biblico" aria-live="polite">
+    <div class="versiculo">
         <strong>“Pero que todo se haga decentemente y con orden.”</strong><br>
         — 1 Corintios 14:40 (Traducción del Nuevo Mundo)
-      </p>
+    </div>
 
-      <nav class="acciones" aria-label="Navegación principal">
-        <button class="btn btn-primary" id="btnTerritorio" aria-label="Ir a Territorios">Territorio</button>
-        <button class="btn btn-primary" id="btnReportes" aria-label="Ir a Reportes">Reportes</button>
-        <button class="btn btn-secondary" id="btnSugerencias" aria-label="Ir a Sugerencias de próximas salidas">Sugerencias de próximas salidas</button>
-      </nav>
-    </section>
+    <button class="boton" onclick="irA('territorios.html')">Territorio</button>
+    <button class="boton" onclick="irA('reportes.html')">Reportes</button>
+    <button class="boton" onclick="irA('sugerencias.html')">Sugerencias de salidas</button>
+</div>
 
-  </main>
-
-  <script src="js/app.js"></script>
 </body>
 </html>
