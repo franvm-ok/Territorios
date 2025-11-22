@@ -1,296 +1,778 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Departamento de Territorio</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Departamento de Territorio — Dashboard</title>
 
+<!-- Colores y estilo basados en tu script original -->
 <style>
-    /* -------------------- COLORES ORIGINALES -------------------- */
-    :root {
-        --verde-principal: #4CAF50;
-        --verde-oscuro: #388E3C;
-        --fondo-suave: #E8F5E9;
-        --texto: #1b1b1b;
-        --blanco: #ffffff;
-        --borde: #cfe6d0;
-        --sombra: 0 4px 10px rgba(0,0,0,0.15);
-    }
+  :root{
+    --bg: #f3f7f3;
+    --panel: #ffffff;
+    --green: #4e8f6b;      /* verde principal (tu original confirmado) */
+    --green-dark: #35503b; /* verde oscuro */
+    --muted: #6b7a6a;
+    --card-shadow: 0 6px 18px rgba(49,73,56,0.08);
+    --radius: 14px;
+    --gap: 18px;
+    --ui-size: 18px; /* base para inputs/buttons */
+  }
 
-    /* Tema oscuro automático */
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --fondo-suave: #121212;
-            --blanco: #1f1f1f;
-            --texto: #f1f1f1;
-            --borde: #2a2a2a;
-        }
-    }
+  /* Dark theme variables (overrides when body.dark) */
+  body.dark {
+    --bg: #0f1410;
+    --panel: #1b201b;
+    --green: #4e8f6b; /* keep same brand green (accent) */
+    --green-dark: #6aa87a;
+    --muted: #9aa79a;
+    --card-shadow: 0 8px 22px rgba(0,0,0,0.5);
+  }
 
-    /* Tema oscuro manual */
-    body.dark {
-        --fondo-suave: #121212 !important;
-        --blanco: #1f1f1f !important;
-        --texto: #f1f1f1 !important;
-        --borde: #2a2a2a !important;
-    }
+  html,body{height:100%;margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;color:#243022;}
+  header{
+    background:linear-gradient(180deg, #57a07b 0%, var(--green) 100%);
+    color:white;padding:18px 16px;text-align:center;font-size:22px;font-weight:700;
+    box-shadow: 0 3px 8px rgba(50,80,60,0.08);
+    border-radius: 12px;
+    position: relative;
+  }
+  .wrap{max-width:1100px;margin:18px auto;padding:0 16px;}
 
-    /* -------------------- ESTILOS GENERALES -------------------- */
-    body {
-        background: var(--fondo-suave);
-        color: var(--texto);
-        font-family: "Segoe UI", sans-serif;
-        padding: 20px;
-        transition: 0.4s ease;
-    }
+  /* Top controls row (login, lang, settings, theme) placed at top-right */
+  .top-row {
+    position: absolute;
+    right: 14px;
+    top: 12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .top-btn {
+    background:var(--panel);
+    color:var(--green-dark);
+    border:1px solid rgba(34,50,40,0.06);
+    padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer;
+    box-shadow: var(--card-shadow);
+    font-size:14px;
+  }
+  .icon-btn{
+    background:var(--panel);border-radius:10px;padding:8px;border:1px solid rgba(34,50,40,0.06);cursor:pointer;box-shadow:var(--card-shadow)
+  }
+  .icon-small{font-size:18px}
 
-    /* -------------------- ENCABEZADO -------------------- */
-    header {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 20px;
-    }
+  /* switch */
+  .switch{position:relative;width:52px;height:28px;display:inline-block}
+  .switch input{display:none}
+  .slider{position:absolute;inset:0;background:rgba(0,0,0,0.08);border-radius:34px;transition:.25s}
+  .slider:before{content:'';position:absolute;height:22px;width:22px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.25s}
+  .switch input:checked + .slider{background:linear-gradient(90deg,var(--green) 0%,var(--green-dark) 100%)}
+  .switch input:checked + .slider:before{transform:translateX(24px)}
 
-    .top-btn {
-        background: var(--blanco);
-        color: var(--texto);
-        border: 1px solid var(--borde);
-        border-radius: 25px;
-        padding: 8px 16px;
-        font-size: 14px;
-        box-shadow: var(--sombra);
-        cursor: pointer;
-        transition: 0.2s;
-    }
-    .top-btn:hover {
-        transform: scale(1.06);
-    }
+  /* Titles */
+  h1{margin:14px 0 4px 0;color:var(--green-dark);font-size:26px;text-align:center}
+  .subtitle{margin:0 0 14px 0;text-align:center;color:var(--green-dark);opacity:0.9;font-size:15px;font-style:italic}
 
-    /* Iconitos */
-    .icon-btn {
-        background: var(--blanco);
-        box-shadow: var(--sombra);
-        border-radius: 50%;
-        padding: 10px;
-        width: 42px;
-        height: 42px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        border: 1px solid var(--borde);
-        transition: .2s;
-    }
-    .icon-btn:hover {
-        transform: scale(1.12);
-    }
+  /* Search bar */
+  .search-wrap{display:flex;justify-content:center;margin-bottom:16px}
+  .search-input{width:100%;max-width:680px;padding:12px 16px;border-radius:12px;border:1px solid rgba(34,50,40,0.06);font-size:16px;box-shadow:var(--card-shadow);background:var(--panel)}
 
-    /* -------------------- MODO OSCURO PERILLA -------------------- */
-    .switch {
-        position: relative;
-        width: 55px;
-        height: 28px;
-    }
-    .switch input { display: none; }
-    .slider {
-        position: absolute;
-        inset: 0;
-        background-color: var(--borde);
-        border-radius: 34px;
-        cursor: pointer;
-        transition: .4s;
-    }
-    .slider:before {
-        content: "";
-        position: absolute;
-        height: 22px;
-        width: 22px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        border-radius: 50%;
-        transition: 0.4s;
-    }
-    input:checked + .slider {
-        background-color: var(--verde-principal);
-    }
-    input:checked + .slider:before {
-        transform: translateX(26px);
-    }
+  /* Dashboard cards grid (medianas) */
+  .cards{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--gap);
+    align-items:stretch;
+  }
+  @media(min-width:720px){
+    .cards{grid-template-columns: repeat(3, 1fr);} /* filas de 3 en pantallas >=720 */
+  }
+  @media(min-width:1100px){
+    .cards{grid-template-columns: repeat(4, 1fr);}
+  }
 
-    /* -------------------- TITULOS -------------------- */
-    h1 {
-        text-align: center;
-        font-size: 34px;
-        font-weight: bold;
-    }
-    .subtitulo {
-        text-align: center;
-        font-size: 18px;
-        opacity: 0.9;
-        margin-bottom: 20px;
-        font-style: italic;
-    }
+  .card {
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 22px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    box-shadow: var(--card-shadow);
+    cursor:pointer;
+    transition: transform .14s cubic-bezier(.2,.9,.3,1), box-shadow .14s;
+    min-height:120px;
+    border: 1px solid rgba(34,50,40,0.04);
+    user-select:none;
+  }
+  .card:active{transform: scale(0.97); box-shadow: 0 4px 10px rgba(0,0,0,0.06)}
+  .card:focus{outline:3px solid rgba(69,142,100,0.18);outline-offset:3px;}
+  .card .icon{
+    width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(180deg, rgba(78,143,107,0.12), rgba(78,143,107,0.06)); font-size:28px;color:var(--green-dark);
+  }
+  .card .label{font-size:18px;font-weight:700;color:var(--green-dark);text-align:center;}
+  .card .hint{font-size:13px;color:var(--muted);}
 
-    /* -------------------- BUSCADOR -------------------- */
-    .search-bar {
-        width: 100%;
-        max-width: 450px;
-        margin: 0 auto 25px auto;
-        display: flex;
-        justify-content: center;
-    }
-    .search-bar input {
-        width: 100%;
-        padding: 12px 18px;
-        border-radius: 30px;
-        border: 1px solid var(--borde);
-        font-size: 16px;
-        box-shadow: var(--sombra);
-        outline: none;
-    }
+  /* Screens */
+  .screen{display:none}
+  .screen.active{display:block}
 
-    /* -------------------- TARJETAS -------------------- */
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 22px;
-    }
+  /* Territorios grid */
+  .territory-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media(min-width:720px){ .territory-grid{grid-template-columns:repeat(3,1fr)} }
+  @media(min-width:1100px){ .territory-grid{grid-template-columns:repeat(4,1fr)} }
 
-    .card {
-        background: var(--blanco);
-        border-radius: 25px;
-        padding: 25px 15px;
-        text-align: center;
-        box-shadow: var(--sombra);
-        border: 1px solid var(--borde);
-        font-size: 18px;
-        cursor: pointer;
-        transition: transform 0.2s;
-        user-select: none;
-    }
-    .card:hover {
-        transform: translateY(-4px);
-    }
-    .card:active {
-        transform: scale(0.95);
-    }
+  .territory-card{
+    background:linear-gradient(180deg, rgba(78,143,107,0.06), rgba(78,143,107,0.02));
+    border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;
+    cursor:pointer;border:1px solid rgba(34,50,40,0.04);
+  }
+  .territory-card .title{font-weight:800;color:var(--green-dark);font-size:17px}
+  .territory-card .meta{font-size:14px;color:var(--muted)}
+  .territory-card .manzanas{margin-top:auto;font-size:14px;font-weight:700;color:var(--green-dark)}
 
-    .emoji {
-        font-size: 42px;
-        margin-bottom: 8px;
-    }
+  /* Modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,14,10,0.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:60}
+  .modal{background:var(--panel);border-radius:14px;padding:18px;max-width:760px;width:100%;box-shadow:0 30px 70px rgba(10,20,10,0.2);position:relative}
+  .modal .row{display:flex;gap:12px;flex-wrap:wrap}
+  .modal label{display:block;font-weight:700;margin-top:8px;color:var(--green-dark)}
+  .modal select,input,textarea{
+    width:100%;padding:12px;border-radius:10px;border:1px solid rgba(34,50,40,0.08);font-size:16px;background:var(--panel)
+  }
+  .modal .manzana-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .pill{padding:10px 12px;border-radius:10px;border:1px solid rgba(34,50,40,0.06);background:#fff;font-weight:700;cursor:pointer}
+  .pill.selected{background:var(--green);color:white;border-color:transparent;box-shadow:0 8px 20px rgba(78,143,107,0.12)}
+  .close-x{background:transparent;border:none;font-size:22px;color:var(--muted);cursor:pointer;position:absolute;right:14px;top:10px}
 
-    /* -------------------- AYUDA -------------------- */
-    .help {
-        margin-top: 35px;
-        text-align: center;
-    }
-    .help button {
-        background: var(--verde-principal);
-        color: white;
-        padding: 14px 22px;
-        font-size: 18px;
-        border-radius: 25px;
-        cursor: pointer;
-        border: none;
-        box-shadow: var(--sombra);
-        transition: .2s;
-    }
-    .help button:hover {
-        transform: scale(1.07);
-    }
+  /* Table reports */
+  .table-wrap{overflow:auto;background:var(--panel);padding:10px;border-radius:12px;box-shadow:var(--card-shadow)}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  th,td{padding:12px;border-bottom:1px solid rgba(34,50,40,0.06);text-align:left}
+  th{background:linear-gradient(180deg,var(--green) 0%, var(--green-dark) 100%);color:white;font-weight:700}
+  .muted{color:var(--muted);font-size:14px}
+
+  footer{margin:30px 0 60px 0;text-align:center;color:var(--muted);font-size:14px}
+
+  /* PDF list */
+  .pdf-item{background:var(--panel);padding:12px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;box-shadow:var(--card-shadow)}
+  .pdf-item .name{font-weight:700;color:var(--green-dark)}
+  .pdf-empty{color:var(--muted);padding:12px}
+
+  /* Responsive small tweaks */
+  @media(max-width:420px){
+    header{padding:12px 10px;font-size:18px}
+    .top-row{right:8px;top:8px}
+    .search-wrap .search-input{max-width:95%}
+  }
 </style>
 </head>
-
 <body>
 
-<header>
-
-    <!-- Selector idioma -->
-    <div class="icon-btn" title="Idioma">
-        🌐
+<header aria-hidden="false">
+  <div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+      <div style="font-size:20px;font-weight:800;color:white">🏠 Departamento de Territorio</div>
     </div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.92);margin-top:4px">Congregación Cuatro Plazas</div>
+  </div>
 
-    <!-- Configuración -->
-    <div class="icon-btn" title="Ajustes">
-        ⚙️
-    </div>
+  <!-- top-right controls -->
+  <div class="top-row" aria-hidden="false" style="position:absolute;right:12px;top:10px;">
+    <!-- language selector -->
+    <div class="icon-btn" title="Idioma" id="langBtn" role="button" tabindex="0" aria-label="Cambiar idioma">ES</div>
 
-    <!-- Iniciar sesión -->
-    <button class="top-btn">Iniciar sesión</button>
+    <!-- settings -->
+    <div class="icon-btn" title="Ajustes" id="settingsBtn" role="button" tabindex="0" aria-label="Abrir ajustes">⚙️</div>
 
-    <!-- Modo oscuro -->
-    <label class="switch">
-        <input type="checkbox" id="themeToggle">
-        <span class="slider"></span>
+    <!-- login -->
+    <button id="loginBtn" class="top-btn" aria-label="Iniciar sesión">Iniciar sesión</button>
+
+    <!-- theme switch -->
+    <label class="switch" title="Modo oscuro / claro" aria-label="Interruptor de tema">
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
     </label>
-
+  </div>
 </header>
 
-<h1>Departamento de Territorio</h1>
-<p class="subtitulo">Congregación Cuatro Plazas</p>
+<main class="wrap" id="app" role="main">
 
-<!-- Barra de búsqueda -->
-<div class="search-bar">
-    <input type="text" placeholder="Buscar…">
+  <!-- Search -->
+  <div class="search-wrap">
+    <input id="searchInput" class="search-input" type="search" placeholder="Buscar (territorio, manzana, conductor)...">
+  </div>
+
+  <!-- DASHBOARD -->
+  <section id="screen-dashboard" class="screen active" aria-labelledby="dashboard-title">
+    <h2 id="dashboard-title">Bienvenido — Elija una acción</h2>
+    <p class="muted">Interfaz limpia y botones medianos, pensada para adultos mayores. Tocar una tarjeta para continuar.</p>
+
+    <div class="cards" role="list">
+      <div class="card" role="button" tabindex="0" onclick="openReportModal()" onkeydown="if(event.key==='Enter') openReportModal()" aria-label="Reportar predicación">
+        <div class="icon" aria-hidden="true">📋</div>
+        <div class="label">Reportar Predicación</div>
+        <div class="hint">Rápido y sencillo</div>
+      </div>
+
+      <div class="card" role="button" tabindex="0" onclick="showScreen('territorios')" onkeydown="if(event.key==='Enter') showScreen('territorios')" aria-label="Reportar territorio">
+        <div class="icon" aria-hidden="true">📌</div>
+        <div class="label">Reportar Territorio</div>
+        <div class="hint">32 territorios y sus manzanas</div>
+      </div>
+
+      <div class="card" role="button" tabindex="0" onclick="showScreen('anuncios')" onkeydown="if(event.key==='Enter') showScreen('anuncios')" aria-label="Mapa">
+        <div class="icon" aria-hidden="true">🗺️</div>
+        <div class="label">Mapa</div>
+        <div class="hint">Pendiente (próxima versión)</div>
+      </div>
+
+      <div class="card" role="button" tabindex="0" onclick="showScreen('reportes')" onkeydown="if(event.key==='Enter') showScreen('reportes')" aria-label="Ver reportes">
+        <div class="icon" aria-hidden="true">📑</div>
+        <div class="label">Reportes</div>
+        <div class="hint">Historial y exportación</div>
+      </div>
+
+      <div class="card" role="button" tabindex="0" onclick="showScreen('estadisticas')" onkeydown="if(event.key==='Enter') showScreen('estadisticas')" aria-label="Estadisticas">
+        <div class="icon" aria-hidden="true">📊</div>
+        <div class="label">Estadísticas</div>
+        <div class="hint">Resumen visual</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLERO DE ANUNCIOS -->
+  <section id="screen-anuncios" class="screen" aria-labelledby="anuncios-title">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <h2 id="anuncios-title">Tablero de Anuncios</h2>
+        <p class="muted">Suba PDFs desde su PC, teléfono o Drive (si el dispositivo lo permite). Se guardan localmente y pueden abrirse en tamaño grande.</p>
+      </div>
+      <div>
+        <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Volver al menú principal</button>
+      </div>
+    </div>
+
+    <div class="controls" style="margin-top:12px">
+      <input type="file" id="pdfInput" accept="application/pdf" style="display:none" />
+      <button class="btn" onclick="document.getElementById('pdfInput').click()">➕ Agregar PDF</button>
+      <button class="btn ghost" onclick="clearPDFs()">🗑️ Eliminar todos los PDFs</button>
+    </div>
+
+    <div id="pdfList" style="margin-top:14px"></div>
+  </section>
+
+  <!-- TERRITORIOS -->
+  <section id="screen-territorios" class="screen" aria-labelledby="territorios-title">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <h2 id="territorios-title">Territorios</h2>
+        <p class="muted">Toque un territorio para reportar la manzana correspondiente.</p>
+      </div>
+      <div>
+        <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Menú</button>
+      </div>
+    </div>
+
+    <div id="territoryGrid" class="territory-grid" style="margin-top:14px"></div>
+  </section>
+
+  <!-- REPORTES -->
+  <section id="screen-reportes" class="screen" aria-labelledby="reportes-title">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <h2 id="reportes-title">Reportes</h2>
+        <p class="muted">Historial de reportes guardados en este dispositivo.</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn small" onclick="exportCSV()">Exportar CSV</button>
+        <button class="btn ghost small" onclick="clearReports()" title="Borrar todos los reportes">Borrar</button>
+        <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Menú</button>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:12px">
+      <table aria-describedby="reportes-title">
+        <thead><tr><th>Fecha</th><th>Territorio</th><th>Manzana</th><th>Conductor</th><th>Notas</th></tr></thead>
+        <tbody id="reportsTable"><tr><td colspan="5" class="muted">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ESTADISTICAS (placeholder) -->
+  <section id="screen-estadisticas" class="screen" aria-labelledby="estadisticas-title">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <h2 id="estadisticas-title">Estadísticas</h2>
+        <p class="muted">Resumen visual de la actividad (próximo paso: gráficos).</p>
+      </div>
+      <div>
+        <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Menú</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px">
+      <div class="card" style="min-height:100px">
+        <div class="label">Reportes totales</div>
+        <div class="hint" id="statTotal">0</div>
+      </div>
+      <div class="card" style="min-height:100px">
+        <div class="label">Territorios activos</div>
+        <div class="hint" id="statActive">0</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>App de Territorios • Compatible Android / iOS / Tablet / PC</footer>
+</main>
+
+<!-- Modal: Reportar (abre desde dashboard o desde territorio) -->
+<div id="modalBackdrop" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" role="document">
+    <button class="close-x" aria-label="Cerrar" onclick="closeModal()">✕</button>
+    <h3 id="modalTitle" style="margin:0 0 8px 0;color:var(--green-dark)">📋 Reportar Predicación</h3>
+    <p class="muted" style="margin:0 0 12px 0">Selección rápida — campos grandes y claros.</p>
+
+    <div class="row">
+      <div style="flex:1 1 220px;min-width:160px">
+        <label for="modalTerritorio">Territorio</label>
+        <select id="modalTerritorio" aria-label="Territorio" onchange="renderManzanaPills()"></select>
+      </div>
+
+      <div style="flex:1 1 220px;min-width:160px">
+        <label for="modalConductor">Conductor</label>
+        <input id="modalConductor" type="text" placeholder="Nombre del conductor" aria-label="Conductor" />
+      </div>
+
+      <div style="flex:1 1 220px;min-width:160px">
+        <label for="modalFecha">Fecha</label>
+        <input id="modalFecha" type="date" aria-label="Fecha" />
+      </div>
+    </div>
+
+    <label>Manzana</label>
+    <div id="manzanaPills" class="manzana-buttons" aria-label="Seleccionar manzana"></div>
+
+    <label for="modalNotas">Notas (opcional)</label>
+    <textarea id="modalNotas" rows="3" placeholder="Observaciones, caras sin predicar, etc." style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(34,50,40,0.06);font-size:15px"></textarea>
+
+    <div style="display:flex;gap:12px;margin-top:14px">
+      <button class="btn" onclick="saveModalReport()">Guardar Reporte</button>
+      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
 </div>
 
-<!-- TARJETAS -->
-<div class="grid">
-
-    <div class="card">
-        <div class="emoji">🗺️</div>
-        Reportar territorio
-    </div>
-
-    <div class="card">
-        <div class="emoji">📢</div>
-        Tablero de anuncios
-    </div>
-
-    <div class="card">
-        <div class="emoji">🗺</div>
-        Mapa
-    </div>
-
-    <div class="card">
-        <div class="emoji">📋</div>
-        Reportes
-    </div>
-
-    <div class="card">
-        <div class="emoji">📊</div>
-        Estadísticas
-    </div>
-
-</div>
-
-<!-- AYUDA -->
-<div class="help">
-    <button>¿Necesitás ayuda?</button>
-</div>
-
+<!-- Scripts: lógica, render y almacenamiento (incluye PDFs) -->
 <script>
-    /* -------------------- Modo oscuro manual -------------------- */
-    const toggle = document.getElementById("themeToggle");
+  // ======== Datos: manzanas por territorio (32 territorios) ========
+  const TERRITORIES = {
+    1:4,2:4,3:4,4:5,5:8,6:6,7:6,8:6,9:8,10:6,11:8,12:7,13:4,14:8,15:6,16:6,
+    17:4,18:6,19:4,20:4,21:5,22:4,23:4,24:4,25:4,26:4,27:4,28:6,29:4,30:4,31:5,32:6
+  };
 
-    if (localStorage.getItem("theme") === "dark") {
-        document.body.classList.add("dark");
-        toggle.checked = true;
+  // Estado simple
+  let selectedTerritory = null;
+  const REPORTS_KEY = 'territorios_reportes_v1';
+  const PDF_KEY = 'territorios_pdfs_v1';
+
+  // Inicial: renderizar grid de territorios y llenar select modalTerritorio
+  document.addEventListener('DOMContentLoaded', () => {
+    renderTerritoriesGrid();
+    fillModalTerritorioSelect();
+    loadReportsTable();
+    renderPDFs();
+    updateStats();
+    // aplicar tema guardado o seguir preferencia del sistema
+    applyInitialTheme();
+  });
+
+  // THEME: aplicar preferencia inicial
+  function applyInitialTheme(){
+    const saved = localStorage.getItem('theme_preference'); // 'dark'|'light'|null
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (saved === 'dark') document.body.classList.add('dark');
+    else if (saved === 'light') document.body.classList.remove('dark');
+    else if (prefersDark) document.body.classList.add('dark');
+    // set toggle checkbox
+    document.getElementById('themeToggle').checked = document.body.classList.contains('dark');
+    // adjust login button colors
+    updateLoginBtnTheme();
+  }
+
+  document.getElementById('themeToggle').addEventListener('change', (e)=>{
+    if (e.target.checked){
+      document.body.classList.add('dark');
+      localStorage.setItem('theme_preference','dark');
+    } else {
+      document.body.classList.remove('dark');
+      localStorage.setItem('theme_preference','light');
+    }
+    updateLoginBtnTheme();
+  });
+
+  function updateLoginBtnTheme(){
+    const btn = document.getElementById('loginBtn');
+    if (document.body.classList.contains('dark')){
+      btn.style.background = 'transparent';
+      btn.style.color = 'white';
+      btn.style.border = '1px solid rgba(255,255,255,0.08)';
+    } else {
+      btn.style.background = 'var(--panel)';
+      btn.style.color = 'var(--green-dark)';
+      btn.style.border = '1px solid rgba(34,50,40,0.06)';
+    }
+  }
+
+  // LANG: cambiar texto minimal (solo muestra ES/EN toggle)
+  const langBtn = document.getElementById('langBtn');
+  let currentLang = localStorage.getItem('lang') || 'es';
+  function updateLangUI(){
+    langBtn.textContent = currentLang.toUpperCase();
+    // (Aquí podrías cargar strings en otro archivo)
+  }
+  langBtn.addEventListener('click', ()=>{
+    currentLang = currentLang === 'es' ? 'en' : 'es';
+    localStorage.setItem('lang', currentLang);
+    updateLangUI();
+  });
+  updateLangUI();
+
+  // SETTINGS placeholder
+  document.getElementById('settingsBtn').addEventListener('click', ()=> alert('Ajustes: pronto podrás configurar la app desde aquí.'));
+
+  // SEARCH (filtra tarjetas de dashboard para UX rápido — simple)
+  document.getElementById('searchInput').addEventListener('input', (e)=>{
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('#screen-dashboard .card').forEach(card=>{
+      const label = card.querySelector('.label')?.textContent?.toLowerCase() || '';
+      const hint = card.querySelector('.hint')?.textContent?.toLowerCase() || '';
+      card.style.display = (label.includes(q) || hint.includes(q) || !q) ? '' : 'none';
+    });
+  });
+
+  // Navegación entre pantallas
+  function showScreen(name){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    if (name === 'screen-dashboard' || name === 'dashboard') document.getElementById('screen-dashboard').classList.add('active');
+    if (name === 'territorios' || name === 'screen-territorios') document.getElementById('screen-territorios').classList.add('active');
+    if (name === 'reportes' || name === 'screen-reportes') document.getElementById('screen-reportes').classList.add('active');
+    if (name === 'anuncios' || name === 'screen-anuncios') document.getElementById('screen-anuncios').classList.add('active');
+    if (name === 'estadisticas' || name === 'screen-estadisticas') document.getElementById('screen-estadisticas').classList.add('active');
+    if (name === 'dashboard' || name === 'screen-dashboard') updateStats();
+    if (name === 'reportes') loadReportsTable();
+  }
+
+  // Renderiza las 32 tarjetas de territorios
+  function renderTerritoriesGrid(){
+    const grid = document.getElementById('territoryGrid');
+    grid.innerHTML = '';
+    for (let i=1;i<=32;i++){
+      const card = document.createElement('div');
+      card.className = 'territory-card';
+      card.tabIndex = 0;
+      card.setAttribute('role','button');
+      card.setAttribute('aria-label', `Territorio ${i}, ${TERRITORIES[i]} manzanas`);
+      card.innerHTML = `<div class="title">Territorio ${i}</div>
+                        <div class="meta">Toque para reportar</div>
+                        <div class="manzanas">${TERRITORIES[i]} manzanas</div>`;
+      card.onclick = ()=> openReportModal(i);
+      card.onkeydown = (e)=> { if(e.key==='Enter') openReportModal(i); };
+      grid.appendChild(card);
+    }
+  }
+
+  // Modal: abrir (opcional preseleccionar territorio)
+  function openReportModal(preterritorio){
+    selectedTerritory = preterritorio || null;
+    document.getElementById('modalBackdrop').style.display = 'flex';
+    // prefill fecha a hoy
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('modalFecha').value = today;
+    // set conductor empty
+    document.getElementById('modalConductor').value = '';
+    document.getElementById('modalNotas').value = '';
+    // set select and render pills
+    const sel = document.getElementById('modalTerritorio');
+    if (preterritorio) sel.value = String(preterritorio);
+    renderManzanaPills();
+    // focus conductor (so devices open keyboard)
+    setTimeout(()=>document.getElementById('modalConductor').focus(),200);
+  }
+
+  function closeModal(){
+    document.getElementById('modalBackdrop').style.display = 'none';
+    selectedTerritory = null;
+  }
+
+  // Llenar select con territorios
+  function fillModalTerritorioSelect(){
+    const s = document.getElementById('modalTerritorio');
+    s.innerHTML = '<option value="">Seleccionar territorio...</option>';
+    for(let i=1;i<=32;i++){
+      const o = document.createElement('option');
+      o.value = i; o.textContent = 'Territorio ' + i;
+      s.appendChild(o);
+    }
+    s.onchange = ()=> { renderManzanaPills(); };
+  }
+
+  // Render botones/pills de manzanas según territorio seleccionado en modal
+  function renderManzanaPills(){
+    const sel = document.getElementById('modalTerritorio').value;
+    const target = document.getElementById('manzanaPills');
+    target.innerHTML = '';
+    const territory = sel ? Number(sel) : (selectedTerritory || null);
+    if (!territory){
+      // mostrar mensaje instructivo
+      target.innerHTML = '<div class="muted" style="padding:8px">Seleccione un territorio arriba para ver sus manzanas.</div>';
+      return;
+    }
+    const count = TERRITORIES[territory] || 0;
+    for(let i=1;i<=count;i++){
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pill';
+      b.textContent = 'Manzana ' + i;
+      b.dataset.value = i;
+      b.onclick = ()=> {
+        // deseleccionar anteriores
+        document.querySelectorAll('#manzanaPills .pill').forEach(p=>p.classList.remove('selected'));
+        b.classList.add('selected');
+      };
+      target.appendChild(b);
+    }
+  }
+
+  // Guardar reporte desde modal (y localStorage)
+  function saveModalReport(){
+    const territorio = document.getElementById('modalTerritorio').value || (selectedTerritory ? String(selectedTerritory) : '');
+    const conductor = document.getElementById('modalConductor').value.trim();
+    const fecha = document.getElementById('modalFecha').value;
+    const notas = document.getElementById('modalNotas').value.trim();
+    const pill = document.querySelector('#manzanaPills .pill.selected');
+    const manzana = pill ? pill.dataset.value : null;
+
+    if (!territorio || !manzana || !conductor || !fecha){
+      alert('Complete Territorio, Manzana, Conductor y Fecha antes de guardar.');
+      return;
     }
 
-    toggle.addEventListener("change", () => {
-        if (toggle.checked) {
-            document.body.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } else {
-            document.body.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-        }
+    const report = {
+      id: 'r_' + Date.now(),
+      territorio: Number(territorio),
+      manzana: Number(manzana),
+      conductor,
+      fecha,
+      notas
+    };
+
+    const all = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
+    all.unshift(report); // push front (más reciente arriba)
+    localStorage.setItem(REPORTS_KEY, JSON.stringify(all));
+
+    // feedback y cerrar modal
+    alert('Reporte guardado ✅');
+    closeModal();
+    loadReportsTable();
+    updateStats();
+  }
+
+  // Cargar tabla de reportes
+  function loadReportsTable(){
+    const tbody = document.getElementById('reportsTable');
+    const all = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
+    tbody.innerHTML = '';
+    if (!all.length){
+      tbody.innerHTML = `<tr><td colspan="5" class="muted">No hay reportes aún.</td></tr>`;
+      return;
+    }
+    all.forEach(r=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.fecha}</td>
+                      <td>Territorio ${r.territorio}</td>
+                      <td>Manzana ${r.manzana}</td>
+                      <td>${escapeHtml(r.conductor)}</td>
+                      <td>${escapeHtml(r.notas || '')}</td>`;
+      tbody.appendChild(tr);
     });
+  }
+
+  // Export CSV
+  function exportCSV(){
+    const all = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
+    if (!all.length){ alert('No hay reportes para exportar.'); return; }
+    const header = ['fecha','territorio','manzana','conductor','notas'];
+    const rows = all.map(r => [r.fecha, r.territorio, r.manzana, r.conductor.replaceAll('"','""'), r.notas.replaceAll('"','""')]);
+    const csv = [header, ...rows].map(r=> r.map(c=> `"${String(c).replaceAll('"','""')}"`).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'reportes_territorios.csv'; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // Borrar todos los reportes
+  function clearReports(){
+    if (!confirm('Borrar TODOS los reportes guardados en este dispositivo? Esta acción no puede deshacerse.')) return;
+    localStorage.removeItem(REPORTS_KEY);
+    loadReportsTable();
+    updateStats();
+    alert('Reportes borrados.');
+  }
+
+  // Helper: escape simple
+  function escapeHtml(s){ return String(s || '').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+  // ---------------- PDF: subida, listado y visor ----------------
+  document.getElementById('pdfInput')?.addEventListener('change', handlePDFUpload);
+
+  function handlePDFUpload(e){
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // lectura base64
+    const reader = new FileReader();
+    reader.onload = function(evt){
+      const dataUrl = evt.target.result;
+      // almacenar lista en localStorage (objetos con id, name, data)
+      const list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
+      list.unshift({
+        id: Date.now(),
+        name: file.name,
+        data: dataUrl
+      });
+      localStorage.setItem(PDF_KEY, JSON.stringify(list));
+      renderPDFs();
+      alert('PDF cargado correctamente ✅');
+      // limpiar input
+      e.target.value = '';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderPDFs(){
+    const cont = document.getElementById('pdfList');
+    const list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
+    cont.innerHTML = '';
+    if (!list.length){
+      cont.innerHTML = `<div class="pdf-empty">Aún no hay PDFs cargados.</div>`;
+      return;
+    }
+    list.forEach(pdf=>{
+      const div = document.createElement('div');
+      div.className = 'pdf-item';
+      const left = document.createElement('div');
+      left.innerHTML = `<div class="name">${escapeHtml(pdf.name)}</div><div class="muted" style="font-size:13px">Subido ${new Date(Number(pdf.id)).toLocaleString()}</div>`;
+      const right = document.createElement('div');
+      right.style.display = 'flex';
+      right.style.gap = '8px';
+      const btnView = document.createElement('button');
+      btnView.className = 'btn small';
+      btnView.textContent = 'Ver';
+      btnView.onclick = ()=> openPDF(pdf.id);
+      const btnDownload = document.createElement('button');
+      btnDownload.className = 'btn ghost small';
+      btnDownload.textContent = 'Descargar';
+      btnDownload.onclick = ()=> downloadPDF(pdf.id);
+      const btnDelete = document.createElement('button');
+      btnDelete.className = 'btn ghost small';
+      btnDelete.textContent = 'Eliminar';
+      btnDelete.onclick = ()=> removePDF(pdf.id);
+      right.appendChild(btnView);
+      right.appendChild(btnDownload);
+      right.appendChild(btnDelete);
+      div.appendChild(left);
+      div.appendChild(right);
+      cont.appendChild(div);
+    });
+  }
+
+  function openPDF(id){
+    const list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
+    const pdf = list.find(p=> String(p.id) === String(id));
+    if(!pdf) { alert('Archivo no encontrado'); return; }
+    const w = window.open('', '_blank');
+    w.document.write(`
+      <!doctype html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>${escapeHtml(pdf.name)}</title>
+        <style>html,body{height:100%;margin:0}embed{width:100%;height:100%;border:none}</style>
+      </head>
+      <body>
+        <embed src="${pdf.data}" type="application/pdf" />
+      </body>
+      </html>
+    `);
+    w.document.close();
+  }
+
+  function downloadPDF(id){
+    const list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
+    const pdf = list.find(p=> String(p.id) === String(id));
+    if(!pdf) { alert('Archivo no encontrado'); return; }
+    fetch(pdf.data)
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = pdf.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      })
+      .catch(()=> alert('Error al preparar la descarga'));
+  }
+
+  function removePDF(id){
+    if(!confirm('Eliminar este PDF?')) return;
+    let list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
+    list = list.filter(p=> String(p.id) !== String(id));
+    localStorage.setItem(PDF_KEY, JSON.stringify(list));
+    renderPDFs();
+  }
+
+  function clearPDFs(){
+    if (!confirm('Eliminar TODOS los PDFs guardados en este dispositivo?')) return;
+    localStorage.removeItem(PDF_KEY);
+    renderPDFs();
+  }
+
+  // Si el usuario abre la app con un parámetro ?territorio=5 podemos abrir modal pre-seleccionado
+  (function handleUrlPrefill(){
+    try{
+      const params = new URLSearchParams(location.search);
+      const t = params.get('territorio');
+      if (t && Number(t) >=1 && Number(t)<=32) openReportModal(Number(t));
+    }catch(e){}
+  })();
+
+  // Exponer showScreen a botones inline
+  window.showScreen = showScreen;
+  window.openReportModal = openReportModal;
+  window.closeModal = closeModal;
+  window.exportCSV = exportCSV;
+  window.clearReports = clearReports;
+
+  // Estadísticas helpers
+  function updateStats(){
+    const all = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
+    document.getElementById('statTotal').textContent = all.length || 0;
+    const used = new Set((all||[]).map(r=> r.territorio));
+    document.getElementById('statActive').textContent = used.size || 0;
+  }
+
+  // Register service worker stub for offline (won't error if sw.js missing)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{/* sw optional; ignore */});
+  }
 
 </script>
 
