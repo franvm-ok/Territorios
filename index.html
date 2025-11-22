@@ -1,180 +1,268 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Departamento de Territorio - Congregación Cuatro Plazas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH57Jc221eFfI2d2kK9I9tXo4pB4X2S4A3e5Zg9q6F6kG9qQ9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q9Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <style>
-        /* Estilos personalizados para el diseño tipo JW Library/accesibilidad */
-        body {
-            background-color: #f8f9fa; /* Fondo claro */
-            font-family: Arial, sans-serif;
-        }
-        .header-bg {
-            background-color: #0b5093; /* Azul profundo, similar al estilo JW */
-            color: white;
-            padding: 20px 0;
-            margin-bottom: 20px;
-        }
-        .btn-xl {
-            padding: 20px;
-            font-size: 1.5rem;
-            min-height: 120px; /* Asegura botones grandes para accesibilidad */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .btn-custom-blue {
-            background-color: #0b5093; /* Azul primario */
-            border-color: #0b5093;
-            color: white;
-        }
-        .btn-custom-blue:hover {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-            color: white;
-        }
-        .btn-custom-green {
-            background-color: #28a745; /* Verde para acción principal */
-            border-color: #28a745;
-            color: white;
-        }
-        .btn-custom-green:hover {
-            background-color: #218838;
-            border-color: #218838;
-            color: white;
-        }
-        .btn-custom-alert {
-            background-color: #dc3545; /* Rojo para alerta/reporte */
-            border-color: #dc3545;
-            color: white;
-        }
-        .btn-custom-alert:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-            color: white;
-        }
-        .btn-icon {
-            font-size: 2.5rem; /* Iconos muy grandes */
-            margin-bottom: 5px;
-        }
-        
-        /* Estilo para el área de reportes recientes */
-        .recent-reports {
-            border-top: 2px solid #ccc;
-            padding-top: 15px;
-            margin-top: 20px;
-        }
+import React, { useEffect, useState } from "react";
 
-        /* Barra de búsqueda simplificada */
-        .search-container {
-            margin-bottom: 20px;
-        }
+// TerritoriosApp — Single-file React preview (inline styles)
+// - Diseño tipo tarjetas grandes
+// - Animaciones suaves tipo iOS/Android
+// - Modo claro/oscuro real
+// - Componentes accesibles y pensados para personas mayores
+// - Listo para integrarse en un proyecto React y desplegar en GitHub Pages
 
-    </style>
-</head>
-<body>
+export default function TerritoriosApp() {
+  const [view, setView] = useState("home"); // home | tablero | reportar | mapa | sugerencias | settings
+  const [dark, setDark] = useState(false);
+  const [name, setName] = useState("");
+  const [lastReports, setLastReports] = useState([]); // {territorio,manzana,name,date}
 
-    <header class="header-bg sticky-top">
-        <div class="container text-center">
-            <h1 class="display-5 mb-0">Departamento de Territorio</h1>
-            <p class="lead">Congregación Cuatro Plazas</p>
+  useEffect(() => {
+    document.documentElement.style.background = dark ? "#0f1724" : "#f4fbf4";
+    document.documentElement.style.color = dark ? "#e6eef0" : "#07202b";
+  }, [dark]);
+
+  function enviarReporte({ territorio, manzana, nombre }) {
+    const r = { territorio, manzana, nombre: nombre || "Anónimo", date: new Date().toISOString() };
+    setLastReports(prev => [r, ...prev].slice(0, 10));
+    // Simula notificación WhatsApp: abrir link
+    const admin = "+543416715020";
+    const wa = `https://wa.me/${admin.replace(/\D/g,"")}?text=${encodeURIComponent(`${r.nombre} reportó Territorio ${territorio}, manzana ${manzana}`)}`;
+    window.open(wa, "_blank");
+    setTimeout(() => setView("tablero"), 700);
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", padding: 20, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial" }}>
+      <Header dark={dark} setDark={setDark} />
+
+      <main style={{ maxWidth: 1100, margin: "18px auto" }}>
+        {view === "home" && (
+          <HomeView
+            onOpen={(v) => setView(v)}
+            dark={dark}
+            lastReports={lastReports}
+          />
+        )}
+
+        {view === "tablero" && <TableroView onBack={() => setView("home")} lastReports={lastReports} />}
+        {view === "reportar" && <ReportView onBack={() => setView("home")} onSubmit={enviarReporte} name={name} setName={setName} />}
+        {view === "mapa" && <MapaView onBack={() => setView("home")} />}
+        {view === "sugerencias" && <SugerenciasView onBack={() => setView("home")} lastReports={lastReports} />}
+        {view === "settings" && <SettingsView onBack={() => setView("home")} dark={dark} setDark={setDark} />}
+      </main>
+
+      <Footer onHome={() => setView("home")} onSettings={() => setView("settings")} />
+    </div>
+  );
+}
+
+function Header({ dark, setDark }) {
+  return (
+    <header style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ width: 64, height: 64, borderRadius: 16, background: "linear-gradient(135deg,#a8d5a2,#4caf50)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, boxShadow: "0 8px 20px rgba(2,6,23,0.08)" }}>🏡</div>
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ margin: 0, fontSize: 24 }}>Departamento de Territorio</h1>
+          <div style={{ fontSize: 13, opacity: 0.9 }}>Cuatro Plazas — Tablero y Reportes</div>
         </div>
+      </div>
+
+      <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+          <input type="checkbox" checked={dark} onChange={(e) => setDark(e.target.checked)} /> Modo oscuro
+        </label>
+      </div>
     </header>
+  );
+}
 
-    <main class="container">
-        
-        <div class="search-container">
-            <div class="input-group input-group-lg">
-                <input type="text" class="form-control" placeholder="Buscar por dirección, calle o # Reporte" aria-label="Buscar territorio">
-                <button class="btn btn-outline-secondary" type="button" id="button-addon2" style="border-color: #ccc;">
-                    <i class="fa-solid fa-microphone fs-4"></i> </button>
+function HomeView({ onOpen, dark, lastReports }) {
+  const cardStyle = {
+    borderRadius: 18,
+    padding: 18,
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    boxShadow: '0 8px 30px rgba(2,6,23,0.06)',
+    background: dark ? "linear-gradient(180deg,#0b3440,#09303a)" : "linear-gradient(180deg,#f6fbf6,#a8d5a2)",
+    color: dark ? "#e6f7ee" : "#07202b",
+    transform: 'translateZ(0)',
+    transition: 'transform .18s ease, box-shadow .18s ease'
+  };
+
+  const container = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))',
+    gap: 18
+  };
+
+  return (
+    <section>
+      <div style={{ maxWidth: 1100, margin: '12px auto 20px', padding: 6 }}>
+        <div style={container}>
+          <button aria-label="Tablero de anuncios" style={cardStyle} onClick={() => onOpen('tablero')}> 
+            <div style={{ fontSize: 34 }}>📢</div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontSize: 18, fontWeight: 700 }}>Tablero de Anuncios</div>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Ver avisos y novedades</div>
             </div>
+          </button>
+
+          <button aria-label="Reportar territorio" style={{ ...cardStyle, border: dark ? '2px solid rgba(255,255,255,0.06)' : '2px solid rgba(0,0,0,0.04)' }} onClick={() => onOpen('reportar')}> 
+            <div style={{ fontSize: 34 }}>📝</div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontSize: 18, fontWeight: 700 }}>Reportar Territorio</div>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Enviar manzanas predicadas</div>
+            </div>
+          </button>
+
+          <button aria-label="Mapa" style={cardStyle} onClick={() => onOpen('mapa')}> 
+            <div style={{ fontSize: 34 }}>🗺️</div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontSize: 18, fontWeight: 700 }}>Mapa</div>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Ubicar territorios (demo)</div>
+            </div>
+          </button>
+
+          <button aria-label="Sugerencias" style={cardStyle} onClick={() => onOpen('sugerencias')}> 
+            <div style={{ fontSize: 34 }}>⭐</div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontSize: 18, fontWeight: 700 }}>Sugerencias</div>
+              <div style={{ fontSize: 13, opacity: 0.85 }}>Priorizar salidas la próxima semana</div>
+            </div>
+          </button>
         </div>
 
-        <div class="row row-cols-2 g-3">
-            
-            <div class="col">
-                <a href="#" class="btn btn-xl w-100 btn-custom-alert" onclick="alert('Funcionalidad de Reportar Territorio')">
-                    <i class="fa-solid fa-siren-on btn-icon"></i> <span>Reportar Ahora</span>
-                </a>
-            </div>
-
-            <div class="col">
-                <a href="#" class="btn btn-xl w-100 btn-custom-green" onclick="alert('Funcionalidad de Mapa Interactivo')">
-                    <i class="fa-solid fa-map-location-dot btn-icon"></i> <span>Ver Mapa Zonal</span>
-                </a>
-            </div>
-
-            <div class="col">
-                <a href="#" class="btn btn-xl w-100 btn-custom-blue" onclick="alert('Funcionalidad de Tablero de Anuncios')">
-                    <i class="fa-solid fa-bullhorn btn-icon"></i> <span>Anuncios del Barrio</span>
-                </a>
-            </div>
-
-            <div class="col">
-                <a href="#" class="btn btn-xl w-100 btn-custom-blue" onclick="alert('Funcionalidad de Sugerencia de Rutas Seguras')">
-                    <i class="fa-solid fa-shoe-prints btn-icon"></i> <span>Próximas Salidas</span>
-                </a>
-            </div>
-
-        </div> <hr class="mt-4 mb-4">
-
-        <h2 class="h4 mb-3 text-secondary">Últimos Reportes Cercanos</h2>
-        <div class="list-group">
-            <div class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">22 NOV, 14:30 - Calle Falsa 123</h5>
-                    <small class="text-danger">En Revisión</small>
-                </div>
-                <p class="mb-1">Acoso/Molestia - Se reportó la presencia de un grupo sospechoso.</p>
-                <small>Ver detalles <i class="fa-solid fa-chevron-right"></i></small>
-            </div>
-            <div class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">21 NOV, 18:00 - Av. Siempre Viva 742</h5>
-                    <small class="text-success">Resuelto</small>
-                </div>
-                <p class="mb-1">Presencia - Reporte de actividad en el límite del territorio.</p>
-                <small>Ver detalles <i class="fa-solid fa-chevron-right"></i></small>
-            </div>
+        <div style={{ marginTop: 22 }}>
+          <h3 style={{ margin: '10px 0' }}>Últimos reportes</h3>
+          {lastReports.length === 0 && <div style={{ opacity: 0.7 }}>Aún no hay reportes — aparecerán aquí</div>}
+          <ul style={{ listStyle: 'none', padding: 0, marginTop: 8 }}>
+            {lastReports.map((r, i) => (
+              <li key={i} style={{ padding: 10, borderRadius: 12, background: dark ? '#06282b' : '#fff', marginBottom: 8, boxShadow: '0 6px 18px rgba(2,6,23,0.04)' }}>
+                <div style={{ fontWeight: 700 }}>{r.nombre}</div>
+                <div style={{ fontSize: 13, opacity: 0.8 }}>{`Territorio ${r.territorio} • Manzana ${r.manzana}`}</div>
+                <div style={{ fontSize: 12, opacity: 0.6 }}>{new Date(r.date).toLocaleString()}</div>
+              </li>
+            ))}
+          </ul>
         </div>
+      </div>
+    </section>
+  );
+}
 
-    </main>
-    
-    <nav class="navbar fixed-bottom navbar-light bg-light border-top">
-        <div class="container-fluid justify-content-around">
-            <a href="#" class="btn btn-link text-decoration-none text-secondary" onclick="alert('Funcionalidad de Cambio de Idioma')">
-                <i class="fa-solid fa-globe fs-4"></i> <br><small>Idioma</small>
-            </a>
+function TableroView({ onBack, lastReports }) {
+  return (
+    <section style={{ maxWidth: 980, margin: '0 auto' }}>
+      <button onClick={onBack} style={{ marginBottom: 12, padding: 10, borderRadius: 10 }}>&larr; Volver</button>
+      <h2>📋 Tablero de Anuncios</h2>
+      <div style={{ marginTop: 12 }}>
+        <article style={{ padding: 14, borderRadius: 12, background: '#fff', boxShadow: '0 8px 26px rgba(2,6,23,0.06)' }}>
+          <h3 style={{ marginTop: 0 }}>Novedades</h3>
+          <ul>
+            <li>22 Nov — Reunión de coordinación a las 18:00</li>
+            <li>20 Nov — Cambio de rutas por lluvia</li>
+          </ul>
+        </article>
 
-            <a href="#" class="btn btn-link text-decoration-none text-secondary" onclick="alert('Funcionalidad de Login/Perfil')">
-                <i class="fa-solid fa-user-circle fs-4"></i> <br><small>Perfil</small>
-            </a>
-            
-            <a href="#" class="btn btn-warning text-white" style="border-radius: 50%; width: 60px; height: 60px; line-height: 20px; font-weight: bold;" onclick="alert('Funcionalidad de Ayuda y WhatsApp')">
-                <i class="fa-solid fa-question fs-3"></i> </a>
-
-            <a href="#" class="btn btn-link text-decoration-none text-secondary" onclick="alert('Funcionalidad de Configuración')">
-                <i class="fa-solid fa-sliders-h fs-4"></i> <br><small>Ajustes</small>
-            </a>
-
-            <a href="whatsapp://send?phone=NUMERO_DE_WHATSAPP_AQUI&text=Necesito%20ayuda%20con%20el%20reporte%20de%20territorio" class="btn btn-link text-decoration-none text-secondary" onclick="alert('Abriendo WhatsApp...')">
-                <i class="fa-brands fa-whatsapp fs-4 text-success"></i> <br><small>Soporte</small>
-            </a>
+        <div style={{ marginTop: 14 }}>
+          <h4>Últimos reportes</h4>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {lastReports.length === 0 && <div style={{opacity:0.7}}>Sin reportes</div>}
+            {lastReports.map((r,i)=> (
+              <div key={i} style={{ padding: 10, borderRadius: 10, background:'#f7fff7' }}>{`${r.nombre} • Territorio ${r.territorio} • Manzana ${r.manzana}`}</div>
+            ))}
+          </div>
         </div>
-    </nav>
+      </div>
+    </section>
+  );
+}
 
+function ReportView({ onBack, onSubmit, name, setName }) {
+  const [territorio, setTerritorio] = useState(1);
+  const [manzana, setManzana] = useState(1);
+  return (
+    <section style={{ maxWidth: 720, margin: '0 auto' }}>
+      <button onClick={onBack} style={{ marginBottom: 12, padding: 10, borderRadius: 10 }}>&larr; Volver</button>
+      <h2>📝 Reportar Territorio</h2>
+      <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: '#fff', boxShadow: '0 8px 26px rgba(2,6,23,0.06)' }}>
+        <label style={{ display:'block', marginBottom:8 }}>Territorio (1-32)
+          <input type="number" min={1} max={32} value={territorio} onChange={e=>setTerritorio(e.target.value)} style={{ width:'100%', padding:10, borderRadius:10, marginTop:6 }} />
+        </label>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-</body>
-</html>
+        <label style={{ display:'block', marginBottom:8 }}>Manzana
+          <input type="text" value={manzana} onChange={e=>setManzana(e.target.value)} style={{ width:'100%', padding:10, borderRadius:10, marginTop:6 }} />
+        </label>
+
+        <label style={{ display:'block', marginBottom:8 }}>Tu nombre (opcional)
+          <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Ej: Juan" style={{ width:'100%', padding:10, borderRadius:10, marginTop:6 }} />
+        </label>
+
+        <div style={{ display:'flex', gap:10, marginTop:10 }}>
+          <button onClick={()=>onSubmit({ territorio, manzana, nombre: name })} style={{ flex:1, padding:12, borderRadius:12, background:'#a8d5a2', fontWeight:700 }}>Enviar reporte</button>
+          <button onClick={onBack} style={{ padding:12, borderRadius:12, background:'#fff', border:'1px solid #e6f4e6' }}>Cancelar</button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MapaView({ onBack }) {
+  return (
+    <section style={{ maxWidth: 980, margin: '0 auto' }}>
+      <button onClick={onBack} style={{ marginBottom: 12, padding: 10, borderRadius: 10 }}>&larr; Volver</button>
+      <h2>🗺️ Mapa</h2>
+      <div style={{ height: 320, borderRadius: 12, background: '#fff', boxShadow: '0 8px 26px rgba(2,6,23,0.06)', display:'flex', alignItems:'center', justifyContent:'center' }}>[Mapa interactivo placeholder]</div>
+    </section>
+  );
+}
+
+function SugerenciasView({ onBack, lastReports }) {
+  // Sugerencia simple: mostrar territorios con menos reportes (demo)
+  const counts = new Array(32).fill(0);
+  lastReports.forEach(r => { const t = Number(r.territorio); if(!isNaN(t) && t>=1 && t<=32) counts[t-1]++ });
+  const suggestionIds = counts.map((c,i)=>({id:i+1,c})).sort((a,b)=>a.c-b.c).slice(0,4).map(x=>x.id);
+
+  return (
+    <section style={{ maxWidth: 980, margin: '0 auto' }}>
+      <button onClick={onBack} style={{ marginBottom: 12, padding: 10, borderRadius: 10 }}>&larr; Volver</button>
+      <h2>⭐ Sugerencias para la próxima semana</h2>
+      <ol>
+        {suggestionIds.map((id)=> <li key={id}>Territorio {id}</li>)}
+      </ol>
+    </section>
+  );
+}
+
+function SettingsView({ onBack, dark, setDark }) {
+  return (
+    <section style={{ maxWidth: 600, margin: '0 auto' }}>
+      <button onClick={onBack} style={{ marginBottom: 12, padding: 10, borderRadius: 10 }}>&larr; Volver</button>
+      <h2>⚙️ Ajustes</h2>
+      <div style={{ padding: 12, borderRadius: 12, background: '#fff', boxShadow: '0 8px 26px rgba(2,6,23,0.06)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <label style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <input type="checkbox" checked={dark} onChange={e=>setDark(e.target.checked)} /> Modo oscuro
+          </label>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer({ onHome, onSettings }) {
+  return (
+    <footer style={{ position: 'fixed', left: 0, right: 0, bottom: 14, display: 'flex', justifyContent: 'center', gap: 12 }}>
+      <button onClick={onHome} style={{ padding: 12, borderRadius: 14, background: '#fff', boxShadow: '0 8px 22px rgba(2,6,23,0.06)' }}>🏠</button>
+      <button onClick={onSettings} style={{ padding: 12, borderRadius: 14, background: '#fff', boxShadow: '0 8px 22px rgba(2,6,23,0.06)' }}>⚙️</button>
+    </footer>
+  );
+}
+
+/*
+  Deployment notes (quick):
+  1) Create a new React app (Vite or Create React App).
+  2) Put this component as src/App.jsx and export default.
+  3) Install and configure Tailwind if you want to replace inline styles.
+  4) For GitHub Pages: set homepage in package.json and use gh-pages package, or deploy the build folder to GitHub Pages.
+
+  If querés, te creo el repo structure y archivos listos para copiar.
+*/
