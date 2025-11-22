@@ -5,416 +5,201 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Departamento de Territorio — Dashboard</title>
 
-<!-- Colores y estilo basados en tu script original -->
+<!-- Estilos: verde moderno accesible, tipografías grandes y botones adaptados para personas mayores -->
 <style>
   :root{
-    --bg: #f3f7f3;
-    --panel: #ffffff;
-    --green: #4e8f6b;      /* verde principal (tu original confirmado) */
-    --green-dark: #35503b; /* verde oscuro */
+    --bg: #eef7ee;              /* fondo claro accesible */
+    --panel: #ffffff;           /* tarjetas / paneles */
+    --green: #4e8f6b;          /* verde principal (accesible) */
+    --green-dark: #35503b;     /* verde oscuro */
     --muted: #6b7a6a;
-    --card-shadow: 0 6px 18px rgba(49,73,56,0.08);
-    --radius: 14px;
+    --card-shadow: 0 8px 20px rgba(34,64,44,0.08);
+    --radius: 16px;
     --gap: 18px;
-    --ui-size: 18px; /* base para inputs/buttons */
+    --ui-size: 18px;           /* base para inputs/buttons */
+    --big-size: 20px;          /* textos grandes para adultos mayores */
   }
 
-  /* Dark theme variables (overrides when body.dark) */
+  /* Dark theme overrides (applied if body.classList contains 'dark' or user chooses) */
   body.dark {
     --bg: #0f1410;
-    --panel: #1b201b;
-    --green: #4e8f6b; /* keep same brand green (accent) */
+    --panel: #161915;
+    --green: #4e8f6b; /* keep brand accent */
     --green-dark: #6aa87a;
     --muted: #9aa79a;
-    --card-shadow: 0 8px 22px rgba(0,0,0,0.5);
+    --card-shadow: 0 10px 28px rgba(0,0,0,0.6);
   }
 
   html,body{height:100%;margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
-    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;color:#243022;}
-  header{
-    background:linear-gradient(180deg, #57a07b 0%, var(--green) 100%);
-    color:white;padding:18px 16px;text-align:center;font-size:22px;font-weight:700;
-    box-shadow: 0 3px 8px rgba(50,80,60,0.08);
-    border-radius: 12px;
-    position: relative;
-  }
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;color:var(--green-dark);font-size:16px;}
   .wrap{max-width:1100px;margin:18px auto;padding:0 16px;}
 
-  /* Top controls row (login, lang, settings, theme) placed at top-right */
+  /* header (minimalista, top-right controls) */
+  header{
+    background:linear-gradient(180deg, #57a07b 0%, var(--green) 100%);
+    color:white;padding:18px 16px;border-radius:12px;position:relative;
+    box-shadow: 0 4px 12px rgba(35,80,50,0.10);
+  }
+  .header-inner{display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column}
+  .title-main{font-size:26px;font-weight:800;line-height:1}
+  .title-sub{font-size:14px;opacity:0.95;margin-top:6px}
+
+  /* top minimal controls (right) */
   .top-row {
-    position: absolute;
-    right: 14px;
-    top: 12px;
-    display:flex;
-    align-items:center;
-    gap:10px;
+    position:absolute; right:14px; top:12px;
+    display:flex; gap:8px; align-items:center;
   }
-  .top-btn {
-    background:var(--panel);
-    color:var(--green-dark);
-    border:1px solid rgba(34,50,40,0.06);
-    padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer;
-    box-shadow: var(--card-shadow);
-    font-size:14px;
+  .top-btn{
+    background:var(--panel); color:var(--green-dark); border-radius:10px;
+    padding:8px 12px; font-weight:700; font-size:14px; border:1px solid rgba(34,50,40,0.06);
+    box-shadow: var(--card-shadow); cursor:pointer;
   }
-  .icon-btn{
-    background:var(--panel);border-radius:10px;padding:8px;border:1px solid rgba(34,50,40,0.06);cursor:pointer;box-shadow:var(--card-shadow)
+  .icon-btn {
+    width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    background:var(--panel); box-shadow:var(--card-shadow); cursor:pointer; border:1px solid rgba(34,50,40,0.06); font-size:15px;
   }
-  .icon-small{font-size:18px}
 
-  /* switch */
-  .switch{position:relative;width:52px;height:28px;display:inline-block}
-  .switch input{display:none}
-  .slider{position:absolute;inset:0;background:rgba(0,0,0,0.08);border-radius:34px;transition:.25s}
-  .slider:before{content:'';position:absolute;height:22px;width:22px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.25s}
-  .switch input:checked + .slider{background:linear-gradient(90deg,var(--green) 0%,var(--green-dark) 100%)}
-  .switch input:checked + .slider:before{transform:translateX(24px)}
+  /* search */
+  .search-wrap{display:flex;justify-content:center;margin-top:18px;margin-bottom:16px}
+  .search-input{
+    width:100%; max-width:700px; padding:14px 18px; border-radius:14px; border:1px solid rgba(34,50,40,0.06);
+    font-size:var(--big-size); box-shadow: 0 6px 18px rgba(34,64,44,0.06); background:var(--panel);
+    outline:none;
+  }
 
-  /* Titles */
-  h1{margin:14px 0 4px 0;color:var(--green-dark);font-size:26px;text-align:center}
-  .subtitle{margin:0 0 14px 0;text-align:center;color:var(--green-dark);opacity:0.9;font-size:15px;font-style:italic}
-
-  /* Search bar */
-  .search-wrap{display:flex;justify-content:center;margin-bottom:16px}
-  .search-input{width:100%;max-width:680px;padding:12px 16px;border-radius:12px;border:1px solid rgba(34,50,40,0.06);font-size:16px;box-shadow:var(--card-shadow);background:var(--panel)}
-
-  /* Dashboard cards grid (medianas) */
+  /* cards grid */
   .cards{
-    display:grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--gap);
-    align-items:stretch;
+    display:grid; gap:var(--gap);
+    grid-template-columns: repeat(1, 1fr);
   }
-  @media(min-width:720px){
-    .cards{grid-template-columns: repeat(3, 1fr);} /* filas de 3 en pantallas >=720 */
-  }
-  @media(min-width:1100px){
-    .cards{grid-template-columns: repeat(4, 1fr);}
-  }
+  @media(min-width:520px){ .cards{grid-template-columns: repeat(2, 1fr);} }
+  @media(min-width:900px){ .cards{grid-template-columns: repeat(3, 1fr);} }
 
-  .card {
-    background: var(--panel);
-    border-radius: var(--radius);
-    padding: 22px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    gap:12px;
-    box-shadow: var(--card-shadow);
-    cursor:pointer;
-    transition: transform .14s cubic-bezier(.2,.9,.3,1), box-shadow .14s;
-    min-height:120px;
-    border: 1px solid rgba(34,50,40,0.04);
+  .card{
+    background:var(--panel); border-radius:var(--radius); padding:26px; text-align:center; min-height:128px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+    box-shadow:var(--card-shadow); border:1px solid rgba(34,50,40,0.04); cursor:pointer; transition:transform .12s ease;
     user-select:none;
   }
-  .card:active{transform: scale(0.97); box-shadow: 0 4px 10px rgba(0,0,0,0.06)}
-  .card:focus{outline:3px solid rgba(69,142,100,0.18);outline-offset:3px;}
-  .card .icon{
-    width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(180deg, rgba(78,143,107,0.12), rgba(78,143,107,0.06)); font-size:28px;color:var(--green-dark);
-  }
-  .card .label{font-size:18px;font-weight:700;color:var(--green-dark);text-align:center;}
-  .card .hint{font-size:13px;color:var(--muted);}
+  .card:active{ transform:scale(0.97); box-shadow: 0 4px 12px rgba(0,0,0,0.06) }
+  .card .icon{ width:64px; height:64px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(180deg, rgba(78,143,107,0.12), rgba(78,143,107,0.06)); font-size:34px; color:var(--green-dark); }
+  .card .label{ font-size:18px; font-weight:800; color:var(--green-dark); text-align:center;}
+  .card .hint{ font-size:14px; color:var(--muted) }
 
-  /* Screens */
-  .screen{display:none}
-  .screen.active{display:block}
+  /* footer and help */
+  .help-block{ margin-top:28px; text-align:center; }
+  .help-btn{ background:var(--green); color:white; padding:14px 22px; border-radius:14px; font-weight:800; font-size:18px; border:none; cursor:pointer; box-shadow:var(--card-shadow) }
+  footer{ margin:30px 0 50px 0; text-align:center; color:var(--muted); font-size:14px }
 
-  /* Territorios grid */
-  .territory-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-  @media(min-width:720px){ .territory-grid{grid-template-columns:repeat(3,1fr)} }
-  @media(min-width:1100px){ .territory-grid{grid-template-columns:repeat(4,1fr)} }
-
-  .territory-card{
-    background:linear-gradient(180deg, rgba(78,143,107,0.06), rgba(78,143,107,0.02));
-    border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;
-    cursor:pointer;border:1px solid rgba(34,50,40,0.04);
-  }
-  .territory-card .title{font-weight:800;color:var(--green-dark);font-size:17px}
-  .territory-card .meta{font-size:14px;color:var(--muted)}
-  .territory-card .manzanas{margin-top:auto;font-size:14px;font-weight:700;color:var(--green-dark)}
-
-  /* Modal */
-  .modal-backdrop{position:fixed;inset:0;background:rgba(10,14,10,0.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:60}
-  .modal{background:var(--panel);border-radius:14px;padding:18px;max-width:760px;width:100%;box-shadow:0 30px 70px rgba(10,20,10,0.2);position:relative}
-  .modal .row{display:flex;gap:12px;flex-wrap:wrap}
-  .modal label{display:block;font-weight:700;margin-top:8px;color:var(--green-dark)}
-  .modal select,input,textarea{
-    width:100%;padding:12px;border-radius:10px;border:1px solid rgba(34,50,40,0.08);font-size:16px;background:var(--panel)
-  }
-  .modal .manzana-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-  .pill{padding:10px 12px;border-radius:10px;border:1px solid rgba(34,50,40,0.06);background:#fff;font-weight:700;cursor:pointer}
-  .pill.selected{background:var(--green);color:white;border-color:transparent;box-shadow:0 8px 20px rgba(78,143,107,0.12)}
-  .close-x{background:transparent;border:none;font-size:22px;color:var(--muted);cursor:pointer;position:absolute;right:14px;top:10px}
-
-  /* Table reports */
-  .table-wrap{overflow:auto;background:var(--panel);padding:10px;border-radius:12px;box-shadow:var(--card-shadow)}
-  table{width:100%;border-collapse:collapse;font-size:15px}
-  th,td{padding:12px;border-bottom:1px solid rgba(34,50,40,0.06);text-align:left}
-  th{background:linear-gradient(180deg,var(--green) 0%, var(--green-dark) 100%);color:white;font-weight:700}
-  .muted{color:var(--muted);font-size:14px}
-
-  footer{margin:30px 0 60px 0;text-align:center;color:var(--muted);font-size:14px}
-
-  /* PDF list */
-  .pdf-item{background:var(--panel);padding:12px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;box-shadow:var(--card-shadow)}
-  .pdf-item .name{font-weight:700;color:var(--green-dark)}
-  .pdf-empty{color:var(--muted);padding:12px}
-
-  /* Responsive small tweaks */
+  /* small responsive tweaks */
   @media(max-width:420px){
-    header{padding:12px 10px;font-size:18px}
     .top-row{right:8px;top:8px}
-    .search-wrap .search-input{max-width:95%}
+    .search-input{max-width:95%}
+    .card{padding:18px; min-height:110px}
+    .card .icon{width:56px;height:56px;font-size:30px}
   }
+
+  /* results panel for search */
+  .results{ max-width:900px; margin:12px auto 18px auto; padding:10px; border-radius:12px; background:var(--panel); box-shadow:var(--card-shadow) }
+  .result-item{ padding:10px; border-bottom:1px solid rgba(34,50,40,0.04); display:flex; justify-content:space-between; gap:12px; align-items:center }
+  .result-link{ color:var(--green-dark); font-weight:700; font-size:16px; text-decoration:none }
+  .result-meta{ color:var(--muted); font-size:13px }
 </style>
 </head>
 <body>
 
-<header aria-hidden="false">
-  <div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-direction:column;">
-    <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
-      <div style="font-size:20px;font-weight:800;color:white">🏠 Departamento de Territorio</div>
+<header>
+  <div class="header-inner">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="title-main">🏠 Departamento de Territorio</div>
     </div>
-    <div style="font-size:13px;color:rgba(255,255,255,0.92);margin-top:4px">Congregación Cuatro Plazas</div>
+    <div class="title-sub">Congregación Cuatro Plazas</div>
   </div>
 
-  <!-- top-right controls -->
-  <div class="top-row" aria-hidden="false" style="position:absolute;right:12px;top:10px;">
-    <!-- language selector -->
-    <div class="icon-btn" title="Idioma" id="langBtn" role="button" tabindex="0" aria-label="Cambiar idioma">ES</div>
-
+  <!-- top minimal controls -->
+  <div class="top-row" aria-hidden="false">
+    <!-- language -->
+    <div id="langBtn" class="icon-btn" title="Idioma" aria-label="Cambiar idioma">ES</div>
     <!-- settings -->
-    <div class="icon-btn" title="Ajustes" id="settingsBtn" role="button" tabindex="0" aria-label="Abrir ajustes">⚙️</div>
-
+    <div id="settingsBtn" class="icon-btn" title="Ajustes" aria-label="Ajustes">⚙️</div>
     <!-- login -->
     <button id="loginBtn" class="top-btn" aria-label="Iniciar sesión">Iniciar sesión</button>
-
-    <!-- theme switch -->
-    <label class="switch" title="Modo oscuro / claro" aria-label="Interruptor de tema">
-      <input type="checkbox" id="themeToggle">
-      <span class="slider"></span>
-    </label>
   </div>
 </header>
 
-<main class="wrap" id="app" role="main">
+<main class="wrap" role="main">
 
-  <!-- Search -->
-  <div class="search-wrap">
-    <input id="searchInput" class="search-input" type="search" placeholder="Buscar (territorio, manzana, conductor)...">
+  <!-- search -->
+  <div class="search-wrap" aria-label="Buscar en la app">
+    <input id="searchInput" class="search-input" type="search" placeholder="Buscar (territorio, manzana, conductor, anuncio)..." aria-label="Buscar">
   </div>
 
-  <!-- DASHBOARD -->
-  <section id="screen-dashboard" class="screen active" aria-labelledby="dashboard-title">
-    <h2 id="dashboard-title">Bienvenido — Elija una acción</h2>
-    <p class="muted">Interfaz limpia y botones medianos, pensada para adultos mayores. Tocar una tarjeta para continuar.</p>
+  <!-- resultados de búsqueda -->
+  <div id="searchResults" class="results" style="display:none" aria-live="polite"></div>
+
+  <!-- DASHBOARD: cada tarjeta abre su propia página -->
+  <section id="dashboard">
+    <h2 style="text-align:center;margin:6px 0 6px 0;font-size:20px;color:var(--green-dark)">Bienvenido — Elija una acción</h2>
+    <p style="text-align:center;color:var(--muted);margin-top:0;margin-bottom:12px">Interfaz clara y botones grandes — pensada para adultos mayores.</p>
 
     <div class="cards" role="list">
-      <div class="card" role="button" tabindex="0" onclick="openReportModal()" onkeydown="if(event.key==='Enter') openReportModal()" aria-label="Reportar predicación">
-        <div class="icon" aria-hidden="true">📋</div>
-        <div class="label">Reportar Predicación</div>
-        <div class="hint">Rápido y sencillo</div>
-      </div>
-
-      <div class="card" role="button" tabindex="0" onclick="showScreen('territorios')" onkeydown="if(event.key==='Enter') showScreen('territorios')" aria-label="Reportar territorio">
+      <a class="card" href="reportar-territorio.html" role="listitem" aria-label="Reportar territorio">
         <div class="icon" aria-hidden="true">📌</div>
-        <div class="label">Reportar Territorio</div>
-        <div class="hint">32 territorios y sus manzanas</div>
-      </div>
+        <div class="label" data-i18n="reportar_territorio">Reportar Territorio</div>
+        <div class="hint" data-i18n="hint_territorios">32 territorios y sus manzanas</div>
+      </a>
 
-      <div class="card" role="button" tabindex="0" onclick="showScreen('anuncios')" onkeydown="if(event.key==='Enter') showScreen('anuncios')" aria-label="Mapa">
+      <a class="card" href="tablero-anuncios.html" role="listitem" aria-label="Tablero de anuncios">
+        <div class="icon" aria-hidden="true">📣</div>
+        <div class="label" data-i18n="tablero_anuncios">Tablero de Anuncios</div>
+        <div class="hint" data-i18n="hint_anuncios">Sube avisos en PDF</div>
+      </a>
+
+      <a class="card" href="mapa.html" role="listitem" aria-label="Mapa">
         <div class="icon" aria-hidden="true">🗺️</div>
-        <div class="label">Mapa</div>
-        <div class="hint">Pendiente (próxima versión)</div>
-      </div>
+        <div class="label" data-i18n="mapa">Mapa</div>
+        <div class="hint" data-i18n="hint_mapa">Ver ubicación y zonas</div>
+      </a>
 
-      <div class="card" role="button" tabindex="0" onclick="showScreen('reportes')" onkeydown="if(event.key==='Enter') showScreen('reportes')" aria-label="Ver reportes">
+      <a class="card" href="reportes.html" role="listitem" aria-label="Reportes">
         <div class="icon" aria-hidden="true">📑</div>
-        <div class="label">Reportes</div>
-        <div class="hint">Historial y exportación</div>
-      </div>
+        <div class="label" data-i18n="reportes">Reportes</div>
+        <div class="hint" data-i18n="hint_reportes">Historial y exportación</div>
+      </a>
 
-      <div class="card" role="button" tabindex="0" onclick="showScreen('estadisticas')" onkeydown="if(event.key==='Enter') showScreen('estadisticas')" aria-label="Estadisticas">
+      <a class="card" href="estadisticas.html" role="listitem" aria-label="Estadísticas">
         <div class="icon" aria-hidden="true">📊</div>
-        <div class="label">Estadísticas</div>
-        <div class="hint">Resumen visual</div>
-      </div>
+        <div class="label" data-i18n="estadisticas">Estadísticas</div>
+        <div class="hint" data-i18n="hint_estadisticas">Resumen visual</div>
+      </a>
     </div>
   </section>
 
-  <!-- TABLERO DE ANUNCIOS -->
-  <section id="screen-anuncios" class="screen" aria-labelledby="anuncios-title">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <h2 id="anuncios-title">Tablero de Anuncios</h2>
-        <p class="muted">Suba PDFs desde su PC, teléfono o Drive (si el dispositivo lo permite). Se guardan localmente y pueden abrirse en tamaño grande.</p>
-      </div>
-      <div>
-        <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Volver al menú principal</button>
-      </div>
-    </div>
-
-    <div class="controls" style="margin-top:12px">
-      <input type="file" id="pdfInput" accept="application/pdf" style="display:none" />
-      <button class="btn" onclick="document.getElementById('pdfInput').click()">➕ Agregar PDF</button>
-      <button class="btn ghost" onclick="clearPDFs()">🗑️ Eliminar todos los PDFs</button>
-    </div>
-
-    <div id="pdfList" style="margin-top:14px"></div>
-  </section>
-
-  <!-- TERRITORIOS -->
-  <section id="screen-territorios" class="screen" aria-labelledby="territorios-title">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <h2 id="territorios-title">Territorios</h2>
-        <p class="muted">Toque un territorio para reportar la manzana correspondiente.</p>
-      </div>
-      <div>
-        <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Menú</button>
-      </div>
-    </div>
-
-    <div id="territoryGrid" class="territory-grid" style="margin-top:14px"></div>
-  </section>
-
-  <!-- REPORTES -->
-  <section id="screen-reportes" class="screen" aria-labelledby="reportes-title">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <h2 id="reportes-title">Reportes</h2>
-        <p class="muted">Historial de reportes guardados en este dispositivo.</p>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn small" onclick="exportCSV()">Exportar CSV</button>
-        <button class="btn ghost small" onclick="clearReports()" title="Borrar todos los reportes">Borrar</button>
-        <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Menú</button>
-      </div>
-    </div>
-
-    <div class="table-wrap" style="margin-top:12px">
-      <table aria-describedby="reportes-title">
-        <thead><tr><th>Fecha</th><th>Territorio</th><th>Manzana</th><th>Conductor</th><th>Notas</th></tr></thead>
-        <tbody id="reportsTable"><tr><td colspan="5" class="muted">Cargando...</td></tr></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ESTADISTICAS (placeholder) -->
-  <section id="screen-estadisticas" class="screen" aria-labelledby="estadisticas-title">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <h2 id="estadisticas-title">Estadísticas</h2>
-        <p class="muted">Resumen visual de la actividad (próximo paso: gráficos).</p>
-      </div>
-      <div>
-        <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Menú</button>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px">
-      <div class="card" style="min-height:100px">
-        <div class="label">Reportes totales</div>
-        <div class="hint" id="statTotal">0</div>
-      </div>
-      <div class="card" style="min-height:100px">
-        <div class="label">Territorios activos</div>
-        <div class="hint" id="statActive">0</div>
-      </div>
-    </div>
-  </section>
+  <!-- ayuda -->
+  <div class="help-block">
+    <a href="ayuda.html"><button class="help-btn" aria-label="Necesitas ayuda">❓ ¿Necesitás ayuda?</button></a>
+  </div>
 
   <footer>App de Territorios • Compatible Android / iOS / Tablet / PC</footer>
 </main>
 
-<!-- Modal: Reportar (abre desde dashboard o desde territorio) -->
-<div id="modalBackdrop" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <div class="modal" role="document">
-    <button class="close-x" aria-label="Cerrar" onclick="closeModal()">✕</button>
-    <h3 id="modalTitle" style="margin:0 0 8px 0;color:var(--green-dark)">📋 Reportar Predicación</h3>
-    <p class="muted" style="margin:0 0 12px 0">Selección rápida — campos grandes y claros.</p>
-
-    <div class="row">
-      <div style="flex:1 1 220px;min-width:160px">
-        <label for="modalTerritorio">Territorio</label>
-        <select id="modalTerritorio" aria-label="Territorio" onchange="renderManzanaPills()"></select>
-      </div>
-
-      <div style="flex:1 1 220px;min-width:160px">
-        <label for="modalConductor">Conductor</label>
-        <input id="modalConductor" type="text" placeholder="Nombre del conductor" aria-label="Conductor" />
-      </div>
-
-      <div style="flex:1 1 220px;min-width:160px">
-        <label for="modalFecha">Fecha</label>
-        <input id="modalFecha" type="date" aria-label="Fecha" />
-      </div>
-    </div>
-
-    <label>Manzana</label>
-    <div id="manzanaPills" class="manzana-buttons" aria-label="Seleccionar manzana"></div>
-
-    <label for="modalNotas">Notas (opcional)</label>
-    <textarea id="modalNotas" rows="3" placeholder="Observaciones, caras sin predicar, etc." style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(34,50,40,0.06);font-size:15px"></textarea>
-
-    <div style="display:flex;gap:12px;margin-top:14px">
-      <button class="btn" onclick="saveModalReport()">Guardar Reporte</button>
-      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Scripts: lógica, render y almacenamiento (incluye PDFs) -->
+<!-- small JS: traducción, search global, theme respect, top controls -->
 <script>
-  // ======== Datos: manzanas por territorio (32 territorios) ========
-  const TERRITORIES = {
-    1:4,2:4,3:4,4:5,5:8,6:6,7:6,8:6,9:8,10:6,11:8,12:7,13:4,14:8,15:6,16:6,
-    17:4,18:6,19:4,20:4,21:5,22:4,23:4,24:4,25:4,26:4,27:4,28:6,29:4,30:4,31:5,32:6
-  };
-
-  // Estado simple
-  let selectedTerritory = null;
+  // Keys used by other pages (kept consistent)
   const REPORTS_KEY = 'territorios_reportes_v1';
   const PDF_KEY = 'territorios_pdfs_v1';
 
-  // Inicial: renderizar grid de territorios y llenar select modalTerritorio
-  document.addEventListener('DOMContentLoaded', () => {
-    renderTerritoriesGrid();
-    fillModalTerritorioSelect();
-    loadReportsTable();
-    renderPDFs();
-    updateStats();
-    // aplicar tema guardado o seguir preferencia del sistema
-    applyInitialTheme();
-  });
-
-  // THEME: aplicar preferencia inicial
+  // ---------- THEME: respect system by default, preference in localStorage ----------
   function applyInitialTheme(){
     const saved = localStorage.getItem('theme_preference'); // 'dark'|'light'|null
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (saved === 'dark') document.body.classList.add('dark');
     else if (saved === 'light') document.body.classList.remove('dark');
     else if (prefersDark) document.body.classList.add('dark');
-    // set toggle checkbox
-    document.getElementById('themeToggle').checked = document.body.classList.contains('dark');
-    // adjust login button colors
-    updateLoginBtnTheme();
+    updateTopButtonsTheme();
   }
-
-  document.getElementById('themeToggle').addEventListener('change', (e)=>{
-    if (e.target.checked){
-      document.body.classList.add('dark');
-      localStorage.setItem('theme_preference','dark');
-    } else {
-      document.body.classList.remove('dark');
-      localStorage.setItem('theme_preference','light');
-    }
-    updateLoginBtnTheme();
-  });
-
-  function updateLoginBtnTheme(){
+  function updateTopButtonsTheme(){
     const btn = document.getElementById('loginBtn');
     if (document.body.classList.contains('dark')){
       btn.style.background = 'transparent';
@@ -426,354 +211,148 @@
       btn.style.border = '1px solid rgba(34,50,40,0.06)';
     }
   }
+  applyInitialTheme();
 
-  // LANG: cambiar texto minimal (solo muestra ES/EN toggle)
-  const langBtn = document.getElementById('langBtn');
+  // ---------- LANGUAGE: simple i18n for index (ES/EN) ----------
+  const strings = {
+    es: {
+      reportar_territorio: 'Reportar Territorio',
+      hint_territorios: '32 territorios y sus manzanas',
+      tablero_anuncios: 'Tablero de Anuncios',
+      hint_anuncios: 'Sube avisos en PDF',
+      mapa: 'Mapa',
+      hint_mapa: 'Ver ubicación y zonas',
+      reportes: 'Reportes',
+      hint_reportes: 'Historial y exportación',
+      estadisticas: 'Estadísticas',
+      hint_estadisticas: 'Resumen visual',
+      welcome_title: 'Bienvenido — Elija una acción',
+      welcome_hint: 'Interfaz clara y botones grandes — pensada para adultos mayores.',
+      search_placeholder: 'Buscar (territorio, manzana, conductor, anuncio)...',
+      help_text: '¿Necesitás ayuda?'
+    },
+    en: {
+      reportar_territorio: 'Report Territory',
+      hint_territorios: '32 territories and their blocks',
+      tablero_anuncios: 'Announcements Board',
+      hint_anuncios: 'Upload PDFs for notices',
+      mapa: 'Map',
+      hint_mapa: 'View location and zones',
+      reportes: 'Reports',
+      hint_reportes: 'History & export',
+      estadisticas: 'Statistics',
+      hint_estadisticas: 'Visual summary',
+      welcome_title: 'Welcome — Choose an action',
+      welcome_hint: 'Clear interface and large buttons — designed for older users.',
+      search_placeholder: 'Search (territory, block, conductor, announcement)...',
+      help_text: 'Need help?'
+    }
+  };
+
   let currentLang = localStorage.getItem('lang') || 'es';
-  function updateLangUI(){
+  const langBtn = document.getElementById('langBtn');
+
+  function applyLang(){
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key = el.getAttribute('data-i18n');
+      if (strings[currentLang] && strings[currentLang][key]) el.textContent = strings[currentLang][key];
+    });
+    // titles & placeholders
+    document.querySelector('h2') && (document.querySelector('h2').textContent = strings[currentLang].welcome_title);
+    document.querySelector('p') && (document.querySelector('p').textContent = strings[currentLang].welcome_hint);
+    document.getElementById('searchInput').placeholder = strings[currentLang].search_placeholder;
+    document.querySelector('.help-btn') && (document.querySelector('.help-btn').textContent = (currentLang === 'es') ? '❓ ¿Necesitás ayuda?' : '❓ Need help?');
     langBtn.textContent = currentLang.toUpperCase();
-    // (Aquí podrías cargar strings en otro archivo)
   }
   langBtn.addEventListener('click', ()=>{
-    currentLang = currentLang === 'es' ? 'en' : 'es';
+    currentLang = (currentLang === 'es') ? 'en' : 'es';
     localStorage.setItem('lang', currentLang);
-    updateLangUI();
+    applyLang();
   });
-  updateLangUI();
+  applyLang();
 
-  // SETTINGS placeholder
-  document.getElementById('settingsBtn').addEventListener('click', ()=> alert('Ajustes: pronto podrás configurar la app desde aquí.'));
-
-  // SEARCH (filtra tarjetas de dashboard para UX rápido — simple)
-  document.getElementById('searchInput').addEventListener('input', (e)=>{
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll('#screen-dashboard .card').forEach(card=>{
-      const label = card.querySelector('.label')?.textContent?.toLowerCase() || '';
-      const hint = card.querySelector('.hint')?.textContent?.toLowerCase() || '';
-      card.style.display = (label.includes(q) || hint.includes(q) || !q) ? '' : 'none';
-    });
+  // ---------- SETTINGS (open configuracion page) ----------
+  document.getElementById('settingsBtn').addEventListener('click', ()=> {
+    window.location.href = 'configuracion.html';
   });
 
-  // Navegación entre pantallas
-  function showScreen(name){
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    if (name === 'screen-dashboard' || name === 'dashboard') document.getElementById('screen-dashboard').classList.add('active');
-    if (name === 'territorios' || name === 'screen-territorios') document.getElementById('screen-territorios').classList.add('active');
-    if (name === 'reportes' || name === 'screen-reportes') document.getElementById('screen-reportes').classList.add('active');
-    if (name === 'anuncios' || name === 'screen-anuncios') document.getElementById('screen-anuncios').classList.add('active');
-    if (name === 'estadisticas' || name === 'screen-estadisticas') document.getElementById('screen-estadisticas').classList.add('active');
-    if (name === 'dashboard' || name === 'screen-dashboard') updateStats();
-    if (name === 'reportes') loadReportsTable();
-  }
+  // ---------- LOGIN ----------
+  document.getElementById('loginBtn').addEventListener('click', ()=> {
+    window.location.href = 'login.html';
+  });
 
-  // Renderiza las 32 tarjetas de territorios
-  function renderTerritoriesGrid(){
-    const grid = document.getElementById('territoryGrid');
-    grid.innerHTML = '';
-    for (let i=1;i<=32;i++){
-      const card = document.createElement('div');
-      card.className = 'territory-card';
-      card.tabIndex = 0;
-      card.setAttribute('role','button');
-      card.setAttribute('aria-label', `Territorio ${i}, ${TERRITORIES[i]} manzanas`);
-      card.innerHTML = `<div class="title">Territorio ${i}</div>
-                        <div class="meta">Toque para reportar</div>
-                        <div class="manzanas">${TERRITORIES[i]} manzanas</div>`;
-      card.onclick = ()=> openReportModal(i);
-      card.onkeydown = (e)=> { if(e.key==='Enter') openReportModal(i); };
-      grid.appendChild(card);
-    }
-  }
+  // ---------- SEARCH: busca en tarjetas, local reports y pdfs ----------
+  const searchInput = document.getElementById('searchInput');
+  const searchResults = document.getElementById('searchResults');
 
-  // Modal: abrir (opcional preseleccionar territorio)
-  function openReportModal(preterritorio){
-    selectedTerritory = preterritorio || null;
-    document.getElementById('modalBackdrop').style.display = 'flex';
-    // prefill fecha a hoy
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('modalFecha').value = today;
-    // set conductor empty
-    document.getElementById('modalConductor').value = '';
-    document.getElementById('modalNotas').value = '';
-    // set select and render pills
-    const sel = document.getElementById('modalTerritorio');
-    if (preterritorio) sel.value = String(preterritorio);
-    renderManzanaPills();
-    // focus conductor (so devices open keyboard)
-    setTimeout(()=>document.getElementById('modalConductor').focus(),200);
-  }
+  function searchApp(q){
+    const ql = q.trim().toLowerCase();
+    if (!ql) { searchResults.style.display = 'none'; return; }
 
-  function closeModal(){
-    document.getElementById('modalBackdrop').style.display = 'none';
-    selectedTerritory = null;
-  }
+    const results = [];
 
-  // Llenar select con territorios
-  function fillModalTerritorioSelect(){
-    const s = document.getElementById('modalTerritorio');
-    s.innerHTML = '<option value="">Seleccionar territorio...</option>';
-    for(let i=1;i<=32;i++){
-      const o = document.createElement('option');
-      o.value = i; o.textContent = 'Territorio ' + i;
-      s.appendChild(o);
-    }
-    s.onchange = ()=> { renderManzanaPills(); };
-  }
-
-  // Render botones/pills de manzanas según territorio seleccionado en modal
-  function renderManzanaPills(){
-    const sel = document.getElementById('modalTerritorio').value;
-    const target = document.getElementById('manzanaPills');
-    target.innerHTML = '';
-    const territory = sel ? Number(sel) : (selectedTerritory || null);
-    if (!territory){
-      // mostrar mensaje instructivo
-      target.innerHTML = '<div class="muted" style="padding:8px">Seleccione un territorio arriba para ver sus manzanas.</div>';
-      return;
-    }
-    const count = TERRITORIES[territory] || 0;
-    for(let i=1;i<=count;i++){
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'pill';
-      b.textContent = 'Manzana ' + i;
-      b.dataset.value = i;
-      b.onclick = ()=> {
-        // deseleccionar anteriores
-        document.querySelectorAll('#manzanaPills .pill').forEach(p=>p.classList.remove('selected'));
-        b.classList.add('selected');
-      };
-      target.appendChild(b);
-    }
-  }
-
-  // Guardar reporte desde modal (y localStorage)
-  function saveModalReport(){
-    const territorio = document.getElementById('modalTerritorio').value || (selectedTerritory ? String(selectedTerritory) : '');
-    const conductor = document.getElementById('modalConductor').value.trim();
-    const fecha = document.getElementById('modalFecha').value;
-    const notas = document.getElementById('modalNotas').value.trim();
-    const pill = document.querySelector('#manzanaPills .pill.selected');
-    const manzana = pill ? pill.dataset.value : null;
-
-    if (!territorio || !manzana || !conductor || !fecha){
-      alert('Complete Territorio, Manzana, Conductor y Fecha antes de guardar.');
-      return;
-    }
-
-    const report = {
-      id: 'r_' + Date.now(),
-      territorio: Number(territorio),
-      manzana: Number(manzana),
-      conductor,
-      fecha,
-      notas
-    };
-
-    const all = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
-    all.unshift(report); // push front (más reciente arriba)
-    localStorage.setItem(REPORTS_KEY, JSON.stringify(all));
-
-    // feedback y cerrar modal
-    alert('Reporte guardado ✅');
-    closeModal();
-    loadReportsTable();
-    updateStats();
-  }
-
-  // Cargar tabla de reportes
-  function loadReportsTable(){
-    const tbody = document.getElementById('reportsTable');
-    const all = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
-    tbody.innerHTML = '';
-    if (!all.length){
-      tbody.innerHTML = `<tr><td colspan="5" class="muted">No hay reportes aún.</td></tr>`;
-      return;
-    }
-    all.forEach(r=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${r.fecha}</td>
-                      <td>Territorio ${r.territorio}</td>
-                      <td>Manzana ${r.manzana}</td>
-                      <td>${escapeHtml(r.conductor)}</td>
-                      <td>${escapeHtml(r.notas || '')}</td>`;
-      tbody.appendChild(tr);
+    // 1) Buscar en tarjetas (titulo/hint)
+    document.querySelectorAll('.card').forEach(card=>{
+      const label = (card.querySelector('.label')?.textContent || '').toLowerCase();
+      const hint = (card.querySelector('.hint')?.textContent || '').toLowerCase();
+      const href = card.getAttribute('href') || '#';
+      if (label.includes(ql) || hint.includes(ql)){
+        results.push({type:'page', title: card.querySelector('.label').textContent, meta: card.querySelector('.hint').textContent, href});
+      }
     });
-  }
 
-  // Export CSV
-  function exportCSV(){
-    const all = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
-    if (!all.length){ alert('No hay reportes para exportar.'); return; }
-    const header = ['fecha','territorio','manzana','conductor','notas'];
-    const rows = all.map(r => [r.fecha, r.territorio, r.manzana, r.conductor.replaceAll('"','""'), r.notas.replaceAll('"','""')]);
-    const csv = [header, ...rows].map(r=> r.map(c=> `"${String(c).replaceAll('"','""')}"`).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'reportes_territorios.csv'; a.style.display = 'none';
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  // Borrar todos los reportes
-  function clearReports(){
-    if (!confirm('Borrar TODOS los reportes guardados en este dispositivo? Esta acción no puede deshacerse.')) return;
-    localStorage.removeItem(REPORTS_KEY);
-    loadReportsTable();
-    updateStats();
-    alert('Reportes borrados.');
-  }
-
-  // Helper: escape simple
-  function escapeHtml(s){ return String(s || '').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-
-  // ---------------- PDF: subida, listado y visor ----------------
-  document.getElementById('pdfInput')?.addEventListener('change', handlePDFUpload);
-
-  function handlePDFUpload(e){
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // lectura base64
-    const reader = new FileReader();
-    reader.onload = function(evt){
-      const dataUrl = evt.target.result;
-      // almacenar lista en localStorage (objetos con id, name, data)
-      const list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
-      list.unshift({
-        id: Date.now(),
-        name: file.name,
-        data: dataUrl
+    // 2) Buscar en reportes guardados (localStorage)
+    try {
+      const reports = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
+      (reports||[]).forEach(r=>{
+        const text = `${r.territorio} ${r.manzana} ${r.conductor} ${r.notas}`.toLowerCase();
+        if (text.includes(ql)){
+          results.push({type:'report', title:`Reporte — Territorio ${r.territorio}`, meta: `${r.fecha} • Conductor: ${r.conductor}`, href:'reportes.html'});
+        }
       });
-      localStorage.setItem(PDF_KEY, JSON.stringify(list));
-      renderPDFs();
-      alert('PDF cargado correctamente ✅');
-      // limpiar input
-      e.target.value = '';
-    };
-    reader.readAsDataURL(file);
-  }
+    } catch(e){}
 
-  function renderPDFs(){
-    const cont = document.getElementById('pdfList');
-    const list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
-    cont.innerHTML = '';
-    if (!list.length){
-      cont.innerHTML = `<div class="pdf-empty">Aún no hay PDFs cargados.</div>`;
+    // 3) Buscar en PDFs
+    try {
+      const pdfs = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
+      (pdfs||[]).forEach(p=>{
+        if (p.name && p.name.toLowerCase().includes(ql)){
+          results.push({type:'pdf', title: p.name, meta: `Anuncio • ${new Date(Number(p.id)).toLocaleString()}`, href:'tablero-anuncios.html'});
+        }
+      });
+    } catch(e){}
+
+    // Render results
+    if (!results.length){
+      searchResults.innerHTML = `<div style="padding:12px;color:var(--muted)">No se encontraron resultados.</div>`;
+      searchResults.style.display = 'block';
       return;
     }
-    list.forEach(pdf=>{
-      const div = document.createElement('div');
-      div.className = 'pdf-item';
-      const left = document.createElement('div');
-      left.innerHTML = `<div class="name">${escapeHtml(pdf.name)}</div><div class="muted" style="font-size:13px">Subido ${new Date(Number(pdf.id)).toLocaleString()}</div>`;
-      const right = document.createElement('div');
-      right.style.display = 'flex';
-      right.style.gap = '8px';
-      const btnView = document.createElement('button');
-      btnView.className = 'btn small';
-      btnView.textContent = 'Ver';
-      btnView.onclick = ()=> openPDF(pdf.id);
-      const btnDownload = document.createElement('button');
-      btnDownload.className = 'btn ghost small';
-      btnDownload.textContent = 'Descargar';
-      btnDownload.onclick = ()=> downloadPDF(pdf.id);
-      const btnDelete = document.createElement('button');
-      btnDelete.className = 'btn ghost small';
-      btnDelete.textContent = 'Eliminar';
-      btnDelete.onclick = ()=> removePDF(pdf.id);
-      right.appendChild(btnView);
-      right.appendChild(btnDownload);
-      right.appendChild(btnDelete);
-      div.appendChild(left);
-      div.appendChild(right);
-      cont.appendChild(div);
-    });
+    searchResults.innerHTML = results.map(r=>`
+      <div class="result-item">
+        <a class="result-link" href="${r.href}">${escapeHtml(r.title)}</a>
+        <div class="result-meta">${escapeHtml(r.meta || '')}</div>
+      </div>
+    `).join('');
+    searchResults.style.display = 'block';
   }
 
-  function openPDF(id){
-    const list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
-    const pdf = list.find(p=> String(p.id) === String(id));
-    if(!pdf) { alert('Archivo no encontrado'); return; }
-    const w = window.open('', '_blank');
-    w.document.write(`
-      <!doctype html>
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>${escapeHtml(pdf.name)}</title>
-        <style>html,body{height:100%;margin:0}embed{width:100%;height:100%;border:none}</style>
-      </head>
-      <body>
-        <embed src="${pdf.data}" type="application/pdf" />
-      </body>
-      </html>
-    `);
-    w.document.close();
+  searchInput.addEventListener('input', (e)=> searchApp(e.target.value));
+  searchInput.addEventListener('keydown', (e)=> { if(e.key==='Escape'){ searchInput.value=''; searchResults.style.display='none'; } });
+
+  // ---------- small helpers ----------
+  function escapeHtml(s){ return String(s||'').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+  // ---------- stats update (keeps index informative) ----------
+  function updateIndexStats(){
+    // (optional: could fill counters in future)
   }
+  updateIndexStats();
 
-  function downloadPDF(id){
-    const list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
-    const pdf = list.find(p=> String(p.id) === String(id));
-    if(!pdf) { alert('Archivo no encontrado'); return; }
-    fetch(pdf.data)
-      .then(res => res.blob())
-      .then(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = pdf.name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      })
-      .catch(()=> alert('Error al preparar la descarga'));
-  }
-
-  function removePDF(id){
-    if(!confirm('Eliminar este PDF?')) return;
-    let list = JSON.parse(localStorage.getItem(PDF_KEY) || '[]');
-    list = list.filter(p=> String(p.id) !== String(id));
-    localStorage.setItem(PDF_KEY, JSON.stringify(list));
-    renderPDFs();
-  }
-
-  function clearPDFs(){
-    if (!confirm('Eliminar TODOS los PDFs guardados en este dispositivo?')) return;
-    localStorage.removeItem(PDF_KEY);
-    renderPDFs();
-  }
-
-  // Si el usuario abre la app con un parámetro ?territorio=5 podemos abrir modal pre-seleccionado
-  (function handleUrlPrefill(){
-    try{
-      const params = new URLSearchParams(location.search);
-      const t = params.get('territorio');
-      if (t && Number(t) >=1 && Number(t)<=32) openReportModal(Number(t));
-    }catch(e){}
-  })();
-
-  // Exponer showScreen a botones inline
-  window.showScreen = showScreen;
-  window.openReportModal = openReportModal;
-  window.closeModal = closeModal;
-  window.exportCSV = exportCSV;
-  window.clearReports = clearReports;
-
-  // Estadísticas helpers
-  function updateStats(){
-    const all = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
-    document.getElementById('statTotal').textContent = all.length || 0;
-    const used = new Set((all||[]).map(r=> r.territorio));
-    document.getElementById('statActive').textContent = used.size || 0;
-  }
-
-  // Register service worker stub for offline (won't error if sw.js missing)
+  // ---------- prepare for offline (service worker stub registration) ----------
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(()=>{/* sw optional; ignore */});
+    navigator.serviceWorker.register('/sw.js').catch(()=>{/* optional */});
   }
-
 </script>
 
 </body>
