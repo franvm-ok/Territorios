@@ -8,52 +8,71 @@
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #e9f5e9; /* verde suave */
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #eef6ef;
+            color: #2f6131;
         }
 
         header {
+            background: linear-gradient(135deg, #2f6131, #3d7a3e);
+            padding: 40px 10px;
             text-align: center;
-            background: #2f6131; /* Verde oscuro JW */
             color: white;
-            padding: 25px 10px;
-            font-size: 28px;
-            font-weight: bold;
+            font-size: 32px;
+            font-weight: 600;
+            border-bottom-left-radius: 35px;
+            border-bottom-right-radius: 35px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        }
+
+        .subtitulo {
+            margin-top: 10px;
+            font-size: 18px;
+            opacity: 0.9;
         }
 
         .container {
-            width: 95%;
+            width: 92%;
             margin: auto;
-            margin-top: 25px;
+            margin-top: 35px;
             display: grid;
+            gap: 25px;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
         }
 
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 18px;
+            border-radius: 28px;
+            padding: 35px 20px;
             text-align: center;
-            font-size: 22px;
-            font-weight: bold;
+            font-size: 24px;
+            font-weight: 600;
             color: #2f6131;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             cursor: pointer;
-            transition: 0.25s;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            transition: 0.30s ease;
+            user-select: none;
         }
 
         .card:hover {
-            transform: scale(1.05);
-            background: #dff0df;
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+            background: #e4f1e4;
+        }
+
+        .icono {
+            font-size: 44px;
+            margin-bottom: 15px;
+            display: block;
         }
 
         footer {
-            margin-top: 40px;
+            margin-top: 45px;
             text-align: center;
-            padding: 15px;
             color: #2f6131;
-            font-size: 14px;
+            padding: 20px;
+            font-size: 16px;
+            opacity: 0.8;
         }
 
         a {
@@ -61,42 +80,62 @@
         }
     </style>
 </head>
+
 <body>
 
     <header>
         🌿 Departamento de Territorio
+        <div class="subtitulo">Herramientas simples, claras y útiles</div>
     </header>
 
     <div class="container">
 
         <a href="territorios.html">
-            <div class="card">📌 Territorios</div>
+            <div class="card">
+                <span class="icono">📌</span>
+                Territorios
+            </div>
         </a>
 
         <a href="reportes.html">
-            <div class="card">📝 Reportes</div>
+            <div class="card">
+                <span class="icono">📝</span>
+                Reportes
+            </div>
         </a>
 
         <a href="mapa.html">
-            <div class="card">🗺️ Mapa</div>
+            <div class="card">
+                <span class="icono">🗺️</span>
+                Mapa
+            </div>
         </a>
 
         <a href="estadisticas.html">
-            <div class="card">📊 Estadísticas</div>
+            <div class="card">
+                <span class="icono">📊</span>
+                Estadísticas
+            </div>
         </a>
 
         <a href="anuncios.html">
-            <div class="card">📢 Tablero de Anuncios</div>
+            <div class="card">
+                <span class="icono">📢</span>
+                Tablero de Anuncios
+            </div>
         </a>
 
         <a href="agregar-pdf.html">
-            <div class="card">📄 Agregar PDF</div>
+            <div class="card">
+                <span class="icono">📄</span>
+                Agregar PDF
+            </div>
         </a>
 
     </div>
 
     <footer>
-        Hecho con cariño para el Departamento de Territorio 💚
+        © 2025 — Departamento de Territorio • Diseño moderno y claro 💚
     </footer>
 
 </body>
