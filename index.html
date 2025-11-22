@@ -1,183 +1,197 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Departamento de Territorio</title>
 
-    <title>Departamento de Territorio</title>
+<style>
+    :root {
+        --color-bg: #eef6ef;
+        --color-card: #ffffff;
+        --color-text: #2f6131;
+        --shadow: rgba(0,0,0,0.15);
+    }
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-    <style>
+    /* MODO OSCURO */
+    @media (prefers-color-scheme: dark) {
         :root {
-            --verde-principal: #2e7031;
-            --verde-suave: #e9f4ea;
-            --texto-principal: #244c26;
-            --blanco: #ffffff;
-            --sombra: rgba(0, 0, 0, 0.15);
-            --radio: 28px;
+            --color-bg: #1c1c1c;
+            --color-card: #2b2b2b;
+            --color-text: #e8e8e8;
+            --shadow: rgba(0,0,0,0.6);
         }
+    }
 
-        body {
-            margin: 0;
-            font-family: "Inter", sans-serif;
-            background: var(--verde-suave);
-            color: var(--texto-principal);
-            -webkit-font-smoothing: antialiased;
-        }
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: var(--color-bg);
+        color: var(--color-text);
+        animation: fadeIn 0.7s ease;
+    }
 
-        header {
-            background: linear-gradient(135deg, #2f6131, #3d7f40);
-            padding: 50px 15px;
-            text-align: center;
-            color: var(--blanco);
-            font-size: 34px;
-            font-weight: 700;
-            border-bottom-left-radius: 40px;
-            border-bottom-right-radius: 40px;
-            box-shadow: 0 4px 22px rgba(0,0,0,0.25);
-            letter-spacing: 0.6px;
-        }
+    /* ANIMACIÓN DE ENTRADA */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-        .subtitulo {
-            margin-top: 12px;
-            font-size: 17px;
-            opacity: 0.95;
-            font-weight: 300;
-        }
+    header {
+        text-align: center;
+        padding: 40px 20px 20px 20px;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--color-text);
+    }
 
-        .container {
-            width: 92%;
-            margin: auto;
-            margin-top: 40px;
-            display: grid;
-            gap: 28px;
-            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-            padding-bottom: 40px;
-        }
+    .subtitulo {
+        font-size: 20px;
+        font-weight: 400;
+        margin-top: 8px;
+        opacity: 0.9;
+    }
 
-        .card {
-            background: var(--blanco);
-            border-radius: var(--radio);
-            padding: 32px 20px;
-            text-align: center;
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--texto-principal);
-            box-shadow: 0 10px 25px var(--sombra);
-            cursor: pointer;
-            transition: 0.25s ease;
-            user-select: none;
-            outline: none;
-            border: 0;
-        }
+    .container {
+        width: 92%;
+        margin: auto;
+        margin-top: 35px;
+        display: grid;
+        gap: 25px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        padding-bottom: 40px;
+    }
 
-        .card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 14px 30px rgba(0,0,0,0.25);
-        }
+    .card {
+        background: var(--color-card);
+        border-radius: 25px;
+        padding: 28px 10px;
+        text-align: center;
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--color-text);
+        cursor: pointer;
+        box-shadow: 0 6px 18px var(--shadow);
+        transition: 0.2s ease;
+        user-select: none;
+        animation: fadeIn 0.5s ease;
+    }
 
-        .icon-container {
-            width: 80px;
-            height: 80px;
-            background: var(--verde-suave);
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px auto;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.08);
-        }
+    /* EFECTO PULSACIÓN */
+    .card:active {
+        transform: scale(0.94);
+        box-shadow: 0 3px 10px var(--shadow);
+    }
 
-        .icon-container img {
-            width: 46px;
-            height: 46px;
-        }
+    .emoji {
+        font-size: 45px;
+        margin-bottom: 10px;
+        display: block;
+    }
 
-        a {
-            text-decoration: none;
-        }
+    .help-btn {
+        width: 90%;
+        margin: 20px auto;
+        padding: 15px;
+        text-align: center;
+        background: var(--color-card);
+        border-radius: 20px;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--color-text);
+        box-shadow: 0 5px 15px var(--shadow);
+        cursor: pointer;
+        transition: 0.2s;
+    }
 
-        footer {
-            margin-top: 45px;
-            text-align: center;
-            color: #2f6131;
-            padding: 20px;
-            font-size: 16px;
-            opacity: 0.85;
+    .help-btn:hover {
+        transform: translateY(-3px);
+    }
+
+    footer {
+        margin-top: 35px;
+        text-align: center;
+        padding: 15px;
+        opacity: 0.7;
+    }
+
+    a { text-decoration: none; }
+</style>
+
+<script>
+    // Muestra guía solo la primera vez
+    document.addEventListener("DOMContentLoaded", () => {
+        if (!localStorage.getItem("guia_mostrada")) {
+            alert("Bienvenido 👋\nEsta app te permite:\n\n• Reportar territorios\n• Ver el mapa\n• Subir PDF al tablero\n• Ver reportes\n\nSiempre podés tocar el botón AYUDA.");
+            localStorage.setItem("guia_mostrada", "si");
         }
-    </style>
+    });
+
+    function abrirGuia() {
+        alert("Guía rápida:\n\n📌 TERRITORIOS – Para ver los 32 territorios.\n📝 REPORTES – Para revisar lo enviado.\n📍 MAPA – Muestra tu zona.\n📄 AGREGAR PDF – Para subir avisos.\n📢 ANUNCIOS – Tablero para todos.\n\nSi necesitás ayuda, avisame 😊");
+    }
+</script>
+
 </head>
 
 <body>
 
-    <header>
-        Departamento de Territorio
-        <div class="subtitulo">Aplicación clara, moderna y accesible</div>
-    </header>
+<header>
+    Departamento de Territorio
+    <div class="subtitulo">Congregación Cuatro Plazas</div>
+</header>
 
-    <div class="container">
+<div class="container">
 
-        <a href="territorios.html">
-            <div class="card">
-                <div class="icon-container">
-                    <img src="https://img.icons8.com/ios-filled/100/2e7031/marker.png">
-                </div>
-                Territorios
-            </div>
-        </a>
+    <a href="territorios.html">
+        <div class="card">
+            <span class="emoji">📌</span>
+            Territorios
+        </div>
+    </a>
 
-        <a href="reportes.html">
-            <div class="card">
-                <div class="icon-container">
-                    <img src="https://img.icons8.com/ios-filled/100/2e7031/task.png">
-                </div>
-                Reportes
-            </div>
-        </a>
+    <a href="reportes.html">
+        <div class="card">
+            <span class="emoji">📝</span>
+            Reportes
+        </div>
+    </a>
 
-        <a href="mapa.html">
-            <div class="card">
-                <div class="icon-container">
-                    <img src="https://img.icons8.com/ios-filled/100/2e7031/worldwide-location.png">
-                </div>
-                Mapa
-            </div>
-        </a>
+    <a href="mapa.html">
+        <div class="card">
+            <span class="emoji">🗺️</span>
+            Mapa
+        </div>
+    </a>
 
-        <a href="estadisticas.html">
-            <div class="card">
-                <div class="icon-container">
-                    <img src="https://img.icons8.com/ios-filled/100/2e7031/combo-chart.png">
-                </div>
-                Estadísticas
-            </div>
-        </a>
+    <a href="estadisticas.html">
+        <div class="card">
+            <span class="emoji">📊</span>
+            Estadísticas
+        </div>
+    </a>
 
-        <a href="anuncios.html">
-            <div class="card">
-                <div class="icon-container">
-                    <img src="https://img.icons8.com/ios-filled/100/2e7031/megaphone.png">
-                </div>
-                Tablero de Anuncios
-            </div>
-        </a>
+    <a href="anuncios.html">
+        <div class="card">
+            <span class="emoji">📢</span>
+            Tablero de Anuncios
+        </div>
+    </a>
 
-        <a href="agregar-pdf.html">
-            <div class="card">
-                <div class="icon-container">
-                    <img src="https://img.icons8.com/ios-filled/100/2e7031/pdf.png">
-                </div>
-                Agregar PDF
-            </div>
-        </a>
+    <a href="agregar-pdf.html">
+        <div class="card">
+            <span class="emoji">📄</span>
+            Agregar PDF
+        </div>
+    </a>
 
-    </div>
+</div>
 
-    <footer>
-        © 2025 — Diseño Premium para el Departamento de Territorio 💚
-    </footer>
+<div class="help-btn" onclick="abrirGuia()">❓ Ayuda / Cómo usar la app</div>
+
+<footer>
+    © 2025 — Departamento de Territorio • Cuatro Plazas
+</footer>
 
 </body>
 </html>
