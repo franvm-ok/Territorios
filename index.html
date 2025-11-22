@@ -1,43 +1,54 @@
-// Abrir selector de PDF
-document.getElementById("btnAgregarPDF").addEventListener("click", () => {
-    document.getElementById("pdfInput").click();
-});
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Departamento de Territorio — Dashboard</title>
 
-// Cuando el usuario selecciona un PDF
-document.getElementById("pdfInput").addEventListener("change", function(){
-    const file = this.files[0];
-    if (!file) return;
+<!-- Estilos: Verde suave, tarjetas medianas, accesible y responsivo -->
+<style>
+  :root{
+    --bg: #f3f7f3;
+    --panel: #ffffff;
+    --green: #4e8f6b;
+    --green-dark: #35503b;
+    --muted: #6b7a6a;
+    --card-shadow: 0 6px 18px rgba(49,73,56,0.08);
+    --radius: 14px;
+    --gap: 18px;
+    --ui-size: 18px;
+  }
 
-    const reader = new FileReader();
+  html,body{height:100%;margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#243022;}
+  header{background:linear-gradient(180deg,#57a07b 0%,var(--green) 100%);color:white;padding:18px 16px;text-align:center;font-size:22px;font-weight:700;box-shadow:0 3px 8px rgba(50,80,60,0.08);}
+  .wrap{max-width:1100px;margin:18px auto;padding:0 16px;}
 
-    reader.onload = function(e) {
-        const pdfBase64 = e.target.result;
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--gap);} 
+  @media(min-width:720px){.cards{grid-template-columns:repeat(3,1fr);}}
+  @media(min-width:1100px){.cards{grid-template-columns:repeat(4,1fr);}}
 
-        localStorage.setItem("pdfAnuncio", pdfBase64); // guardar PDF
+  .card{background:var(--panel);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;box-shadow:var(--card-shadow);cursor:pointer;transition:.14s;min-height:120px;border:1px solid rgba(34,50,40,0.04);} 
+  .card:active{transform:translateY(2px);} 
+  .icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(78,143,107,0.12),rgba(78,143,107,0.06));font-size:28px;color:var(--green-dark);} 
+  .label{font-size:18px;font-weight:700;color:var(--green-dark);} 
+  .hint{font-size:13px;color:var(--muted);} 
 
-        mostrarPDF(pdfBase64); // mostrarlo al usuario
-    };
+  .screen{display:none;} 
+  .screen.active{display:block;} 
 
-    reader.readAsDataURL(file); // convertir a base64
-});
+  .controls{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 18px 0;} 
+  .btn{background:var(--green);color:white;border:none;padding:12px 16px;border-radius:10px;font-size:var(--ui-size);cursor:pointer;font-weight:700;} 
+  .btn.ghost{background:transparent;color:var(--green-dark);border:1px solid rgba(53,80,59,0.12);} 
+  .btn.small{padding:8px 12px;font-size:16px;} 
 
-// Mostrar PDF en pantalla
-function mostrarPDF(base64){
-    const viewer = document.getElementById("pdfViewer");
-    viewer.src = base64;
+  .pdf-item{padding:12px;border-radius:10px;background:white;box-shadow:var(--card-shadow);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;} 
 
-    document.getElementById("pdfViewerContainer").style.display = "block";
-}
+</style>
+</head>
+<body>
 
-// Cargar PDF guardado si existe
-window.addEventListener("DOMContentLoaded", () => {
-    const guardado = localStorage.getItem("pdfAnuncio");
-    if (guardado){
-        mostrarPDF(guardado);
-    }
-});
+<header>🏠 Departamento de Territorio</header>
+<main class="wrap" id="app">
 
-// Volver al menú
-function goToMenu(){
-    window.location.href = "index.html"; // Cambiar si tu menú está en otro archivo
-}
+  <!-- DASHBOARD -->
+  <section id="screen-dashboard" class="sc
