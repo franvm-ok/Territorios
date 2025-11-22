@@ -1,259 +1,211 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Departamento de Territorio - Congregación Cuatro Plazas</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup de App Móvil</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --verde-suave: #cfe8d5;
-            --verde-medio: #8fbf9f;
-            --verde-oscuro: #4f7f66;
-            --texto: #1a1a1a;
-            --fondo: #e8f5ec;
-        }
-
-        body.dark {
-            --fondo: #1a1a1a;
-            --texto: #f2f2f2;
-            --verde-suave: #2e3f35;
-            --verde-medio: #3f5f4c;
-            --verde-oscuro: #6fa78a;
-        }
-
+        /* Configuración de la fuente Inter y estilos base */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
-            margin: 0;
-            padding: 0;
-            font-family: "Segoe UI", sans-serif;
-            background: var(--fondo);
-            color: var(--texto);
-            transition: background 0.5s ease, color 0.5s ease;
-        }
-
-        header {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Fondo gris claro */
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            padding: 20px;
-            background: var(--verde-medio);
-            color: white;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            flex-wrap: wrap;
+            min-height: 100vh;
         }
-
-        header h1 {
-            font-size: 1.8rem;
-        }
-
-        .acciones {
+        /* Estilo para simular el marco de un móvil */
+        .mobile-frame {
+            width: 100%;
+            max-width: 420px; /* Tamaño típico de móvil */
+            height: 90vh;
+            max-height: 800px;
+            background-color: #f7f7f7;
+            border-radius: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
             display: flex;
-            gap: 20px;
-            align-items: center;
-            flex-wrap: wrap;
+            flex-direction: column;
         }
-
-        .acciones button {
-            font-size: 1.2rem;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 16px;
-            background: var(--verde-oscuro);
-            color: white;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+        /* Estilos personalizados para el gradiente del botón flotante */
+        .fab-plus {
+            background-image: linear-gradient(to right bottom, #34d399, #10b981); /* Green-400 a Green-600 */
         }
-
-        .acciones button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+        /* Estilos para el texto del departamento */
+        .dept-text {
+            color: #10b981; /* Green-600 */
         }
-
-        .icono {
-            font-size: 1.8rem;
-            cursor: pointer;
-            user-select: none;
+        /* Estilo para las pestañas (Segmented Control) */
+        .tab {
+            transition: all 0.3s ease;
         }
-
-        .tarjetas {
-            padding: 40px 20px;
-            display: grid;
-            gap: 25px;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            max-width: 1100px;
-            margin: auto;
-        }
-
-        .card {
-            background: var(--verde-suave);
-            padding: 35px 20px;
-            border-radius: 20px;
-            text-align: center;
-            font-size: 1.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover, .card:focus {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-        }
-
-        /* Botón grande inferior */
-        .boton-inferior {
-            margin: 40px auto;
-            max-width: 450px;
-            background: var(--verde-oscuro);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 20px;
-            font-size: 1.4rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .boton-inferior:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
-        }
-
-        /* WhatsApp */
-        .whatsapp {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            font-size: 3rem;
-            cursor: pointer;
-            color: #25d366;
-        }
-
-        /* Botón ayuda */
-        .ayuda {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: white;
-            border-radius: 16px;
-            padding: 12px 18px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .ayuda span {
-            color: red;
-            font-size: 1.6rem;
-        }
-
-        /* Panel Ajustes */
-        #panelAjustes {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: var(--verde-medio);
-            color: white;
-            padding: 20px;
-            border-radius: 20px;
-            display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 1000;
-        }
-
-        #panelAjustes label {
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        #panelAjustes input[type="checkbox"] {
-            transform: scale(1.3);
-            margin-right: 10px;
-        }
-
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 1.5rem;
-            }
-            .acciones button {
-                font-size: 1rem;
-                padding: 10px 14px;
-            }
-            .card {
-                font-size: 1.6rem;
-            }
-            .boton-inferior {
-                font-size: 1.2rem;
-                padding: 16px;
-            }
+        .tab-active {
+            background-color: white;
+            color: #10b981;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+            border-radius: 1rem;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Departamento de Territorio - Congregación Cuatro Plazas</h1>
-        <div class="acciones">
-            <button>Iniciar sesión</button>
-            <span id="ajustes" class="icono">⚙️</span>
+
+    <div class="mobile-frame">
+        
+        <!-- Contenido principal de la aplicación -->
+        <div class="flex-grow overflow-y-auto pb-24">
+            
+            <!-- 1. Header (Encabezado de Perfil) -->
+            <header class="p-6 flex justify-between items-start bg-white/95 backdrop-blur-sm border-b border-gray-100">
+                <div class="flex items-center space-x-4">
+                    <!-- Avatar -->
+                    <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center border-2 border-teal-500">
+                        <img src="https://placehold.co/48x48/6ee7b7/134e4a?text=J" alt="Foto de Perfil" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/48x48/6ee7b7/134e4a?text=J';" />
+                    </div>
+                    <!-- Nombre y Departamento -->
+                    <div>
+                        <div class="font-bold text-xl text-gray-800">Juae</div>
+                        <div class="text-sm font-semibold dept-text">Departamento de Territorio</div>
+                    </div>
+                </div>
+                <!-- Icono de Configuración -->
+                <button aria-label="Configuración" class="text-gray-500 hover:text-gray-700 p-2 rounded-full transition duration-150">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><!-- Icono de Engranaje (Settings) -->
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.82 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.82 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.82-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.82-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </header>
+
+            <!-- 2. Segmented Control (Pestañas) -->
+            <div class="p-4 bg-gray-100">
+                <div class="flex space-x-2 p-1 bg-gray-200 rounded-2xl shadow-inner">
+                    <button class="flex-1 text-center py-2 px-3 text-sm font-semibold tab tab-active">Inicio</button>
+                    <button class="flex-1 text-center py-2 px-3 text-sm font-semibold text-gray-600 tab">Actividad</button>
+                    <button class="flex-1 text-center py-2 px-3 text-sm font-semibold text-gray-600 tab">Mapa</button>
+                </div>
+            </div>
+
+            <!-- 3. Grid de Módulos (Cards) -->
+            <div class="p-6 grid grid-cols-2 gap-4">
+
+                <!-- Card 1: Mapa Interactivo (Teal/Verde) -->
+                <div class="bg-teal-500 text-white p-4 rounded-3xl shadow-lg h-40 flex flex-col justify-between transition transform hover:scale-[1.02] cursor-pointer">
+                    <!-- Icono de Mapa -->
+                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center mb-2">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg font-bold">Mapa Interactivo</div>
+                </div>
+
+                <!-- Card 2: Nuevo Reporte (Orange/Naranja) -->
+                <div class="bg-orange-500 text-white p-4 rounded-3xl shadow-lg h-40 flex flex-col justify-between transition transform hover:scale-[1.02] cursor-pointer">
+                    <!-- Icono de Reporte/Lápiz -->
+                    <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center mb-2">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg font-bold">Nuevo Reporte</div>
+                </div>
+
+                <!-- Card 3: Estadísticas (Blanco/Claro) -->
+                <div class="bg-white text-gray-800 p-4 rounded-3xl shadow-md h-40 flex flex-col justify-between transition transform hover:scale-[1.02] cursor-pointer">
+                    <!-- Icono de Estadísticas/Gráfico -->
+                    <div class="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center mb-2">
+                        <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-2v4m-4-2v2m-2-6h18a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8a2 2 0 012-2z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg font-bold">Estadísticas</div>
+                </div>
+
+                <!-- Card 4: Contactos (Blanco/Claro) -->
+                <div class="bg-white text-gray-800 p-4 rounded-3xl shadow-md h-40 flex flex-col justify-between transition transform hover:scale-[1.02] cursor-pointer">
+                    <!-- Icono de Contactos/Usuarios -->
+                    <div class="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center mb-2">
+                        <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20v-2c0-.523-.086-1.04-.265-1.53M22 20v-2c0-.523-.086-1.04-.265-1.53m-4.66-3.834a5.006 5.006 0 00-6.417 0M10 21v-2a4 4 0 014-4h.5M9 8a2.5 2.5 0 10-5 0 2.5 2.5 0 005 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10V6M9 8h6"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg font-bold">Contactos</div>
+                </div>
+                
+                <!-- Card 5: Biblioteca (Blanco/Claro) -->
+                <div class="bg-white text-gray-800 p-4 rounded-3xl shadow-md h-40 flex flex-col justify-between transition transform hover:scale-[1.02] cursor-pointer">
+                    <!-- Icono de Biblioteca/Libro -->
+                    <div class="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center mb-2">
+                        <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg font-bold">Biblioteca</div>
+                </div>
+                
+                 <!-- Card 6: Biblioteca (Blanco/Claro) -->
+                <div class="bg-white text-gray-800 p-4 rounded-3xl shadow-md h-40 flex flex-col justify-between transition transform hover:scale-[1.02] cursor-pointer">
+                    <!-- Icono de Biblioteca/Libro -->
+                    <div class="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center mb-2">
+                        <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg font-bold">Biblioteca</div>
+                </div>
+
+            </div>
         </div>
-    </header>
 
-    <div id="panelAjustes">
-        <label>
-            <input type="checkbox" id="modoOscuro"> Modo oscuro
-        </label>
+        <!-- 4. Floating Action Button (FAB) - Botón Flotante de Acción -->
+        <!-- Nota: Lo colocamos aquí para que esté sobre el contenido pero debajo del nav inferior -->
+        <button aria-label="Añadir Nuevo" class="fab-plus w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-white transform transition duration-300 hover:scale-110 active:scale-95 absolute bottom-16 left-1/2 -translate-x-1/2 z-20">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+        </button>
+
+
+        <!-- 5. Bottom Navigation Bar (Barra de Navegación Inferior) -->
+        <footer class="bg-white border-t border-gray-200 p-3 rounded-t-3xl shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] sticky bottom-0 z-10">
+            <nav class="flex justify-around items-center">
+                
+                <!-- Botón de Inicio (activo) -->
+                <button class="flex flex-col items-center text-teal-600 font-semibold text-xs transition duration-150">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span>Inicio</span>
+                </button>
+
+                <!-- Botón de Noticias/Búsqueda -->
+                <button class="flex flex-col items-center text-gray-400 font-medium text-xs transition duration-150 hover:text-teal-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <span>Noticias</span>
+                </button>
+                
+                <!-- Placeholder para centrar el FAB -->
+                <div class="w-16 h-16 opacity-0"></div>
+
+                <!-- Botón de Perfil -->
+                <button class="flex flex-col items-center text-gray-400 font-medium text-xs transition duration-150 hover:text-teal-500">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span>Perfil</span>
+                </button>
+            </nav>
+        </footer>
+        
     </div>
 
-    <section class="tarjetas">
-        <div class="card" tabindex="0">📋 Reportes</div>
-        <div class="card" tabindex="0">🗺️ Territorios</div>
-        <div class="card" tabindex="0">📈 Estadísticas</div>
-        <div class="card" tabindex="0">📌 Mapa</div>
-    </section>
-
-    <div class="boton-inferior">📅 Sugerencia de próximas salidas</div>
-
-    <div class="whatsapp">🟢</div>
-
-    <div class="ayuda">
-        <span>❓</span> ¿Necesita ayuda hermano?
-    </div>
-
-    <script>
-        const ajustes = document.getElementById("ajustes");
-        const panel = document.getElementById("panelAjustes");
-        const modoOscuro = document.getElementById("modoOscuro");
-        const whatsapp = document.querySelector(".whatsapp");
-
-        ajustes.onclick = () => {
-            panel.style.display = panel.style.display === "none" ? "block" : "none";
-        };
-
-        modoOscuro.onchange = () => {
-            document.body.classList.toggle("dark");
-        };
-
-        whatsapp.onclick = () => {
-            window.open("https://wa.me/3416715020", "_blank");
-        };
-
-        // Funcionalidad simple para tarjetas
-        document.querySelectorAll('.card').forEach(card => {
-            card.onclick = () => alert(`Has hecho clic en "${card.textContent}"`);
-        });
-
-        // Botón sugerencias
-        document.querySelector('.boton-inferior').onclick = () => {
-            alert("Se mostrarán las sugerencias de próximas salidas.");
-        };
-
-        // Botón ayuda
-        document.querySelector('.ayuda').onclick = () => {
-            alert("Para asistencia, contacta al siervo de territorio.");
-        };
-    </script>
 </body>
 </html>
