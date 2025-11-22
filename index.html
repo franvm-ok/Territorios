@@ -3,293 +3,201 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Departamento de Territorio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Departamento de Territorio - Congregación Cuatro Plazas</title>
     <style>
         :root {
-            --primary-green: #388E3C; /* Verde principal, más vibrante */
-            --light-green: #E8F5E9; /* Verde muy claro para fondos */
-            --dark-green: #2E7D32; /* Verde oscuro para botones y acentos */
-            --text-color: #212121;
-            --background-color: #F8F8F8;
-            --card-bg: #FFFFFF;
-            --header-text: #FFFFFF; /* Color de texto del header */
-            --secondary-text: #757575; /* Texto secundario */
+            --verde-suave: #cfe8d5;
+            --verde-medio: #8fbf9f;
+            --verde-oscuro: #4f7f66;
+            --texto: #1a1a1a;
+            --fondo: #e8f5ec;
         }
 
         body.dark {
-            --primary-green: #4CAF50;
-            --light-green: #2C3E50;
-            --dark-green: #388E3C;
-            --text-color: #E0E0E0;
-            --background-color: #121212;
-            --card-bg: #1E1E1E;
-            --header-text: #FFFFFF;
-            --secondary-text: #BDBDBD;
+            --fondo: #1a1a1a;
+            --texto: #f2f2f2;
+            --verde-suave: #2e3f35;
+            --verde-medio: #3f5f4c;
+            --verde-oscuro: #6fa78a;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Poppins', sans-serif;
-            background: var(--background-color);
-            color: var(--text-color);
+            font-family: "Segoe UI", sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
             transition: background 0.5s ease, color 0.5s ease;
-            line-height: 1.6;
         }
 
         header {
-            background-image: url('https://source.unsplash.com/random/1600x600/?landscape,forest'); /* Imagen de fondo dinámica */
-            background-size: cover;
-            background-position: center;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--header-text);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-            position: relative;
-            padding: 20px 40px;
-        }
-
-        .header-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* Oscurecer la imagen */
-            z-index: 1;
-        }
-
-        .header-top, .header-content {
-            z-index: 2; /* Asegurar que el contenido esté sobre el overlay */
-            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 20px;
+            background: var(--verde-medio);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            flex-wrap: wrap;
         }
 
-        .header-top {
-            padding: 20px 0;
-        }
-
-        .header-logo {
-            display: flex;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .header-logo i {
-            margin-right: 10px;
+        header h1 {
             font-size: 1.8rem;
-            color: var(--primary-green);
         }
 
-        .header-actions {
+        .acciones {
             display: flex;
-            gap: 15px;
+            gap: 20px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .header-actions button {
-            font-size: 1rem;
-            padding: 10px 20px;
+        .acciones button {
+            font-size: 1.2rem;
+            padding: 12px 20px;
             border: none;
-            border-radius: 8px;
-            background: var(--primary-green);
+            border-radius: 16px;
+            background: var(--verde-oscuro);
             color: white;
             cursor: pointer;
-            font-weight: 500;
-            transition: background 0.3s ease;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .header-actions button:hover {
-            background: var(--dark-green);
+        .acciones button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
         }
 
-        .header-actions .icon {
+        .icono {
             font-size: 1.8rem;
             cursor: pointer;
             user-select: none;
-            color: white; /* Cambiado a blanco para que se vea bien en el header */
         }
 
-        .header-content {
-            flex-direction: column;
-            text-align: center;
-            padding-bottom: 80px;
-        }
-
-        .header-content h1 {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-
-        .header-content p {
-            font-size: 1.2rem;
-            font-weight: 300;
-            max-width: 700px;
-            opacity: 0.9;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 30px;
-            color: var(--primary-green);
-        }
-
-        .card-container {
-            padding: 60px 20px;
+        .tarjetas {
+            padding: 40px 20px;
             display: grid;
-            gap: 30px;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             max-width: 1100px;
             margin: auto;
         }
 
         .card {
-            background: var(--card-bg);
-            padding: 40px 25px;
-            border-radius: 15px;
+            background: var(--verde-suave);
+            padding: 35px 20px;
+            border-radius: 20px;
             text-align: center;
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 1.8rem;
+            font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
         }
 
-        .card i {
-            font-size: 3rem;
-            color: var(--primary-green);
+        .card:hover, .card:focus {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
         }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .main-button {
-            margin: 40px auto 60px auto;
-            max-width: 500px;
-            background: var(--dark-green);
+        /* Botón grande inferior */
+        .boton-inferior {
+            margin: 40px auto;
+            max-width: 450px;
+            background: var(--verde-oscuro);
             color: white;
-            padding: 22px;
+            padding: 20px;
             text-align: center;
-            border-radius: 12px;
-            font-size: 1.3rem;
-            font-weight: 600;
+            border-radius: 20px;
+            font-size: 1.4rem;
             cursor: pointer;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
-            transition: background 0.3s ease, transform 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .main-button i {
-            font-size: 1.5rem;
-        }
-
-        .main-button:hover {
-            background: var(--primary-green);
+        .boton-inferior:hover {
             transform: translateY(-3px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
         }
 
+        /* WhatsApp */
         .whatsapp {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            font-size: 3.5rem;
+            bottom: 20px;
+            right: 20px;
+            font-size: 3rem;
             cursor: pointer;
             color: #25d366;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-            transition: transform 0.3s ease;
         }
 
-        .whatsapp:hover {
-            transform: scale(1.1);
-        }
-
-        .help-button {
+        /* Botón ayuda */
+        .ayuda {
             position: fixed;
-            bottom: 30px;
-            left: 30px;
-            background: var(--card-bg); /* Fondo de tarjeta para la ayuda */
-            border-radius: 12px;
-            padding: 15px 20px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            border-radius: 16px;
+            padding: 12px 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: var(--text-color);
-            font-weight: 500;
-            transition: transform 0.3s ease;
+            gap: 8px;
         }
-        .help-button i {
-            color: #FF5722; /* Naranja para el icono de pregunta */
-            font-size: 1.8rem;
-        }
-        .help-button:hover {
-            transform: translateY(-3px);
+        .ayuda span {
+            color: red;
+            font-size: 1.6rem;
         }
 
         /* Panel Ajustes */
         #panelAjustes {
             position: fixed;
-            top: 100px; /* Ajustado para el nuevo header */
-            right: 40px;
-            background: var(--card-bg); /* Fondo de tarjeta */
-            color: var(--text-color);
+            top: 80px;
+            right: 20px;
+            background: var(--verde-medio);
+            color: white;
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 20px;
             display: none;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
         }
+
         #panelAjustes label {
-            font-size: 1.1rem;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 1.2rem;
         }
+
         #panelAjustes input[type="checkbox"] {
-            transform: scale(1.2);
-            accent-color: var(--primary-green); /* Color del checkbox */
+            transform: scale(1.3);
+            margin-right: 10px;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+            .acciones button {
+                font-size: 1rem;
+                padding: 10px 14px;
+            }
+            .card {
+                font-size: 1.6rem;
+            }
+            .boton-inferior {
+                font-size: 1.2rem;
+                padding: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="header-overlay"></div>
-        <div class="header-top">
-            <div class="header-logo">
-                <i class="fas fa-mountain"></i> Departamento de Territorio
-            </div>
-            <div class="header-actions">
-                <button>Iniciar sesión</button>
-                <i id="ajustes" class="fas fa-cog icon"></i>
-            </div>
-        </div>
-        <div class="header-content">
-            <h1>EXPLORA, GESTIONA, PROTEGE.</h1>
-            <p>Una plataforma integral para el futuro de nuestro territorio, impulsada por datos y compromiso.</p>
+        <h1>Departamento de Territorio - Congregación Cuatro Plazas</h1>
+        <div class="acciones">
+            <button>Iniciar sesión</button>
+            <span id="ajustes" class="icono">⚙️</span>
         </div>
     </header>
 
@@ -299,38 +207,26 @@
         </label>
     </div>
 
-    <section class="card-container">
-        <h2 class="section-title">Nuestros Servicios</h2>
-        <div class="card" onclick="alert('Ir a Reportes')">
-            <i class="fas fa-chart-line"></i> Reportes
-        </div>
-        <div class="card" onclick="alert('Ir a Territorios')">
-            <i class="fas fa-map-marked-alt"></i> Territorios
-        </div>
-        <div class="card" onclick="alert('Ir a Estadísticas')">
-            <i class="fas fa-chart-bar"></i> Estadísticas
-        </div>
-        <div class="card" onclick="alert('Ir a Mapa')">
-            <i class="fas fa-map"></i> Mapa
-        </div>
+    <section class="tarjetas">
+        <div class="card" tabindex="0">📋 Reportes</div>
+        <div class="card" tabindex="0">🗺️ Territorios</div>
+        <div class="card" tabindex="0">📈 Estadísticas</div>
+        <div class="card" tabindex="0">📌 Mapa</div>
     </section>
 
-    <div class="main-button" onclick="alert('Ir a Sugerencia de Salidas')">
-        <i class="fas fa-calendar-alt"></i> Sugerencia de próximas salidas
-    </div>
+    <div class="boton-inferior">📅 Sugerencia de próximas salidas</div>
 
-    <div class="whatsapp" onclick="window.open('https://wa.me/TUNUMERODEWHATSAPP', '_blank')">
-        <i class="fab fa-whatsapp"></i>
-    </div>
+    <div class="whatsapp">🟢</div>
 
-    <div class="help-button" onclick="alert('Abrir chat de ayuda')">
-        <i class="fas fa-question-circle"></i> ¿Necesitas ayuda?
+    <div class="ayuda">
+        <span>❓</span> ¿Necesita ayuda hermano?
     </div>
 
     <script>
         const ajustes = document.getElementById("ajustes");
         const panel = document.getElementById("panelAjustes");
         const modoOscuro = document.getElementById("modoOscuro");
+        const whatsapp = document.querySelector(".whatsapp");
 
         ajustes.onclick = () => {
             panel.style.display = panel.style.display === "none" ? "block" : "none";
@@ -340,12 +236,24 @@
             document.body.classList.toggle("dark");
         };
 
-        // Cerrar panel de ajustes si se hace clic fuera
-        document.addEventListener('click', (event) => {
-            if (!panel.contains(event.target) && !ajustes.contains(event.target) && panel.style.display === "block") {
-                panel.style.display = "none";
-            }
+        whatsapp.onclick = () => {
+            window.open("https://wa.me/3416715020", "_blank");
+        };
+
+        // Funcionalidad simple para tarjetas
+        document.querySelectorAll('.card').forEach(card => {
+            card.onclick = () => alert(`Has hecho clic en "${card.textContent}"`);
         });
+
+        // Botón sugerencias
+        document.querySelector('.boton-inferior').onclick = () => {
+            alert("Se mostrarán las sugerencias de próximas salidas.");
+        };
+
+        // Botón ayuda
+        document.querySelector('.ayuda').onclick = () => {
+            alert("Para asistencia, contacta al siervo de territorio.");
+        };
     </script>
 </body>
 </html>
