@@ -1,187 +1,43 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Departamento de Territorio — Dashboard</title>
+// Abrir selector de PDF
+document.getElementById("btnAgregarPDF").addEventListener("click", () => {
+    document.getElementById("pdfInput").click();
+});
 
-<style>
-  :root{
-    --bg: #f3f7f3;
-    --panel: #ffffff;
-    --green: #4e8f6b;
-    --green-dark: #35503b;
-    --muted: #6b7a6a;
-    --card-shadow: 0 6px 18px rgba(49,73,56,0.08);
-    --radius: 14px;
-    --gap: 18px;
-    --ui-size: 18px;
-  }
+// Cuando el usuario selecciona un PDF
+document.getElementById("pdfInput").addEventListener("change", function(){
+    const file = this.files[0];
+    if (!file) return;
 
-  html,body{height:100%;margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-  header{
-    background:linear-gradient(180deg, #57a07b 0%, var(--green) 100%);
-    color:white;padding:18px 16px;text-align:center;font-size:22px;font-weight:700;
-    box-shadow: 0 3px 8px rgba(50,80,60,0.08);
-  }
-  .wrap{max-width:1100px;margin:18px auto;padding:0 16px;}
+    const reader = new FileReader();
 
-  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--gap);}
-  @media(min-width:720px){.cards{grid-template-columns:repeat(3,1fr);}}
-  @media(min-width:1100px){.cards{grid-template-columns:repeat(4,1fr);}}
+    reader.onload = function(e) {
+        const pdfBase64 = e.target.result;
 
-  .card{
-    background:var(--panel);border-radius:var(--radius);padding:22px;
-    display:flex;flex-direction:column;gap:12px;align-items:center;
-    box-shadow:var(--card-shadow);cursor:pointer;min-height:120px;
-    border:1px solid rgba(34,50,40,0.04);transition:.14s;
-  }
-  .card:active{transform:translateY(2px);}
-  .icon{
-    width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(180deg, rgba(78,143,107,0.12), rgba(78,143,107,0.06));
-    font-size:28px;color:var(--green-dark);
-  }
-  .label{font-size:18px;font-weight:700;color:var(--green-dark);}
-  .hint{font-size:13px;color:var(--muted);}
+        localStorage.setItem("pdfAnuncio", pdfBase64); // guardar PDF
 
-  .screen{display:none;}
-  .active{display:block;}
+        mostrarPDF(pdfBase64); // mostrarlo al usuario
+    };
 
-  .btn{
-    background:var(--green);color:white;border:none;padding:12px 16px;border-radius:10px;
-    font-size:var(--ui-size);cursor:pointer;font-weight:700;
-  }
-  .btn.ghost{background:transparent;color:var(--green-dark);border:1px solid rgba(53,80,59,0.12);}
-  .btn.small{padding:8px 12px;font-size:16px;}
+    reader.readAsDataURL(file); // convertir a base64
+});
 
-  .territory-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px;}
-  @media(min-width:720px){.territory-grid{grid-template-columns:repeat(3,1fr);}}
-  @media(min-width:1100px){.territory-grid{grid-template-columns:repeat(4,1fr);}}
+// Mostrar PDF en pantalla
+function mostrarPDF(base64){
+    const viewer = document.getElementById("pdfViewer");
+    viewer.src = base64;
 
-  .territory-card{
-    background:linear-gradient(180deg, rgba(78,143,107,0.06), rgba(78,143,107,0.02));
-    border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;
-    border:1px solid rgba(34,50,40,0.04);
-  }
-
-  footer{text-align:center;margin:40px 0;color:var(--muted);font-size:14px;}
-</style>
-</head>
-<body>
-
-<header>🏠 Departamento de Territorio</header>
-
-<main class="wrap">
-
-<!-- ========================= DASHBOARD ========================= -->
-<section id="screen-dashboard" class="screen active">
-  <h2>Bienvenido — Elija una acción</h2>
-  <p class="muted">Interfaz clara y accesible.</p>
-
-  <div class="cards">
-
-    <!-- ★ CAMBIADO: TABLERO DE ANUNCIOS -->
-    <div class="card" onclick="showScreen('anuncios')" role="button">
-      <div class="icon">📢</div>
-      <div class="label">Tablero de Anuncios</div>
-      <div class="hint">Publicar PDF y avisos</div>
-    </div>
-
-    <!-- ★ CAMBIADO: REPORTAR TERRITORIO -->
-    <div class="card" onclick="showScreen('territorios')" role="button">
-      <div class="icon">🗂️</div>
-      <div class="label">Reportar Territorio</div>
-      <div class="hint">32 territorios y sus manzanas</div>
-    </div>
-
-    <div class="card" onclick="alert('Mapa próximamente')" role="button">
-      <div class="icon">🗺️</div>
-      <div class="label">Mapa</div>
-      <div class="hint">Pendiente</div>
-    </div>
-
-    <div class="card" onclick="showScreen('reportes')" role="button">
-      <div class="icon">📑</div>
-      <div class="label">Reportes</div>
-      <div class="hint">Historial</div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ========================= NUEVO: TABLERO DE ANUNCIOS ========================= -->
-<section id="screen-anuncios" class="screen">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <h2>Tablero de Anuncios</h2>
-    <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Volver al Menú</button>
-  </div>
-
-  <p class="muted">Suba PDFs con anuncios o comunicaciones para los hermanos.</p>
-
-  <button class="btn" style="margin-top:14px" onclick="alert('Función agregar PDF próximamente')">
-    ➕ Agregar PDF
-  </button>
-</section>
-
-
-<!-- ========================= REPORTAR TERRITORIO (ANTES TERRITORIOS) ========================= -->
-<section id="screen-territorios" class="screen">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <div>
-      <h2>Reportar Territorio</h2>
-      <p class="muted">Seleccione un territorio para reportar.</p>
-    </div>
-    <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Menú</button>
-  </div>
-
-  <div id="territoryGrid" class="territory-grid"></div>
-</section>
-
-
-<!-- ========================= REPORTES ========================= -->
-<section id="screen-reportes" class="screen">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <h2>Reportes</h2>
-    <button class="btn ghost small" onclick="showScreen('screen-dashboard')">← Menú</button>
-  </div>
-
-  <div id="reportsTable" style="margin-top:12px"></div>
-</section>
-
-<footer>App de Territorios • Android / iOS / PC</footer>
-</main>
-
-<script>
-/* ========== Lógica mínima para que funcione la navegación ========== */
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id.startsWith("screen")?id:`screen-${id}`).classList.add('active');
+    document.getElementById("pdfViewerContainer").style.display = "block";
 }
 
-/* ========== Render de territorios ========== */
-const TERRITORIES = {
-  1:4,2:4,3:4,4:5,5:8,6:6,7:6,8:6,9:8,10:6,11:8,12:7,13:4,14:8,15:6,16:6,
-  17:4,18:6,19:4,20:4,21:5,22:4,23:4,24:4,25:4,26:4,27:4,28:6,29:4,30:4,31:5,32:6
-};
+// Cargar PDF guardado si existe
+window.addEventListener("DOMContentLoaded", () => {
+    const guardado = localStorage.getItem("pdfAnuncio");
+    if (guardado){
+        mostrarPDF(guardado);
+    }
+});
 
-document.addEventListener("DOMContentLoaded", ()=>renderTerritories());
-
-function renderTerritories(){
-  const grid = document.getElementById("territoryGrid");
-  grid.innerHTML = "";
-  for(let i=1;i<=32;i++){
-    const card = document.createElement("div");
-    card.className = "territory-card";
-    card.innerHTML = `
-      <div><strong>Territorio ${i}</strong></div>
-      <div>${TERRITORIES[i]} manzanas</div>
-    `;
-    card.onclick = ()=>alert("Aquí abriría el formulario de reporte");
-    grid.appendChild(card);
-  }
+// Volver al menú
+function goToMenu(){
+    window.location.href = "index.html"; // Cambiar si tu menú está en otro archivo
 }
-</script>
-
-</body>
-</html>
