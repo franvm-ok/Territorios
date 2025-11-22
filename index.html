@@ -1,388 +1,192 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Departamento de Territorio</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Departamento de Territorio</title>
+    <style>
+        :root {
+            --verde-suave: #cfe8d5;
+            --verde-medio: #8fbf9f;
+            --verde-oscuro: #4f7f66;
+            --texto: #1a1a1a;
+            --fondo: #e8f5ec;
+        }
 
-<!-- ================= ESTILOS ================ -->
-<style>
-  :root{
-    --bg:#f3f7f3;
-    --panel:#ffffff;
-    --green:#4e8f6b;
-    --green-dark:#35503b;
-    --muted:#6b7a6a;
-    --radius:16px;
-    --shadow:0 4px 14px rgba(0,0,0,0.08);
-  }
+        body.dark {
+            --fondo: #1a1a1a;
+            --texto: #f2f2f2;
+            --verde-suave: #2e3f35;
+            --verde-medio: #3f5f4c;
+            --verde-oscuro: #6fa78a;
+        }
 
-  body{
-    margin:0;
-    background:var(--bg);
-    font-family: system-ui,-apple-system,Segoe UI,Roboto;
-    color:#223322;
-  }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+            transition: background 0.5s ease, color 0.5s ease;
+        }
 
-  header{
-    background:var(--green);
-    color:white;
-    padding:20px;
-    font-size:22px;
-    font-weight:700;
-    text-align:center;
-    box-shadow:0 2px 10px rgba(0,0,0,0.12);
-  }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--verde-medio);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
 
-  .wrap{max-width:1100px;margin:auto;padding:20px;}
+        .acciones {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
 
-  /* ================= Dashboard ================= */
-  .cards{
-    display:grid;
-    gap:20px;
-    grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-    margin-top:15px;
-  }
+        .acciones button {
+            font-size: 1rem;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 10px;
+            background: var(--verde-oscuro);
+            color: white;
+            cursor: pointer;
+        }
 
-  .card{
-    background:var(--panel);
-    border-radius:var(--radius);
-    padding:28px 20px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    align-items:center;
-    box-shadow:var(--shadow);
-    cursor:pointer;
-    transition:transform .15s;
-  }
-  .card:hover{transform:translateY(-3px);}
-  .card:active{transform:scale(.98);}
+        .icono {
+            font-size: 1.6rem;
+            cursor: pointer;
+            user-select: none;
+        }
 
-  .icon{
-    width:60px;height:60px;
-    background:#eaf2ed;
-    border-radius:14px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:30px;
-    color:var(--green-dark);
-  }
-  .label{font-size:19px;font-weight:700;color:var(--green-dark);}
-  .hint{font-size:14px;color:var(--muted);}
+        .tarjetas {
+            padding: 40px 20px;
+            display: grid;
+            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            max-width: 1100px;
+            margin: auto;
+        }
 
-  /* ================= Pantallas ================= */
-  .screen{display:none;}
-  .screen.active{display:block;}
+        .card {
+            background: var(--verde-suave);
+            padding: 35px 20px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
 
-  h2{
-    color:var(--green-dark);
-    font-size:22px;
-    margin-bottom:6px;
-  }
-  .muted{color:var(--muted);font-size:15px}
+        .card:hover {
+            transform: translateY(-5px);
+        }
 
-  .btn{
-    padding:12px 18px;
-    background:var(--green);
-    color:white;
-    border:none;
-    border-radius:10px;
-    font-weight:700;
-    cursor:pointer;
-    font-size:16px;
-    box-shadow:var(--shadow);
-  }
-  .btn.ghost{
-    background:white;
-    color:var(--green-dark);
-    border:1px solid #d3e0d6;
-  }
+        /* Botón grande inferior */
+        .boton-inferior {
+            margin: 40px auto;
+            max-width: 450px;
+            background: var(--verde-oscuro);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 20px;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
 
-  /* ================= Territorios ================= */
-  .territory-grid{
-    margin-top:20px;
-    display:grid;
-    gap:16px;
-    grid-template-columns:repeat(auto-fill, minmax(170px,1fr));
-  }
-  .territory-card{
-    padding:16px;
-    background:white;
-    border-radius:14px;
-    border:1px solid #dfe7e0;
-    cursor:pointer;
-    box-shadow:var(--shadow);
-    transition:.15s;
-  }
-  .territory-card:hover{transform:translateY(-3px);}
-  .territory-card .title{font-weight:800;color:var(--green-dark);font-size:17px;}
-  .territory-card .meta{font-size:14px;color:var(--muted);}
-  .territory-card .manzanas{margin-top:6px;font-weight:700;color:var(--green-dark);}
+        /* WhatsApp */
+        .whatsapp {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 3rem;
+            cursor: pointer;
+            color: #25d366;
+        }
 
-  /* ================= Reportes ================= */
-  .table-wrap{
-    background:white;
-    padding:14px;
-    border-radius:14px;
-    box-shadow:var(--shadow);
-    margin-top:16px;
-    overflow:auto;
-  }
+        /* Botón ayuda */
+        .ayuda {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            border-radius: 16px;
+            padding: 12px 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ayuda span {
+            color: red;
+            font-size: 1.6rem;
+        }
 
-  table{width:100%;border-collapse:collapse;}
-  th{
-    background:var(--green);
-    color:white;
-    text-align:left;
-    padding:10px;
-  }
-  td{padding:10px;border-bottom:1px solid #e0e6e2;}
-
-  /* ================= Modal ================= */
-  .modal-backdrop{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,0.45);
-    display:none;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-  }
-  .modal{
-    background:white;
-    width:100%;
-    max-width:520px;
-    padding:20px;
-    border-radius:18px;
-    box-shadow:0 30px 60px rgba(0,0,0,0.25);
-    position:relative;
-  }
-  .close-x{
-    background:none;border:none;cursor:pointer;
-    font-size:22px;color:var(--muted);
-    position:absolute;top:10px;right:12px;
-  }
-
-  input,select,textarea{
-    width:100%;
-    padding:12px;
-    border:1px solid #d3e0d6;
-    border-radius:10px;
-    font-size:15px;
-    margin-top:4px;
-  }
-
-  .pill{
-    padding:10px 14px;
-    border-radius:10px;
-    border:1px solid #cfdcd3;
-    background:white;
-    cursor:pointer;
-    font-weight:700;
-    margin:4px;
-  }
-  .pill.selected{
-    background:var(--green);
-    color:white;
-    border:none;
-    box-shadow:var(--shadow);
-  }
-
-  footer{
-    text-align:center;
-    margin:35px 0;
-    font-size:14px;
-    color:var(--muted);
-  }
-</style>
+        /* Panel Ajustes */
+        #panelAjustes {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--verde-medio);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <h1>Departamento de Territorio</h1>
+        <div class="acciones">
+            <button>Iniciar sesión</button>
+            <span id="ajustes" class="icono">⚙️</span>
+        </div>
+    </header>
 
-<header>🏠 Departamento de Territorio</header>
-
-<div class="wrap">
-
-  <!-- ================= Dashboard ================= -->
-  <section id="home" class="screen active">
-    <h2>Bienvenido</h2>
-    <p class="muted">Elija una acción</p>
-
-    <div class="cards">
-      <div class="card" onclick="openReportModal()">
-        <div class="icon">📋</div>
-        <div class="label">Reportar Predicación</div>
-        <div class="hint">Rápido y sencillo</div>
-      </div>
-
-      <div class="card" onclick="showScreen('territorios')">
-        <div class="icon">🗂️</div>
-        <div class="label">Territorios</div>
-        <div class="hint">Ver los 32 territorios</div>
-      </div>
-
-      <div class="card" onclick="alert('Disponible próximamente')">
-        <div class="icon">🗺️</div>
-        <div class="label">Mapa</div>
-        <div class="hint">Próxima versión</div>
-      </div>
-
-      <div class="card" onclick="showScreen('reportes')">
-        <div class="icon">📑</div>
-        <div class="label">Reportes</div>
-        <div class="hint">Historial guardado</div>
-      </div>
+    <div id="panelAjustes">
+        <label style="font-size: 1.2rem; cursor:pointer;">
+            <input type="checkbox" id="modoOscuro" style="transform: scale(1.3); margin-right: 10px;"> Modo oscuro
+        </label>
     </div>
-  </section>
 
-  <!-- ================= Territorios ================= -->
-  <section id="territorios" class="screen">
-    <button class="btn ghost" onclick="showScreen('home')">← Volver</button>
-    <h2>Territorios</h2>
-    <p class="muted">Toque un territorio para reportar</p>
+    <section class="tarjetas">
+        <div class="card">📋 Reportes</div>
+        <div class="card">🗺️ Territorios</div>
+        <div class="card">📈 Estadísticas</div>
+        <div class="card">📌 Mapa</div>
+    </section>
 
-    <div id="territoryGrid" class="territory-grid"></div>
-  </section>
+    <div class="boton-inferior">📅 Sugerencia de próximas salidas</div>
 
-  <!-- ================= Reportes ================= -->
-  <section id="reportes" class="screen">
-    <button class="btn ghost" onclick="showScreen('home')">← Volver</button>
-    <h2>Reportes</h2>
-    <p class="muted">Historial guardado en su dispositivo</p>
+    <div class="whatsapp">🟢</div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Fecha</th><th>Territorio</th><th>Manzana</th><th>Conductor</th><th>Notas</th></tr>
-        </thead>
-        <tbody id="reportsTable"></tbody>
-      </table>
+    <div class="ayuda">
+        <span>❓</span> ¿Necesita ayuda hermano?
     </div>
-  </section>
 
-</div>
+    <script>
+        const ajustes = document.getElementById("ajustes");
+        const panel = document.getElementById("panelAjustes");
+        const modoOscuro = document.getElementById("modoOscuro");
 
-<footer>App de Territorios • Android / iOS / Tablet / PC</footer>
+        ajustes.onclick = () => {
+            panel.style.display = panel.style.display === "none" ? "block" : "none";
+        };
 
-<!-- ================= Modal ================= -->
-<div id="modalBackdrop" class="modal-backdrop">
-  <div class="modal">
-    <button class="close-x" onclick="closeModal()">✕</button>
-    <h2 style="margin-top:0">📋 Reportar Predicación</h2>
-
-    <label>Territorio</label>
-    <select id="modalTerritorio"></select>
-
-    <label>Conductor</label>
-    <input id="modalConductor" type="text">
-
-    <label>Fecha</label>
-    <input id="modalFecha" type="date">
-
-    <label>Manzana</label>
-    <div id="manzanaPills"></div>
-
-    <label>Notas</label>
-    <textarea id="modalNotas" rows="3"></textarea>
-
-    <br>
-    <button class="btn" onclick="saveModalReport()">Guardar</button>
-  </div>
-</div>
-
-<!-- ================= LÓGICA JS ================= -->
-<script>
-  const TERRITORIES={1:4,2:4,3:4,4:5,5:8,6:6,7:6,8:6,9:8,10:6,11:8,12:7,13:4,14:8,15:6,16:6,17:4,18:6,19:4,20:4,21:5,22:4,23:4,24:4,25:4,26:4,27:4,28:6,29:4,30:4,31:5,32:6};
-  const REPORTS_KEY='territorios_reports';
-
-  function showScreen(id){
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if(id==="reportes") loadReports();
-  }
-
-  // ----- Territorios -----
-  const grid=document.getElementById('territoryGrid');
-  for(let i=1;i<=32;i++){
-    const d=document.createElement('div');
-    d.className='territory-card';
-    d.innerHTML=`<div class="title">Territorio ${i}</div>
-                 <div class="meta">Tocar para reportar</div>
-                 <div class="manzanas">${TERRITORIES[i]} manzanas</div>`;
-    d.onclick=()=>openReportModal(i);
-    grid.appendChild(d);
-  }
-
-  // ----- Modal Reporte -----
-  const modal=document.getElementById('modalBackdrop');
-  function openReportModal(t){
-    modal.style.display='flex';
-    modalTerritorio.innerHTML='<option value="">Seleccione...</option>';
-    for(let i=1;i<=32;i++){
-      const o=document.createElement('option');
-      o.value=i;
-      o.textContent='Territorio '+i;
-      modalTerritorio.appendChild(o);
-    }
-    if(t) modalTerritorio.value=t;
-
-    modalFecha.value=new Date().toISOString().split("T")[0];
-    modalConductor.value="";
-    modalNotas.value="";
-    renderManzanas();
-  }
-  function closeModal(){ modal.style.display='none'; }
-
-  modalTerritorio.onchange=renderManzanas;
-  function renderManzanas(){
-    const t=modalTerritorio.value;
-    manzanaPills.innerHTML="";
-    if(!t) return;
-    for(let i=1;i<=TERRITORIES[t];i++){
-      const b=document.createElement('button');
-      b.className='pill';
-      b.textContent="Manzana "+i;
-      b.onclick=()=>{document.querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));b.classList.add('selected');};
-      manzanaPills.appendChild(b);
-    }
-  }
-
-  // ----- Guardar reporte -----
-  function saveModalReport(){
-    const t=modalTerritorio.value;
-    const c=modalConductor.value.trim();
-    const f=modalFecha.value;
-    const p=document.querySelector('.pill.selected');
-    if(!t||!p||!c||!f){ alert("Complete todos los campos"); return; }
-
-    const rep={fecha:f, territorio:t, manzana:p.textContent.replace("Manzana ",""), conductor:c, notas:modalNotas.value};
-    const all=JSON.parse(localStorage.getItem(REPORTS_KEY)||"[]");
-    all.unshift(rep);
-    localStorage.setItem(REPORTS_KEY,JSON.stringify(all));
-
-    alert("Reporte guardado ✓");
-    closeModal();
-    loadReports();
-  }
-
-  // ----- Cargar reportes -----
-  function loadReports(){
-    const tb=document.getElementById('reportsTable');
-    const all=JSON.parse(localStorage.getItem(REPORTS_KEY)||"[]");
-    tb.innerHTML="";
-    if(!all.length){
-      tb.innerHTML=`<tr><td colspan="5" class="muted">No hay reportes aún</td></tr>`;
-      return;
-    }
-    all.forEach(r=>{
-      tb.innerHTML+=`<tr>
-        <td>${r.fecha}</td>
-        <td>Territorio ${r.territorio}</td>
-        <td>${r.manzana}</td>
-        <td>${r.conductor}</td>
-        <td>${r.notas||""}</td>
-      </tr>`;
-    });
-  }
-</script>
-
+        modoOscuro.onchange = () => {
+            document.body.classList.toggle("dark");
+        };
+    </script>
 </body>
 </html>
