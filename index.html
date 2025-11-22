@@ -3,67 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Departamento de Territorio</title>
 
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --verde-principal: #2e7031;
+            --verde-suave: #e9f4ea;
+            --texto-principal: #244c26;
+            --blanco: #ffffff;
+            --sombra: rgba(0, 0, 0, 0.15);
+            --radio: 28px;
+        }
+
         body {
             margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #eef6ef;
-            color: #2f6131;
+            font-family: "Inter", sans-serif;
+            background: var(--verde-suave);
+            color: var(--texto-principal);
+            -webkit-font-smoothing: antialiased;
         }
 
         header {
-            background: linear-gradient(135deg, #2f6131, #3d7a3e);
-            padding: 40px 10px;
+            background: linear-gradient(135deg, #2f6131, #3d7f40);
+            padding: 50px 15px;
             text-align: center;
-            color: white;
-            font-size: 32px;
-            font-weight: 600;
-            border-bottom-left-radius: 35px;
-            border-bottom-right-radius: 35px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            color: var(--blanco);
+            font-size: 34px;
+            font-weight: 700;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 4px 22px rgba(0,0,0,0.25);
+            letter-spacing: 0.6px;
         }
 
         .subtitulo {
-            margin-top: 10px;
-            font-size: 18px;
-            opacity: 0.9;
+            margin-top: 12px;
+            font-size: 17px;
+            opacity: 0.95;
+            font-weight: 300;
         }
 
         .container {
             width: 92%;
             margin: auto;
-            margin-top: 35px;
+            margin-top: 40px;
             display: grid;
-            gap: 25px;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 28px;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            padding-bottom: 40px;
         }
 
         .card {
-            background: white;
-            border-radius: 28px;
-            padding: 35px 20px;
+            background: var(--blanco);
+            border-radius: var(--radio);
+            padding: 32px 20px;
             text-align: center;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
-            color: #2f6131;
+            color: var(--texto-principal);
+            box-shadow: 0 10px 25px var(--sombra);
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-            transition: 0.30s ease;
+            transition: 0.25s ease;
             user-select: none;
+            outline: none;
+            border: 0;
         }
 
         .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.18);
-            background: #e4f1e4;
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 14px 30px rgba(0,0,0,0.25);
         }
 
-        .icono {
-            font-size: 44px;
-            margin-bottom: 15px;
-            display: block;
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            background: var(--verde-suave);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.08);
+        }
+
+        .icon-container img {
+            width: 46px;
+            height: 46px;
+        }
+
+        a {
+            text-decoration: none;
         }
 
         footer {
@@ -72,11 +105,7 @@
             color: #2f6131;
             padding: 20px;
             font-size: 16px;
-            opacity: 0.8;
-        }
-
-        a {
-            text-decoration: none;
+            opacity: 0.85;
         }
     </style>
 </head>
@@ -84,50 +113,62 @@
 <body>
 
     <header>
-        🌿 Departamento de Territorio
-        <div class="subtitulo">Herramientas simples, claras y útiles</div>
+        Departamento de Territorio
+        <div class="subtitulo">Aplicación clara, moderna y accesible</div>
     </header>
 
     <div class="container">
 
         <a href="territorios.html">
             <div class="card">
-                <span class="icono">📌</span>
+                <div class="icon-container">
+                    <img src="https://img.icons8.com/ios-filled/100/2e7031/marker.png">
+                </div>
                 Territorios
             </div>
         </a>
 
         <a href="reportes.html">
             <div class="card">
-                <span class="icono">📝</span>
+                <div class="icon-container">
+                    <img src="https://img.icons8.com/ios-filled/100/2e7031/task.png">
+                </div>
                 Reportes
             </div>
         </a>
 
         <a href="mapa.html">
             <div class="card">
-                <span class="icono">🗺️</span>
+                <div class="icon-container">
+                    <img src="https://img.icons8.com/ios-filled/100/2e7031/worldwide-location.png">
+                </div>
                 Mapa
             </div>
         </a>
 
         <a href="estadisticas.html">
             <div class="card">
-                <span class="icono">📊</span>
+                <div class="icon-container">
+                    <img src="https://img.icons8.com/ios-filled/100/2e7031/combo-chart.png">
+                </div>
                 Estadísticas
             </div>
         </a>
 
         <a href="anuncios.html">
             <div class="card">
-                <span class="icono">📢</span>
+                <div class="icon-container">
+                    <img src="https://img.icons8.com/ios-filled/100/2e7031/megaphone.png">
+                </div>
                 Tablero de Anuncios
             </div>
         </a>
 
         <a href="agregar-pdf.html">
             <div class="card">
-                <span class="icono">📄</span>
+                <div class="icon-container">
+                    <img src="https://img.icons8.com/ios-filled/100/2e7031/pdf.png">
+                </div>
                 Agregar PDF
             </div>
         </a>
@@ -135,7 +176,7 @@
     </div>
 
     <footer>
-        © 2025 — Departamento de Territorio • Diseño moderno y claro 💚
+        © 2025 — Diseño Premium para el Departamento de Territorio 💚
     </footer>
 
 </body>
