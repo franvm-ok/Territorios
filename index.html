@@ -3,289 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Departamento de Territorio</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Departamento de Territorio - Congregación Cuatro Plazas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
-        /* Variables para colores */
-        :root {
-            --dark-blue: #1c264a; /* Fondo principal */
-            --green: #4CAF50;
-            --blue: #2196F3;
-            --orange: #FF9800;
-            --purple: #9C27B0;
-            --gray: #607D8B;
-            --white: #ffffff;
-        }
-
-        /* Estilos Globales y de Fondo */
+        /* Estilos personalizados para el diseño tipo JW Library/accesibilidad */
         body {
-            font-family: sans-serif;
-            margin: 0;
-            background-color: var(--dark-blue);
-            color: var(--white);
-            /* Para simular la visualización en una tablet/pantalla */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh; /* Asegura que ocupe toda la altura */
-            padding: 20px;
+            background-color: #f8f9fa; /* Fondo claro */
+            font-family: Arial, sans-serif;
         }
-
-        .app-container {
-            width: 90%;
-            max-width: 900px; /* Tamaño máximo para simular la tablet */
-            padding: 20px;
-            /* Añadir un fondo para contrastar un poco más, simulando el borde del dispositivo */
-            background-color: #161e38; 
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-        }
-
-        /* 1. BARRA SUPERIOR (HEADER) */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .header-bg {
+            background-color: #0b5093; /* Azul profundo, similar al estilo JW */
+            color: white;
+            padding: 20px 0;
             margin-bottom: 20px;
         }
-
-        .top-left, .top-right {
-            display: flex;
-            align-items: center;
-        }
-
-        .search-box {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            padding: 5px 10px;
-            margin-right: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .search-box input {
-            background: none;
-            border: none;
-            color: var(--white);
-            margin-left: 5px;
-            outline: none;
-            width: 100px; /* Ajuste para el campo de búsqueda */
-        }
-
-        .settings {
-            margin-right: 20px;
-        }
-
-        .top-right i, .settings i {
-            font-size: 18px;
-            margin-right: 5px;
-        }
-
-        .top-bar i {
-            color: var(--white);
-        }
-
-        /* 2. TÍTULO PRINCIPAL */
-        h1 {
-            font-size: 28px;
-            font-weight: bold;
-            margin: 10px 0 30px;
-        }
-
-        /* 3. CUADRÍCULA DE BOTONES */
-        .buttons-grid {
-            display: grid;
-            /* Define 3 columnas de igual ancho */
-            grid-template-columns: repeat(3, 1fr);
-            /* Espacio entre las celdas */
-            gap: 15px;
-            margin-bottom: 50px; /* Espacio para el botón de AYUDA */
-        }
-
-        .grid-item {
-            /* Estilo base para todos los botones */
-            color: var(--white);
-            border: none;
-            border-radius: 10px;
+        .btn-xl {
             padding: 20px;
-            text-align: left;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            position: relative;
+            font-size: 1.5rem;
+            min-height: 120px; /* Asegura botones grandes para accesibilidad */
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: flex-start;
-            min-height: 120px; /* Altura base mínima */
-            line-height: 1.2;
-            transition: transform 0.2s;
-        }
-        
-        .grid-item:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-
-        /* Iconos dentro de los botones */
-        .grid-item i {
-            font-size: 30px;
-            margin-bottom: 10px;
-            opacity: 0.8;
-        }
-
-        /* Altura doble: Botón verde (Tablero) y Naranja (Reportes) */
-        .large-h {
-            grid-row: span 2;
-            min-height: 255px; /* Altura calculada para dos filas (120 + 15 + 120) */
-        }
-
-        /* Ancho doble: Botón Azul (Mapa) */
-        .large-w {
-            grid-column: span 2;
-            min-height: 120px;
-            /* Centrar ícono grande del mapa */
             justify-content: center;
             align-items: center;
-            font-size: 20px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: bold;
         }
-
-        .large-w i {
-            font-size: 60px;
-            margin-bottom: 20px;
+        .btn-custom-blue {
+            background-color: #0b5093; /* Azul primario */
+            border-color: #0b5093;
+            color: white;
         }
-
-        /* Íconos especiales para Tablero de Anuncios */
-        .green-bg i:first-child { /* thumbtack (chincheta) */
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 20px;
+        .btn-custom-blue:hover {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: white;
         }
-        .green-bg i:nth-child(2) { /* comments (burbuja de chat) */
-            margin-top: 30px; 
-            font-size: 60px;
+        .btn-custom-green {
+            background-color: #28a745; /* Verde para acción principal */
+            border-color: #28a745;
+            color: white;
         }
-
-        /* Colores de fondo */
-        .green-bg { background-color: var(--green); }
-        .blue-bg { background-color: var(--blue); }
-        .orange-bg { background-color: var(--orange); }
-        .purple-bg { background-color: var(--purple); }
-        .gray-bg { background-color: var(--gray); }
-
-        /* 4. BOTÓN DE AYUDA INFERIOR */
-        .help-container {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
+        .btn-custom-green:hover {
+            background-color: #218838;
+            border-color: #218838;
+            color: white;
         }
-
-        .help-button {
-            background: none;
-            border: none;
-            color: var(--white);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            padding: 10px;
+        .btn-custom-alert {
+            background-color: #dc3545; /* Rojo para alerta/reporte */
+            border-color: #dc3545;
+            color: white;
         }
-
-        .help-button i {
-            font-size: 35px;
-            color: var(--blue); /* Color destacado para el ícono de ayuda */
+        .btn-custom-alert:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+            color: white;
+        }
+        .btn-icon {
+            font-size: 2.5rem; /* Iconos muy grandes */
             margin-bottom: 5px;
         }
-
-        .help-button span {
-            font-size: 12px;
-            font-weight: bold;
+        
+        /* Estilo para el área de reportes recientes */
+        .recent-reports {
+            border-top: 2px solid #ccc;
+            padding-top: 15px;
+            margin-top: 20px;
         }
 
-        /* Responsividad básica para pantallas pequeñas */
-        @media (max-width: 600px) {
-            .buttons-grid {
-                grid-template-columns: 1fr 1fr; /* 2 columnas en móviles */
-            }
-            .large-h {
-                grid-row: span 1; /* Desactiva la altura doble en móviles */
-                min-height: 120px;
-            }
-            .large-w {
-                grid-column: span 2; /* Sigue siendo ancho completo */
-            }
+        /* Barra de búsqueda simplificada */
+        .search-container {
+            margin-bottom: 20px;
         }
+
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <header class="top-bar">
-            <div class="top-left">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar">
-                </div>
-                <div class="settings">
-                    <i class="fas fa-cog"></i>
-                    <span>AJUSTES</span>
-                </div>
-            </div>
-            <div class="top-right">
-                <i class="fas fa-user-circle"></i>
-                <span>LOGIN</span>
-            </div>
-        </header>
-
-        <h1>DEPARTAMENTO DE TERRITORIO</h1>
-
-        <div class="buttons-grid">
-            
-            <button class="grid-item green-bg large-h">
-                <i class="fas fa-thumbtack"></i>
-                <i class="fas fa-comments"></i>
-                <span>TABLERO DE ANUNCIOS</span>
-            </button>
-
-            <button class="grid-item blue-bg">
-                <i class="fas fa-pencil-alt"></i>
-                <span>REPORTAR TERRITORIO</span>
-            </button>
-
-            <button class="grid-item orange-bg large-h">
-                <i class="fas fa-chart-line"></i>
-                <span>REPORTES</span>
-            </button>
-
-            <button class="grid-item gray-bg">
-                <i class="fas fa-user-friends"></i>
-                <span>PALUDA</span>
-            </button>
-
-            <button class="grid-item blue-bg large-w">
-                <i class="fas fa-map-marked-alt"></i>
-                <span>MAPA</span>
-            </button>
-
-            <button class="grid-item purple-bg">
-                <i class="fas fa-calendar-alt"></i>
-                <span>SUGERENCIA DE PRÓXIMAS SALIDAS</span>
-            </button>
+    <header class="header-bg sticky-top">
+        <div class="container text-center">
+            <h1 class="display-5 mb-0">Departamento de Territorio</h1>
+            <p class="lead">Congregación Cuatro Plazas</p>
         </div>
-        
-    </div>
-    
-    <div class="help-container">
-        <button class="help-button">
-            <i class="fas fa-question-circle"></i>
-            <span>AYUDA</span>
-        </button>
-    </div>
+    </header>
 
+    <main class="container">
+        
+        <div class="search-container">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" placeholder="Buscar por dirección, calle o # Reporte" aria-label="Buscar territorio">
+                <button class="btn btn-outline-secondary" type="button" id="button-addon2" style="border-color: #ccc;">
+                    <i class="bi bi-mic-fill fs-4"></i> </button>
+            </div>
+        </div>
+
+        <div class="row row-cols-2 g-3">
+            
+            <div class="col">
+                <a href="#" class="btn btn-xl w-100 btn-custom-alert" onclick="alert('Funcionalidad de Reportar Territorio')">
+                    <i class="bi bi-exclamation-triangle-fill btn-icon"></i>
+                    <span>Reportar Ahora</span>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="#" class="btn btn-xl w-100 btn-custom-green" onclick="alert('Funcionalidad de Mapa Interactivo')">
+                    <i class="bi bi-pin-map-fill btn-icon"></i>
+                    <span>Ver Mapa Zonal</span>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="#" class="btn btn-xl w-100 btn-custom-blue" onclick="alert('Funcionalidad de Tablero de Anuncios')">
+                    <i class="bi bi-megaphone-fill btn-icon"></i>
+                    <span>Anuncios del Barrio</span>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="#" class="btn btn-xl w-100 btn-custom-blue" onclick="alert('Funcionalidad de Sugerencia de Rutas Seguras')">
+                    <i class="bi bi-person-walking btn-icon"></i>
+                    <span>Próximas Salidas</span>
+                </a>
+            </div>
+
+        </div> <hr class="mt-4 mb-4">
+
+        <h2 class="h4 mb-3 text-secondary">Últimos Reportes Cercanos</h2>
+        <div class="list-group">
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">22 OCT, 14:30 - Calle Falsa 123</h5>
+                    <small class="text-danger">En Revisión</small>
+                </div>
+                <p class="mb-1">Acoso/Molestia - Se reportó la presencia de un grupo sospechoso.</p>
+                <small>Ver detalles <i class="bi bi-chevron-right"></i></small>
+            </div>
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">21 OCT, 18:00 - Av. Siempre Viva 742</h5>
+                    <small class="text-success">Resuelto</small>
+                </div>
+                <p class="mb-1">Presencia - Reporte de actividad en el límite del territorio.</p>
+                <small>Ver detalles <i class="bi bi-chevron-right"></i></small>
+            </div>
+        </div>
+
+    </main>
+    
+    <nav class="navbar fixed-bottom navbar-light bg-light border-top">
+        <div class="container-fluid justify-content-around">
+            <a href="#" class="btn btn-link text-decoration-none text-secondary" onclick="alert('Funcionalidad de Cambio de Idioma')">
+                <i class="bi bi-translate fs-4"></i>
+                <br><small>Idioma</small>
+            </a>
+
+            <a href="#" class="btn btn-link text-decoration-none text-secondary" onclick="alert('Funcionalidad de Login/Perfil')">
+                <i class="bi bi-person-circle fs-4"></i>
+                <br><small>Perfil</small>
+            </a>
+            
+            <a href="#" class="btn btn-warning text-white" style="border-radius: 50%; width: 60px; height: 60px; line-height: 20px; font-weight: bold;" onclick="alert('Funcionalidad de Ayuda y WhatsApp')">
+                <i class="bi bi-question-lg fs-3"></i>
+            </a>
+
+            <a href="#" class="btn btn-link text-decoration-none text-secondary" onclick="alert('Funcionalidad de Configuración')">
+                <i class="bi bi-gear-fill fs-4"></i>
+                <br><small>Ajustes</small>
+            </a>
+
+            <a href="whatsapp://send?phone=NUMERO_DE_WHATSAPP_AQUI&text=Necesito%20ayuda%20con%20el%20reporte%20de%20territorio" class="btn btn-link text-decoration-none text-secondary" onclick="alert('Abriendo WhatsApp...')">
+                <i class="bi bi-whatsapp fs-4 text-success"></i>
+                <br><small>Soporte</small>
+            </a>
+        </div>
+    </nav>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
