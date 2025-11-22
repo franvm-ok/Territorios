@@ -1,124 +1,110 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Departamento de Territorio</title>
 
 <style>
-    /* ---------------------- RESET ---------------------- */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Segoe UI", sans-serif;
-    }
-
+    /* -------------------- COLORES ORIGINALES -------------------- */
     :root {
-        --color-bg: #f4f7f4;
-        --color-card: #ffffff;
-        --color-text: #1c1c1c;
-        --color-primary: #4CAF50;
-        --color-secondary: #3d8b40;
-        --color-border: #d8e6d8;
-        --shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        --verde-principal: #4CAF50;
+        --verde-oscuro: #388E3C;
+        --fondo-suave: #E8F5E9;
+        --texto: #1b1b1b;
+        --blanco: #ffffff;
+        --borde: #cfe6d0;
+        --sombra: 0 4px 10px rgba(0,0,0,0.15);
     }
 
     /* Tema oscuro automático */
     @media (prefers-color-scheme: dark) {
         :root {
-            --color-bg: #121212;
-            --color-card: #1e1e1e;
-            --color-text: #f4f4f4;
-            --color-primary: #76c76e;
-            --color-secondary: #5aaa56;
-            --color-border: #2f2f2f;
+            --fondo-suave: #121212;
+            --blanco: #1f1f1f;
+            --texto: #f1f1f1;
+            --borde: #2a2a2a;
         }
     }
 
     /* Tema oscuro manual */
     body.dark {
-        --color-bg: #121212 !important;
-        --color-card: #1e1e1e !important;
-        --color-text: #f4f4f4 !important;
-        --color-primary: #76c76e !important;
-        --color-secondary: #5aaa56 !important;
-        --color-border: #2f2f2f !important;
+        --fondo-suave: #121212 !important;
+        --blanco: #1f1f1f !important;
+        --texto: #f1f1f1 !important;
+        --borde: #2a2a2a !important;
     }
 
+    /* -------------------- ESTILOS GENERALES -------------------- */
     body {
-        background: var(--color-bg);
-        color: var(--color-text);
+        background: var(--fondo-suave);
+        color: var(--texto);
+        font-family: "Segoe UI", sans-serif;
         padding: 20px;
-        transition: background 0.4s, color 0.4s;
+        transition: 0.4s ease;
     }
 
-    /* Encabezado */
+    /* -------------------- ENCABEZADO -------------------- */
     header {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
-        margin-bottom: 30px;
+        gap: 15px;
+        margin-bottom: 20px;
     }
 
-    /* Título */
-    .titulo-principal {
-        font-size: 30px;
-        font-weight: bold;
-        text-align: center;
-        width: 100%;
-        margin-top: 5px;
-    }
-
-    .subtitulo {
-        text-align: center;
-        font-size: 18px;
-        margin-top: 5px;
-        opacity: 0.85;
-        font-style: italic;
-    }
-
-    /* Botón iniciar sesión */
-    .login-btn {
-        background: var(--color-card);
-        border-radius: 40px;
+    .top-btn {
+        background: var(--blanco);
+        color: var(--texto);
+        border: 1px solid var(--borde);
+        border-radius: 25px;
         padding: 8px 16px;
-        box-shadow: var(--shadow);
-        border: 1px solid var(--color-border);
-        cursor: pointer;
         font-size: 14px;
+        box-shadow: var(--sombra);
+        cursor: pointer;
         transition: 0.2s;
     }
-    .login-btn:hover {
-        transform: scale(1.05);
+    .top-btn:hover {
+        transform: scale(1.06);
     }
 
-    /* Interruptor modo oscuro */
-    .switch-container {
-        position: absolute;
-        right: 20px;
-        top: 20px;
+    /* Iconitos */
+    .icon-btn {
+        background: var(--blanco);
+        box-shadow: var(--sombra);
+        border-radius: 50%;
+        padding: 10px;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        border: 1px solid var(--borde);
+        transition: .2s;
     }
+    .icon-btn:hover {
+        transform: scale(1.12);
+    }
+
+    /* -------------------- MODO OSCURO PERILLA -------------------- */
     .switch {
         position: relative;
         width: 55px;
         height: 28px;
-        display: inline-block;
     }
-    .switch input {
-        display: none;
-    }
+    .switch input { display: none; }
     .slider {
         position: absolute;
-        cursor: pointer;
         inset: 0;
-        background: var(--color-border);
+        background-color: var(--borde);
         border-radius: 34px;
-        transition: 0.4s;
+        cursor: pointer;
+        transition: .4s;
     }
     .slider:before {
-        position: absolute;
         content: "";
+        position: absolute;
         height: 22px;
         width: 22px;
         left: 3px;
@@ -128,127 +114,176 @@
         transition: 0.4s;
     }
     input:checked + .slider {
-        background-color: var(--color-primary);
+        background-color: var(--verde-principal);
     }
     input:checked + .slider:before {
         transform: translateX(26px);
     }
 
-    /* Tarjetas */
+    /* -------------------- TITULOS -------------------- */
+    h1 {
+        text-align: center;
+        font-size: 34px;
+        font-weight: bold;
+    }
+    .subtitulo {
+        text-align: center;
+        font-size: 18px;
+        opacity: 0.9;
+        margin-bottom: 20px;
+        font-style: italic;
+    }
+
+    /* -------------------- BUSCADOR -------------------- */
+    .search-bar {
+        width: 100%;
+        max-width: 450px;
+        margin: 0 auto 25px auto;
+        display: flex;
+        justify-content: center;
+    }
+    .search-bar input {
+        width: 100%;
+        padding: 12px 18px;
+        border-radius: 30px;
+        border: 1px solid var(--borde);
+        font-size: 16px;
+        box-shadow: var(--sombra);
+        outline: none;
+    }
+
+    /* -------------------- TARJETAS -------------------- */
     .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 20px;
-        margin-top: 40px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 22px;
     }
 
     .card {
-        background: var(--color-card);
-        border-radius: 22px;
-        padding: 22px;
+        background: var(--blanco);
+        border-radius: 25px;
+        padding: 25px 15px;
         text-align: center;
+        box-shadow: var(--sombra);
+        border: 1px solid var(--borde);
         font-size: 18px;
         cursor: pointer;
-        border: 1px solid var(--color-border);
-        box-shadow: var(--shadow);
-        transition: transform 0.2s ease, background 0.3s;
+        transition: transform 0.2s;
         user-select: none;
     }
-
     .card:hover {
         transform: translateY(-4px);
     }
-
     .card:active {
-        transform: scale(0.97);
+        transform: scale(0.95);
     }
 
-    .card-emoji {
-        font-size: 40px;
+    .emoji {
+        font-size: 42px;
         margin-bottom: 8px;
     }
 
-    /* Botón ayuda */
-    .help-btn {
-        margin-top: 40px;
-        background: var(--color-primary);
+    /* -------------------- AYUDA -------------------- */
+    .help {
+        margin-top: 35px;
+        text-align: center;
+    }
+    .help button {
+        background: var(--verde-principal);
         color: white;
         padding: 14px 22px;
-        border-radius: 25px;
         font-size: 18px;
+        border-radius: 25px;
         cursor: pointer;
-        text-align: center;
-        width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
-        transition: transform 0.2s;
-        box-shadow: var(--shadow);
+        border: none;
+        box-shadow: var(--sombra);
+        transition: .2s;
     }
-
-    .help-btn:hover {
-        transform: scale(1.05);
+    .help button:hover {
+        transform: scale(1.07);
     }
 </style>
-
 </head>
+
 <body>
 
-<!-- Interruptor modo oscuro -->
-<div class="switch-container">
+<header>
+
+    <!-- Selector idioma -->
+    <div class="icon-btn" title="Idioma">
+        🌐
+    </div>
+
+    <!-- Configuración -->
+    <div class="icon-btn" title="Ajustes">
+        ⚙️
+    </div>
+
+    <!-- Iniciar sesión -->
+    <button class="top-btn">Iniciar sesión</button>
+
+    <!-- Modo oscuro -->
     <label class="switch">
-        <input type="checkbox" id="themeToggle" />
+        <input type="checkbox" id="themeToggle">
         <span class="slider"></span>
     </label>
-</div>
 
-<header>
-    <button class="login-btn">Iniciar sesión</button>
 </header>
 
-<h1 class="titulo-principal">Departamento de Territorio</h1>
+<h1>Departamento de Territorio</h1>
 <p class="subtitulo">Congregación Cuatro Plazas</p>
 
+<!-- Barra de búsqueda -->
+<div class="search-bar">
+    <input type="text" placeholder="Buscar…">
+</div>
+
+<!-- TARJETAS -->
 <div class="grid">
+
     <div class="card">
-        <div class="card-emoji">🗺️</div>
+        <div class="emoji">🗺️</div>
         Reportar territorio
     </div>
 
     <div class="card">
-        <div class="card-emoji">📢</div>
+        <div class="emoji">📢</div>
         Tablero de anuncios
     </div>
 
     <div class="card">
-        <div class="card-emoji">🗺</div>
+        <div class="emoji">🗺</div>
         Mapa
     </div>
 
     <div class="card">
-        <div class="card-emoji">📋</div>
+        <div class="emoji">📋</div>
         Reportes
     </div>
 
     <div class="card">
-        <div class="card-emoji">📊</div>
+        <div class="emoji">📊</div>
         Estadísticas
     </div>
+
 </div>
 
-<div class="help-btn">¿Necesitás ayuda?</div>
+<!-- AYUDA -->
+<div class="help">
+    <button>¿Necesitás ayuda?</button>
+</div>
 
 <script>
-    // Interruptor modo oscuro manual
-    const themeToggle = document.getElementById("themeToggle");
+    /* -------------------- Modo oscuro manual -------------------- */
+    const toggle = document.getElementById("themeToggle");
 
-    // Si el usuario ya eligió un tema, respetarlo
     if (localStorage.getItem("theme") === "dark") {
         document.body.classList.add("dark");
-        themeToggle.checked = true;
+        toggle.checked = true;
     }
 
-    themeToggle.addEventListener("change", () => {
-        if (themeToggle.checked) {
+    toggle.addEventListener("change", () => {
+        if (toggle.checked) {
             document.body.classList.add("dark");
             localStorage.setItem("theme", "dark");
         } else {
@@ -256,6 +291,7 @@
             localStorage.setItem("theme", "light");
         }
     });
+
 </script>
 
 </body>
