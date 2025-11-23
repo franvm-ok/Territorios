@@ -14,13 +14,15 @@
         color: #333;
     }
 
+    /* ENCABEZADO AL ESTILO DEL INDEX */
     header {
-        text-align: center;
-        padding: 20px;
         background: #4D6AA6;
         color: white;
-        font-size: 1.6rem;
+        text-align: center;
+        padding: 22px;
+        font-size: 1.7rem;
         font-weight: 600;
+        letter-spacing: 0.5px;
     }
 
     .container {
@@ -29,55 +31,61 @@
         margin: auto;
     }
 
-    /* TARJETAS DE REPORTES */
+    /* TARJETAS DE REPORTES (MISMO ESTILO DE TARJETAS DEL INDEX) */
     .reporte-card {
         background: white;
+        border-radius: 18px;
         padding: 18px;
-        border-radius: 16px;
-        margin-bottom: 15px;
+        margin-bottom: 18px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        transition: 0.15s;
+    }
+
+    .reporte-card:hover {
+        transform: scale(1.01);
     }
 
     .reporte-header {
-        font-size: 1.3rem;
-        font-weight: 700;
+        font-size: 1.35rem;
         color: #4D6AA6;
-        margin-bottom: 6px;
+        font-weight: 700;
+        margin-bottom: 10px;
     }
 
     .reporte-body {
-        font-size: 1.1rem;
-        line-height: 1.5;
+        font-size: 1.15rem;
+        line-height: 1.55;
     }
 
     .no-reportes {
         text-align: center;
-        color: #777;
-        margin-top: 30px;
-        font-size: 1.2rem;
+        margin-top: 40px;
+        color: #666;
+        font-size: 1.25rem;
     }
 
-    /* BOTÓN VOLVER ABAJO A LA IZQUIERDA */
+    /* BOTÓN VOLVER FLOTANTE (MISMO PARA TODAS LAS PANTALLAS) */
     .btn-volver-float {
         position: fixed;
         bottom: 20px;
         left: 20px;
         background: #4D6AA6;
-        color: white;
-        width: 48px;
-        height: 48px;
+        color: #fff;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         text-decoration: none;
-        border: none;
         box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-        z-index: 999;
+        transition: 0.2s;
     }
+
     .btn-volver-float:hover {
         background: #3B578F;
+        transform: scale(1.07);
     }
 </style>
 </head>
@@ -88,7 +96,7 @@
 
 <div class="container" id="reportesList"></div>
 
-<!-- BOTÓN VOLVER -->
+<!-- BOTÓN VOLVER AL MENÚ PRINCIPAL -->
 <a href="index.html" class="btn-volver-float">⮌</a>
 
 <script>
@@ -97,22 +105,28 @@
         const contenedor = document.getElementById("reportesList");
 
         if (reportes.length === 0) {
-            contenedor.innerHTML = `<p class="no-reportes">No hay reportes cargados aún.</p>`;
+            contenedor.innerHTML = `
+                <p class="no-reportes">No hay reportes cargados aún.</p>
+            `;
             return;
         }
 
-        reportes.reverse(); // Mostrar primero los más recientes
+        reportes.reverse();
 
         reportes.forEach(r => {
             const card = document.createElement("div");
             card.className = "reporte-card";
+
             card.innerHTML = `
-                <div class="reporte-header">📅 ${r.fecha} — 🧑 ${r.nombre}</div>
+                <div class="reporte-header">
+                    📅 ${r.fecha} — 👤 ${r.nombre}
+                </div>
                 <div class="reporte-body">
                     <strong>Observaciones:</strong><br>
                     ${r.observaciones ? r.observaciones : "<em>Sin observaciones</em>"}
                 </div>
             `;
+
             contenedor.appendChild(card);
         });
     }
