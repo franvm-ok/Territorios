@@ -5,42 +5,97 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Iniciar Sesión</title>
 <style>
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f4f4f4; display:flex; justify-content:center; align-items:center; height:100vh; }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
 .login-container {
-    background:white;
-    border-radius:15px;
-    padding:30px;
-    width:90%;
-    max-width:350px;
-    box-shadow:0 4px 15px rgba(0,0,0,0.15);
-    text-align:center;
+    background: white;
+    padding: 30px 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
 }
-h1 { color:#1a4b27; margin-bottom:20px; }
-input { width:100%; padding:12px; margin-bottom:15px; border-radius:15px; border:1px solid #ccc; font-size:16px; box-sizing:border-box; }
+
+.login-container h1 {
+    color: #1a4b27;
+    margin-bottom: 25px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
 .btn {
-    padding:14px 18px;
-    border-radius:15px;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-    border:none;
-    background:#2d6a4f;
-    color:white;
-    width:100%;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-    transition:0.2s;
+    padding: 14px 18px;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: 0.2s;
+    width: 100%;
+    margin-bottom: 10px;
 }
-.btn:hover { background:#1f4d37; }
+
+.btn.login {
+    background: #2d6a4f;
+    color: white;
+}
+
+.btn.login:hover {
+    background: #1f4d37;
+}
+
+.btn.volver {
+    background: white;
+    color: #1a4b27;
+}
+
+.btn.volver:hover {
+    background: #e8e8e8;
+}
+
 </style>
 </head>
 <body>
 
 <div class="login-container">
     <h1>Iniciar Sesión</h1>
-    <input type="text" placeholder="Usuario">
-    <input type="password" placeholder="Contraseña">
-    <button class="btn">Entrar</button>
+    <input type="text" id="usuario" placeholder="Usuario">
+    <input type="password" id="contrasena" placeholder="Contraseña">
+    <button class="btn login" onclick="iniciarSesion()">✅ Entrar</button>
+    <button class="btn volver" onclick="location.href='index.html'">⬅️ Volver</button>
 </div>
+
+<script>
+function iniciarSesion(){
+    const usuario=document.getElementById("usuario").value.trim();
+    const contrasena=document.getElementById("contrasena").value.trim();
+    if(!usuario || !contrasena){
+        alert("Ingrese usuario y contraseña.");
+        return;
+    }
+    // Aquí puedes agregar validación real o simulada
+    alert("Sesión iniciada correctamente.");
+    location.href="index.html"; // Redirige al menú principal
+}
+</script>
 
 </body>
 </html>
