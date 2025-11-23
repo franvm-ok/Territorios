@@ -4,281 +4,112 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informar Territorio</title>
-
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-    padding: 20px;
-}
-
-/* Título */
-h1 {
-    text-align: center;
-    color: #1a4b27;
-    margin-bottom: 20px;
-}
-
-/* Tarjetas de territorios */
-.territorios {
-    display: grid;
-    grid-template-columns: repeat(auto-fill,minmax(130px,1fr));
-    gap: 15px;
-}
-
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    text-align: center;
-    font-size: 20px;
-    cursor: pointer;
-    color: #1a4b27;
-    font-weight: bold;
-}
-
-.card:active {
-    background: #e5ffe5;
-}
-
-/* Pantalla de manzanas */
-.oculto {
-    display: none;
-}
-
-.manzanas-lista {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(95px,1fr));
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.manzana {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: white;
-    padding: 10px;
-    border-radius: 12px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    font-size: 18px;
-}
-
-/* Inputs */
-input, textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 12px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    font-size: 16px;
-}
-
-/* Botones */
-.btn-volver, .btn-enviar {
-    position: fixed;
-    bottom: 20px;
-    padding: 14px 18px;
-    border-radius: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-
-.btn-volver {
-    left: 20px;
-    background: white;
-    color: #1a4b27;
-}
-
-.btn-enviar {
-    right: 20px;
-    background: #2d6a4f;
-    color: white;
-}
-
+body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
+h1{color:#1a4b27;text-align:center;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.card{background:white;padding:18px;border-radius:15px;text-align:center;font-size:18px;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.1);cursor:pointer;transition:.2s}
+.card:hover{transform:scale(1.05)}
+.manzanas{display:none;margin-top:20px}
+.manzana{background:white;padding:12px;margin-bottom:10px;border-radius:10px;border:1px solid #ddd;cursor:pointer;font-weight:bold;font-size:17px}
+.checked{background:#d8f3dc;border-color:#2d6a4f;color:#2d6a4f}
+input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box;font-size:16px}
+textarea{resize:vertical;min-height:60px}
+.btn{padding:14px 18px;border-radius:15px;font-size:18px;font-weight:bold;cursor:pointer;border:none;box-shadow:0 4px 10px rgba(0,0,0,0.08);transition:.15s}
+.enviar{background:#2d6a4f;color:white;float:right;margin-left:5px}
+.enviar:hover{background:#1f4d37}
+.volver{background:white;color:#1a4b27;float:left;margin-right:5px}
+.volver:hover{background:#e8e8e8}
+.clearfix::after{content:"";display:table;clear:both}
 </style>
 </head>
 <body>
 
 <h1>Informar Territorio</h1>
 
-<!-- PANTALLA 1 – LISTA DE TERRITORIOS -->
-<div id="pantalla-territorios">
-    <div class="territorios" id="listaTerritorios"></div>
+<div id="territoriosGrid" class="grid"></div>
+
+<div id="manzanasSection" class="manzanas"></div>
+
+<div id="formSection" class="manzanas">
+    <input type="text" id="nombreHermano" placeholder="Nombre del hermano">
+    <textarea id="observaciones" placeholder="Observaciones..."></textarea>
+    <div class="clearfix">
+        <button class="btn volver" onclick="volverTerritorios()">⬅️ Volver</button>
+        <button class="btn enviar" onclick="guardarReporte()">✅ Enviar Informe</button>
+    </div>
 </div>
-
-<!-- PANTALLA 2 – MANZANAS -->
-<div id="pantalla-manzanas" class="oculto">
-    <h2 id="tituloManzanas" style="text-align:center;color:#1a4b27;"></h2>
-
-    <div class="manzanas-lista" id="contenedorManzanas"></div>
-
-    <input type="text" id="nombreConductor" placeholder="Nombre del conductor">
-
-    <textarea id="observaciones" rows="3" placeholder="Observaciones (opcional)"></textarea>
-
-    <button class="btn-volver" onclick="volverATerritorios()">⬅️ Volver</button>
-    <button class="btn-enviar" onclick="enviarReporte()">📤 Enviar</button>
-</div>
-
-
 
 <script>
-/* =============================
-   DATOS DE MANZANAS POR TERRITORIO
-   ============================= */
+const territorios = Array.from({length:32},(_,i)=>({
+    numero:i+1,
+    manzanas:["A","B","C","D","E"]
+}));
 
-const MANZANAS = {
-1:["A","B","C","D"],
-2:["A","B","C","D","E"],
-3:["A","B","C"],
-4:["A","B","C","D"],
-5:["A","B","C","D","E"],
-6:["A","B","C","D","E"],
-7:["A","B","C"],
-8:["A","B","C","D"],
-9:["A","B","C","D","E"],
-10:["A","B","C","D","E"],
-11:["A","B","C"],
-12:["A","B","C","D"],
-13:["A","B","C"],
-14:["A","B","C","D","E"],
-15:["A","B","C"],
-16:["A","B","C","D"],
-17:["A","B","C"],
-18:["A","B","C","D"],
-19:["A","B","C"],
-20:["A","B","C","D","E"],
-21:["A","B","C"],
-22:["A","B","C"],
-23:["A","B","C"],
-24:["A","B","C","D"],
-25:["A","B","C"],
-26:["A","B","C"],
-27:["A","B","C"],
-28:["A","B","C"],
-29:["A","B","C","D"],
-30:["A","B","C"],
-31:["A","B","C"],
-32:["A","B","C","D"]
-};
+const grid=document.getElementById("territoriosGrid");
+const manzanasSection=document.getElementById("manzanasSection");
+const formSection=document.getElementById("formSection");
+let territorioSeleccionado=null;
 
-/* =========================================
-   CREAR LAS TARJETAS DE TERRITORIOS
-   ========================================= */
-
-const lista = document.getElementById("listaTerritorios");
-
-for(let i=1;i<=32;i++){
-    const card = document.createElement("div");
-    card.className = "card";
-    card.textContent = "Territorio " + i;
-    card.onclick = ()=> abrirTerritorio(i);
-    lista.appendChild(card);
+function renderTarjetas(filtro=""){
+    grid.innerHTML="";
+    territorios.filter(t=>t.numero.toString().includes(filtro)).forEach(t=>{
+        const card=document.createElement("div");
+        card.className="card";
+        card.textContent=`Territorio ${t.numero}`;
+        card.onclick=()=>abrirTerritorio(t);
+        grid.appendChild(card);
+    });
 }
+renderTarjetas();
 
-let territorioActual = null;
+function abrirTerritorio(t){
+    territorioSeleccionado=t;
+    grid.style.display="grid";
+    manzanasSection.style.display="block";
+    formSection.style.display="block";
 
-/* =========================================
-   ABRIR TERRITORIO
-   ========================================= */
-
-function abrirTerritorio(num){
-    territorioActual = num;
-    document.getElementById("pantalla-territorios").classList.add("oculto");
-    document.getElementById("pantalla-manzanas").classList.remove("oculto");
-
-    document.getElementById("tituloManzanas").innerText =
-        "Territorio " + num + " – Manzanas";
-
-    const cont = document.getElementById("contenedorManzanas");
-    cont.innerHTML = "";
-
-    MANZANAS[num].forEach(m=>{
-        const div = document.createElement("div");
+    manzanasSection.innerHTML=`<h2>Territorio ${t.numero}</h2>`;
+    t.manzanas.forEach(m=>{
+        const div=document.createElement("div");
         div.className="manzana";
-
-        div.innerHTML = `
-            <input type="checkbox" id="m_${m}">
-            <label for="m_${m}">Manzana ${m}</label>
-        `;
-
-        cont.appendChild(div);
+        div.textContent=`Manzana ${m}`;
+        div.onclick=()=>div.classList.toggle("checked");
+        manzanasSection.appendChild(div);
     });
+    window.scrollTo({top:0,behavior:'smooth'});
 }
 
-
-/* =========================================
-   VOLVER
-   ========================================= */
-function volverATerritorios(){
-    document.getElementById("pantalla-manzanas").classList.add("oculto");
-    document.getElementById("pantalla-territorios").classList.remove("oculto");
+function volverTerritorios(){
+    manzanasSection.style.display="none";
+    formSection.style.display="none";
+    renderTarjetas();
 }
 
+function guardarReporte(){
+    const nombre=document.getElementById("nombreHermano").value.trim();
+    const observaciones=document.getElementById("observaciones").value.trim();
+    if(!nombre){alert("Por favor ingrese su nombre.");return;}
 
-/* =========================================
-   ENVIAR REPORTE
-   ========================================= */
-
-function enviarReporte(){
-
-    const nombre = document.getElementById("nombreConductor").value.trim();
-    const obs = document.getElementById("observaciones").value.trim();
-
-    if(nombre===""){
-        alert("Ingrese el nombre del conductor.");
-        return;
-    }
-
-    const hechas = [];
-    const pendientes = [];
-
-    MANZANAS[territorioActual].forEach(m=>{
-        const chk = document.getElementById("m_"+m).checked;
-        if(chk) hechas.push(m);
-        else pendientes.push(m);
+    const manzanasDivs=manzanasSection.querySelectorAll(".manzana");
+    const hechas=[],pendientes=[];
+    manzanasDivs.forEach(div=>{
+        const letra=div.textContent.replace("Manzana ","");
+        if(div.classList.contains("checked")) hechas.push(letra);
+        else pendientes.push(letra);
     });
 
-    const fecha = new Date().toLocaleDateString();
+    const fecha=new Date().toLocaleDateString();
+    const reporte={fecha,nombre,territorio:territorioSeleccionado.numero,hechas,pendientes,observaciones};
+    const reportesGuardados=JSON.parse(localStorage.getItem("reportes")||"[]");
+    reportesGuardados.push(reporte);
+    localStorage.setItem("reportes",JSON.stringify(reportesGuardados));
 
-    // GUARDAR EN REPORTES
-    let reportes = JSON.parse(localStorage.getItem("reportes") || "[]");
-
-    reportes.push({
-        fecha,
-        territorio: territorioActual,
-        hechas,
-        pendientes,
-        nombre,
-        observaciones: obs
-    });
-
-    localStorage.setItem("reportes", JSON.stringify(reportes));
-
-    // GUARDAR PENDIENTES EN PRÓXIMAS SALIDAS
-    let proximas = JSON.parse(localStorage.getItem("proximas") || "[]");
-
-    if(pendientes.length > 0){
-        proximas.push({
-            territorio: territorioActual,
-            pendientes,
-            conductor: nombre
-        });
-
-        localStorage.setItem("proximas", JSON.stringify(proximas));
-    }
-
-    alert("Reporte enviado correctamente.");
-    location.href="index.html";
+    alert("✅ Informe guardado correctamente.");
+    volverTerritorios();
+    document.getElementById("nombreHermano").value="";
+    document.getElementById("observaciones").value="";
 }
 </script>
-
 </body>
 </html>
