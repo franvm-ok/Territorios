@@ -10,7 +10,7 @@ h1{color:#1a4b27;text-align:center;margin-bottom:20px}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
 .card{background:white;padding:18px;border-radius:15px;text-align:center;font-size:18px;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.1);cursor:pointer;transition:.2s}
 .card:hover{transform:scale(1.05)}
-.manzanas{display:none;margin-top:20px}
+.manzanas-section{display:none;margin-top:20px}
 .manzana{background:white;padding:12px;margin-bottom:10px;border-radius:10px;border:1px solid #ddd;cursor:pointer;font-weight:bold;font-size:17px}
 .checked{background:#d8f3dc;border-color:#2d6a4f;color:#2d6a4f}
 input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box;font-size:16px}
@@ -29,9 +29,9 @@ textarea{resize:vertical;min-height:60px}
 
 <div id="territoriosGrid" class="grid"></div>
 
-<div id="manzanasSection" class="manzanas"></div>
+<div id="manzanasSection" class="manzanas-section"></div>
 
-<div id="formSection" class="manzanas">
+<div id="formSection" class="manzanas-section">
     <input type="text" id="nombreHermano" placeholder="Nombre del hermano">
     <textarea id="observaciones" placeholder="Observaciones..."></textarea>
     <div class="clearfix">
@@ -65,7 +65,7 @@ renderTarjetas();
 
 function abrirTerritorio(t){
     territorioSeleccionado=t;
-    grid.style.display="grid";
+    grid.style.display="none"; // ocultar grilla de territorios
     manzanasSection.style.display="block";
     formSection.style.display="block";
 
@@ -77,12 +77,14 @@ function abrirTerritorio(t){
         div.onclick=()=>div.classList.toggle("checked");
         manzanasSection.appendChild(div);
     });
+
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function volverTerritorios(){
     manzanasSection.style.display="none";
     formSection.style.display="none";
+    grid.style.display="grid";
     renderTarjetas();
 }
 
