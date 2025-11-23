@@ -1,200 +1,188 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Territorio</title>
+<title>Departamento de Territorio</title>
 <script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-
-body {
-    font-family: 'Inter', sans-serif;
-    transition: background-color 0.3s, color 0.3s;
-    margin:0; padding:0;
+/* Animaciones de pantallas internas */
+.pantalla {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.pantalla.oculta {
+    opacity: 0;
+    transform: translateX(20px);
+    pointer-events: none;
 }
 
-/* Tarjetas */
-.card { 
-    transition: transform .2s; cursor:pointer; border-radius:1rem; 
-    padding:1rem; display:flex; flex-direction:column; justify-content:space-between; height:160px; 
+/* Animación del botón + */
+@keyframes floatButton {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+    100% { transform: translateY(0); }
 }
-.card:hover { transform:scale(1.03); }
-
-/* Pantallas internas */
-.screen { position:absolute; top:0; left:100%; width:100%; height:calc(100vh - 120px); overflow-y:auto; background-color:inherit; transition:left 0.3s ease; padding:1rem; z-index:5; }
-.screen.active { left:0; }
-
-/* Dark mode */
-.dark { background-color:#111827; color:white; }
-.dark header, .dark .pc-sidebar, .dark .mobile-bottom-nav { background-color:#1f2937; color:white; border-color:#374151; }
-
-/* Botón flotante + */
-.fab-plus { background-image: linear-gradient(to right bottom, #34d399, #10b981); transition: transform 0.2s; }
-
-/* Efecto presionado + */
-.fab-plus:active { transform: scale(0.9); }
-
-/* Barra inferior móvil */
-.mobile-bottom-nav { 
-    display:flex; justify-around; align-items:center; background:white; border-top:1px solid #e5e7eb; padding:.5rem 0; 
-    position:fixed; bottom:0; width:100%; z-index:20; 
-}
-.mobile-bottom-nav button { 
-    display:flex; flex-direction:column; align-items:center; justify-center; font-size:.75rem; color:#9ca3af; flex:1; padding:.25rem 0; transition:color 0.2s; 
-}
-.mobile-bottom-nav button.active { color:#10b981; }
-.mobile-bottom-nav #fabBtn { 
-    width:60px; height:60px; border-radius:50%; background-image:linear-gradient(to right bottom,#34d399,#10b981); 
-    display:flex; align-items:center; justify-content:center; margin-top:-25px; color:white; font-size:1.5rem; flex:none; 
+.floating {
+    animation: floatButton 2s infinite ease-in-out;
 }
 
-/* Sidebar PC */
+/* Sidebar para PC */
 @media (min-width: 1024px) {
-    .mobile-bottom-nav { display:none; }
-    .pc-sidebar { display:flex; flex-direction:column; justify-start; align-items:center; background:white; width:100px; height:100vh; border-right:1px solid #e5e7eb; position:fixed; left:0; top:0; padding-top:1rem; z-index:10; }
-    .pc-sidebar button { display:flex; flex-direction:column; align-items:center; font-size:.75rem; margin-bottom:1.5rem; color:#9ca3af; }
-    .pc-sidebar button.active { color:#10b981; }
-    main { margin-left:100px; }
+    .pc-sidebar {
+        display: flex !important;
+    }
+    .mobile-bottom-bar {
+        display: none !important;
+    }
 }
 </style>
 </head>
-<body class="bg-gray-100 text-gray-800 relative">
 
-<!-- Sidebar PC -->
-<div class="hidden lg:flex pc-sidebar">
-    <button class="active">Inicio</button>
-    <button>Noticias</button>
-    <button id="pcFabBtn">+</button>
-    <button>Ayuda</button>
-    <button>Perfil</button>
-</div>
+<body class="h-full bg-gray-100 text-gray-800 transition-all duration-300" id="body">
 
-<div class="flex flex-col min-h-screen relative lg:ml-24">
+<!-- ====================== SIDEBAR PC ====================== -->
+<aside class="pc-sidebar hidden lg:flex flex-col w-64 h-full fixed left-0 top-0 bg-white border-r shadow-md p-6 z-50">
+    <h1 class="text-xl font-bold text-center mb-2">Departamento de Territorio</h1>
+    <p class="text-center text-gray-600 mb-6">Congregación Cuatro Plazas</p>
 
-<!-- Header -->
-<header class="bg-white/95 backdrop-blur-sm p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center relative z-10">
-    <div class="flex flex-col items-center text-center">
-        <div class="font-bold text-xl text-teal-600">Departamento de Territorio</div>
-        <div class="text-sm text-gray-600">Congregación Cuatro Plazas</div>
+    <nav class="flex flex-col space-y-3">
+        <button onclick="openScreen('inicio')" class="py-2 px-4 bg-teal-100 rounded-lg font-semibold">Inicio</button>
+        <button onclick="openScreen('noticias')" class="py-2 px-4 bg-teal-100 rounded-lg font-semibold">Noticias</button>
+        <button onclick="openScreen('nuevo')" class="py-2 px-4 bg-teal-200 rounded-lg font-semibold">Nuevo reporte</button>
+        <button onclick="openScreen('ayuda')" class="py-2 px-4 bg-teal-100 rounded-lg font-semibold">Ayuda</button>
+        <button onclick="openScreen('perfil')" class="py-2 px-4 bg-teal-100 rounded-lg font-semibold">Perfil</button>
+    </nav>
+</aside>
+
+<!-- ====================== CONTENIDO DERECHO ====================== -->
+<div class="lg:ml-64 p-4 pb-24" id="contenido">
+
+<!-- ============ HEADER ============ -->
+<header class="flex justify-between items-center mb-4">
+    <div class="text-center flex-1">
+        <h1 class="text-xl font-bold">Departamento de Territorio</h1>
+        <p class="text-sm text-gray-600">Congregación Cuatro Plazas</p>
     </div>
-    <div class="flex items-center space-x-2 mt-2 sm:mt-0">
-        <div class="flex items-center bg-gray-200 rounded-full px-3 py-1 w-48 sm:w-64">
-            <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-            <input type="text" placeholder="Buscar..." class="bg-transparent outline-none w-full text-sm">
-        </div>
-        <button id="loginBtn" class="bg-teal-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-teal-600 text-sm flex items-center">Iniciar Sesión</button>
-        <div class="relative">
-            <button id="settingsBtn" class="p-2 rounded-full hover:bg-gray-200 transition">
-                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.82 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.82 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.82-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.82-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-            </button>
-            <div id="settingsMenu" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2">
-                <label class="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-gray-100">
-                    <span>Modo Oscuro</span>
-                    <input type="checkbox" id="darkModeToggle" class="form-checkbox h-5 w-5 text-teal-500">
-                </label>
-            </div>
-        </div>
+
+    <div class="flex items-center space-x-3">
+        <button id="modo-btn" onclick="toggleDarkMode()" class="text-2xl">⚙️</button>
+        <button class="text-sm font-semibold">Iniciar sesión</button>
     </div>
 </header>
 
-<!-- Main -->
-<main class="flex-grow relative z-0 p-4">
-    <div id="homeScreen" class="screen active grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 relative">
+<!-- BÚSQUEDA -->
+<div class="mb-4">
+    <div class="flex items-center bg-white p-2 rounded-xl shadow">
+        <span class="text-gray-400 pr-2 text-xl">🔍</span>
+        <input type="text" placeholder="Buscar…" class="w-full outline-none">
+    </div>
+</div>
 
-        <!-- Tarjetas -->
-        <div class="card bg-teal-500 text-white" data-target="mapa">
-            <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center mb-2">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-            </div>
-            <div class="font-bold text-lg">Mapa Interactivo</div>
+<!-- ============ PANTALLA: INICIO ============ -->
+<div id="inicio" class="pantalla">
+
+    <div class="grid grid-cols-2 gap-4">
+
+        <!-- TABLERO DE ANUNCIOS -->
+        <div onclick="openScreen('tablero')" class="p-4 bg-white shadow rounded-xl text-center active:scale-95">
+            <div class="text-4xl mb-2">📣</div>
+            <p class="font-semibold">Tablero de Anuncios</p>
         </div>
 
-        <div class="card bg-orange-500 text-white" data-target="nuevoReporte">
-            <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center mb-2">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-            </div>
-            <div class="font-bold text-lg">Nuevo Reporte</div>
+        <!-- REPORTES -->
+        <div onclick="openScreen('reportes')" class="p-4 bg-white shadow rounded-xl text-center active:scale-95">
+            <div class="text-4xl mb-2">📓</div>
+            <p class="font-semibold">Reportes</p>
         </div>
 
-        <div class="card bg-white text-gray-800" data-target="tablero">
-            <div class="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center mb-2">
-                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-            </div>
-            <div class="font-bold text-lg">Tablero de Anuncios</div>
+        <!-- SUGERENCIA SALIDAS -->
+        <div onclick="openScreen('salidas')" class="p-4 bg-white shadow rounded-xl text-center active:scale-95">
+            <div class="text-4xl mb-2">📅</div>
+            <p class="font-semibold">Sugerencia de Próximas Salidas</p>
         </div>
 
-        <div class="card bg-white text-gray-800" data-target="reportes">
-            <div class="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center mb-2">
-                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 20h9M12 4h9M5 4h.01M5 8h.01M5 12h.01M5 16h.01"></path>
-                </svg>
-            </div>
-            <div class="font-bold text-lg">Reportes</div>
-        </div>
-
-        <div class="card bg-white text-gray-800" data-target="sugerencias">
-            <div class="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center mb-2">
-                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 11v10a2 2 0 002 2h10a2 2 0 002-2V11"></path>
-                </svg>
-            </div>
-            <div class="font-bold text-lg">Sugerencia de Próximas Salidas</div>
+        <!-- NUEVO REPORTE -->
+        <div onclick="openScreen('nuevo')" class="p-4 bg-white shadow rounded-xl text-center active:scale-95">
+            <div class="text-4xl mb-2">➕</div>
+            <p class="font-semibold">Nuevo Reporte</p>
         </div>
 
     </div>
-</main>
-
-<!-- Bottom nav móvil -->
-<div class="mobile-bottom-nav lg:hidden">
-    <button class="active">Inicio</button>
-    <button>Noticias</button>
-    <button id="fabBtn" class="fab-plus">+</button>
-    <button>Ayuda</button>
-    <button>Perfil</button>
 </div>
 
+<!-- ============ OTRAS PANTALLAS (OCULTAS) ============ -->
+
+<div id="noticias" class="pantalla oculta p-4">
+    <h2 class="text-xl font-bold mb-3">Noticias</h2>
+    <p>Aquí irán las noticias.</p>
+</div>
+
+<div id="tablero" class="pantalla oculta p-4">
+    <h2 class="text-xl font-bold mb-3">Tablero de Anuncios</h2>
+</div>
+
+<div id="reportes" class="pantalla oculta p-4">
+    <h2 class="text-xl font-bold mb-3">Reportes</h2>
+</div>
+
+<div id="salidas" class="pantalla oculta p-4">
+    <h2 class="text-xl font-bold mb-3">Sugerencias de Salidas</h2>
+</div>
+
+<div id="nuevo" class="pantalla oculta p-4">
+    <h2 class="text-xl font-bold mb-3">Nuevo Reporte</h2>
+</div>
+
+<div id="ayuda" class="pantalla oculta p-4">
+    <h2 class="text-xl font-bold mb-3">Ayuda</h2>
+</div>
+
+<div id="perfil" class="pantalla oculta p-4">
+    <h2 class="text-xl font-bold mb-3">Perfil</h2>
+</div>
+
+</div>
+
+<!-- ====================== BARRA INFERIOR MÓVIL ====================== -->
+<nav class="mobile-bottom-bar fixed bottom-0 left-0 w-full bg-white border-t flex justify-around py-2 shadow-lg lg:hidden">
+
+    <button onclick="openScreen('inicio')" class="text-center">
+        <div class="text-2xl">🏠</div>
+        <p class="text-xs">Inicio</p>
+    </button>
+
+    <button onclick="openScreen('noticias')" class="text-center">
+        <div class="text-2xl">📰</div>
+        <p class="text-xs">Noticias</p>
+    </button>
+
+    <button onclick="openScreen('nuevo')" class="text-center floating">
+        <div class="text-3xl text-teal-600 font-bold">+</div>
+    </button>
+
+    <button onclick="openScreen('ayuda')" class="text-center">
+        <div class="text-2xl">❓</div>
+        <p class="text-xs">Ayuda</p>
+    </button>
+
+    <button onclick="openScreen('perfil')" class="text-center">
+        <div class="text-2xl">👤</div>
+        <p class="text-xs">Perfil</p>
+    </button>
+
+</nav>
+
 <script>
-// Settings
-document.getElementById('settingsBtn').addEventListener('click', () => {
-    document.getElementById('settingsMenu').classList.toggle('hidden');
-});
-document.getElementById('darkModeToggle').addEventListener('change', function() {
-    if(this.checked){ document.body.classList.add('dark'); }
-    else{ document.body.classList.remove('dark'); }
-});
+function openScreen(id) {
+    document.querySelectorAll(".pantalla").forEach(p => p.classList.add("oculta"));
+    document.getElementById(id).classList.remove("oculta");
+}
 
-// FAB modal (móvil/pc)
-document.getElementById('fabBtn').addEventListener('click', ()=> alert('Acción +'));
-document.getElementById('pcFabBtn').addEventListener('click', ()=> alert('Acción + PC'));
-
-// Abrir pantallas internas
-document.querySelectorAll('[data-target]').forEach(el => {
-    el.addEventListener('click', ()=>{
-        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-        const id = el.getAttribute('data-target');
-        const screen = document.getElementById(id);
-        if(screen) screen.classList.add('active');
-    });
-});
+function toggleDarkMode() {
+    document.body.classList.toggle("bg-gray-900");
+    document.body.classList.toggle("text-white");
+}
 </script>
 
 </body>
