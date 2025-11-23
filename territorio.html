@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Informar Territorio</title>
+<title>Territorio</title>
 <style>
 body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
-h1 { text-align:center; color:#1a4b27; margin-bottom:10px; }
+h1 { text-align:center; color:#1a4b27; margin-bottom:15px; }
 .manzana { display:flex; justify-content:space-between; background:white; padding:14px; margin-bottom:10px; border-radius:10px; font-size:18px; cursor:pointer; border:1px solid #ddd; }
 .manzana.checked { background:#d8f3dc; border-color:#2d6a4f; color:#2d6a4f; font-weight:bold; }
 input, textarea { width:100%; padding:12px; font-size:16px; border-radius:10px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box; }
 .btn { padding:12px 18px; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; border:none; }
-.volver { background:#cccccc; color:#333; float:left; }
+.volver { background:#cccccc; color:#333; float:left; width:auto; padding:12px 20px; margin-top:10px; }
 .volver:hover { background:#aaaaaa; }
 .enviar { background:#2d6a4f; color:white; float:right; }
 .enviar:hover { background:#1f4d37; }
@@ -19,15 +19,15 @@ input, textarea { width:100%; padding:12px; font-size:16px; border-radius:10px; 
 </head>
 <body>
 
-<h1 id="tituloTerritorio">Informar Territorio</h1>
+<h1 id="tituloTerritorio">Territorio</h1>
 
 <div id="manzanasContainer"></div>
 
 <input type="text" id="nombreHermano" placeholder="Nombre del hermano">
 <textarea id="observaciones" placeholder="Observaciones…"></textarea>
 
-<button class="btn volver" onclick="history.back()">⬅️ Volver</button>
-<button class="btn enviar" onclick="guardarReporte()">✅ Enviar</button>
+<button class="volver" onclick="history.back()">⬅️ Volver</button>
+<button class="enviar" onclick="guardarReporte()">✅ Enviar</button>
 
 <script>
 // Obtener número de territorio desde query string
@@ -47,7 +47,7 @@ const manzanasPorTerritorio = {
     29:["A","B","C","D","E"],30:["A","B","C","D"],31:["A","B","C","D","E"],32:["A","B","C","D"]
 };
 
-// Mostrar manzanas en tarjetas
+// Renderizar manzanas
 const container = document.getElementById("manzanasContainer");
 const manzanas = manzanasPorTerritorio[numeroTerritorio] || [];
 manzanas.forEach(m=>{
@@ -90,8 +90,8 @@ function guardarReporte(){
     // Guardar pendientes en proximas
     let proximas = JSON.parse(localStorage.getItem("proximas")) || [];
     const existente = proximas.find(p => p.territorio == numeroTerritorio);
-    if(existente){ existente.manzanas = manzanasPendientes; }
-    else{ proximas.push({territorio:numeroTerritorio, manzanas:manzanasPendientes}); }
+    if(existente){ existente.manzanas = manzanasPendientes; existente.ultimoConductor = nombre; }
+    else{ proximas.push({territorio:numeroTerritorio, manzanas:manzanasPendientes, ultimoConductor:nombre}); }
     localStorage.setItem("proximas", JSON.stringify(proximas));
 
     alert("✅ Reporte guardado correctamente.");
