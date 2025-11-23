@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Departamento de Territorio — Cuatro Plazas</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Departamento de Territorio</title>
 
 <style>
     body {
         margin: 0;
         font-family: "Segoe UI", sans-serif;
-        background: #f5f7fa;
-        color: #333;
+        background: #eef2f3; /* mismo fondo suave */
     }
 
-    /* Encabezado estilo JW.org */
     header {
-        background: #1a73e8;
+        background: #2a5298; /* tu azul JW original */
         color: white;
         padding: 18px 25px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
 
     header a {
@@ -29,66 +27,58 @@
         text-decoration: none;
         font-weight: 600;
         padding: 8px 14px;
-        border: 2px solid white;
+        border: 1px solid white;
         border-radius: 8px;
-        transition: 0.2s ease-in-out;
         font-size: 1rem;
     }
 
-    header a:hover {
-        background: white;
-        color: #1a73e8;
-    }
-
-    /* Contenedor principal */
     .container {
         width: 92%;
         max-width: 900px;
-        margin: 30px auto;
+        margin: 25px auto;
+        text-align: center;
     }
 
     h1 {
-        text-align: center;
-        font-size: 1.8rem;
-        margin-bottom: 25px;
-        color: #1a73e8;
+        color: #2a5298;
+        margin-bottom: 30px;
         font-weight: 600;
     }
 
-    /* GRID de 2 columnas */
     .grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 18px;
+        gap: 20px;
     }
 
-    /* Botones estilo tarjeta */
     .btn {
         background: white;
-        padding: 25px;
-        border-radius: 16px;
-        text-align: center;
+        border-radius: 14px;
+        padding: 30px 20px;
         font-size: 1.25rem;
         font-weight: 600;
+        color: #2a5298;
         text-decoration: none;
-        color: #1a73e8;
-        border: 2px solid #dce3eb;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-        transition: 0.2s ease-in-out;
+        border: 2px solid #d3dce6;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        text-align: center; /* asegura centrado */
+        display: flex;
+        justify-content: center; /* más centrado */
+        align-items: center;     /* más centrado */
+        transition: 0.15s ease-in-out;
     }
 
     .btn:hover {
-        background: #e9f1ff;
+        background: #e6eefc;
         transform: translateY(-3px);
     }
 
-    /* Adaptación para teléfonos */
-    @media(max-width: 600px) {
+    /* Teléfonos: pasa a 1 columna */
+    @media (max-width: 600px) {
         .grid {
             grid-template-columns: 1fr;
         }
     }
-
 </style>
 </head>
 
@@ -104,29 +94,14 @@
 
     <div class="grid">
 
-        <a class="btn" href="#">
-            Reportar territorio
-        </a>
+        <a class="btn" href="#">Reportar territorio</a>
+        <a class="btn" href="#">Tablero de anuncios</a>
 
-        <a class="btn" href="#">
-            Tablero de anuncios
-        </a>
+        <a class="btn" href="#">Reportes</a>
+        <a class="btn" href="#">Próximas salidas</a>
 
-        <a class="btn" href="#">
-            Reportes
-        </a>
-
-        <a class="btn" href="#">
-            Próximas salidas
-        </a>
-
-        <a class="btn" href="#">
-            Mapa interactivo
-        </a>
-
-        <a class="btn" href="#">
-            Sugerencias
-        </a>
+        <a class="btn" href="#">Mapa interactivo</a>
+        <a class="btn" href="#">Sugerencias</a>
 
     </div>
 </div>
