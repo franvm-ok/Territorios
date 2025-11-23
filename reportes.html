@@ -4,110 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reportes Generados</title>
-
 <style>
-body {
-    margin: 0;
-    padding: 20px;
-    background: #f4f4f4;
-    font-family: Arial, sans-serif;
-}
-
-h1 {
-    text-align: center;
-    color: #1a4b27;
-    margin-bottom: 20px;
-}
-
-/* Tarjetas de reportes */
-.reporte-card {
-    background: white;
-    padding: 18px;
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    margin-bottom: 18px;
-    font-size: 17px;
-}
-
-.titulo {
-    font-size: 20px;
-    font-weight: bold;
-    color: #1a4b27;
-    margin-bottom: 8px;
-}
-
-.hechas {
-    color: #2d6a4f;
-    font-weight: bold;
-}
-
-.pendientes {
-    color: #c1121f;
-    font-weight: bold;
-}
-
-.btn-volver {
-    position: fixed;
-    left: 20px;
-    bottom: 20px;
-    background: white;
-    color: #1a4b27;
-    border: none;
-    padding: 14px 18px;
-    border-radius: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
+body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
+h1{text-align:center;color:#1a4b27;margin-bottom:20px}
+.card{background:white;padding:18px;margin-bottom:15px;border-radius:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+.card h2{margin:0 0 8px;color:#2d6a4f}
+.card p{margin:4px 0}
+.hechas{color:#2d6a4f;font-weight:bold}
+.pendientes{color:#c1121f;font-weight:bold}
+.btn-volver{position:fixed;left:20px;bottom:20px;padding:14px 18px;border-radius:15px;font-size:18px;font-weight:bold;border:none;box-shadow:0 4px 10px rgba(0,0,0,0.08);background:white;color:#1a4b27;cursor:pointer}
+.btn-volver:hover{background:#e8e8e8}
 </style>
 </head>
 <body>
-
 <h1>Reportes Generados</h1>
-
 <div id="contenedorReportes"></div>
-
 <button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
-
 <script>
-function cargarReportes(){
-    const cont = document.getElementById("contenedorReportes");
-    cont.innerHTML = "";
+const cont=document.getElementById("contenedorReportes");
+const reportes=JSON.parse(localStorage.getItem("reportes")||"[]");
 
-    let reportes = JSON.parse(localStorage.getItem("reportes") || "[]");
-
-    if(reportes.length === 0){
-        cont.innerHTML = "<p style='text-align:center;color:#555;'>No hay reportes todavía.</p>";
-        return;
-    }
-
-    reportes.forEach(r => {
-
-        const div = document.createElement("div");
-        div.className = "reporte-card";
-
-        div.innerHTML = `
-            <div class="titulo">Territorio ${r.territorio}</div>
-
-            <p><strong>Fecha:</strong> ${r.fecha}</p>
-            <p><strong>Conductor:</strong> ${r.nombre}</p>
-
-            <p><strong>Manzanas hechas:</strong> 
-            <span class="hechas">${r.hechas.join(", ") || "Ninguna"}</span></p>
-
-            <p><strong>Manzanas pendientes:</strong> 
-            <span class="pendientes">${r.pendientes.join(", ") || "Ninguna"}</span></p>
-
-            ${r.observaciones ? `<p><strong>Observaciones:</strong> ${r.observaciones}</p>` : ""}
-        `;
-
-        cont.appendChild(div);
-    });
+if(reportes.length===0){ cont.innerHTML="<p style='text-align:center;color:#555'>No hay reportes aún.</p>"; }
+else{
+reportes.slice().reverse().forEach(r=>{
+  const div=document.createElement("div"); div.className="card";
+  div.innerHTML=`<h2>Territorio ${r.territorio}</h2>
+  <p><strong>Fecha:</strong> ${r.fecha}</p>
+  <p><strong>Conductor:</strong> ${r.nombre}</p>
+  <p><strong>Manzanas hechas:</strong> <span class="hechas">${r.hechas.join(", ")}</span></p>
+  <p><strong>Manzanas pendientes:</strong> <span class="pendientes">${r.pendientes.join(", ")}</span></p>
+  <p><strong>Observaciones:</strong> ${r.observaciones||'-'}</p>`;
+  cont.appendChild(div);
+});
 }
-
-cargarReportes();
 </script>
-
 </body>
 </html>
