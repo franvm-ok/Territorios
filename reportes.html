@@ -4,62 +4,109 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reportes Generados</title>
-<style>
-body { font-family: Arial, sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
-h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
-.reporte-card { background:white; border-radius:15px; padding:15px; margin-bottom:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
-.reporte-card h3 { margin:0 0 10px 0; color:#2d6a4f; }
-.reporte-card p { margin:4px 0; }
 
-.btn {
-    padding:14px 18px;
-    border-radius:15px;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-    border:none;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-    transition:0.2s;
+<style>
+body {
+    margin: 0;
+    padding: 20px;
+    background: #f4f4f4;
+    font-family: Arial, sans-serif;
 }
-.btn.enviar, .btn.agregar { background:#2d6a4f; color:white; }
-.btn.enviar:hover, .btn.agregar:hover { background:#1f4d37; }
-.btn.volver { background:white; color:#1a4b27; }
-.btn.volver:hover { background:#e8e8e8; }
+
+h1 {
+    text-align: center;
+    color: #1a4b27;
+    margin-bottom: 20px;
+}
+
+/* Tarjetas de reportes */
+.reporte-card {
+    background: white;
+    padding: 18px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-bottom: 18px;
+    font-size: 17px;
+}
+
+.titulo {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1a4b27;
+    margin-bottom: 8px;
+}
+
+.hechas {
+    color: #2d6a4f;
+    font-weight: bold;
+}
+
+.pendientes {
+    color: #c1121f;
+    font-weight: bold;
+}
+
+.btn-volver {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    background: white;
+    color: #1a4b27;
+    border: none;
+    padding: 14px 18px;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
 </style>
 </head>
 <body>
 
 <h1>Reportes Generados</h1>
-<div id="reportesContainer"></div>
 
-<button class="btn volver" onclick="history.back()">⬅️ Volver</button>
+<div id="contenedorReportes"></div>
+
+<button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
 
 <script>
-const container=document.getElementById("reportesContainer");
+function cargarReportes(){
+    const cont = document.getElementById("contenedorReportes");
+    cont.innerHTML = "";
 
-function mostrarReportes(){
-    const reportes=JSON.parse(localStorage.getItem("reportes"))||[];
-    container.innerHTML="";
-    if(reportes.length===0){
-        container.innerHTML="<p>No hay reportes aún.</p>";
+    let reportes = JSON.parse(localStorage.getItem("reportes") || "[]");
+
+    if(reportes.length === 0){
+        cont.innerHTML = "<p style='text-align:center;color:#555;'>No hay reportes todavía.</p>";
         return;
     }
-    reportes.forEach(r=>{
-        const div=document.createElement("div");
-        div.className="reporte-card";
-        div.innerHTML=`
-            <h3>Territorio ${r.territorio}</h3>
+
+    reportes.forEach(r => {
+
+        const div = document.createElement("div");
+        div.className = "reporte-card";
+
+        div.innerHTML = `
+            <div class="titulo">Territorio ${r.territorio}</div>
+
             <p><strong>Fecha:</strong> ${r.fecha}</p>
-            <p><strong>Hermano:</strong> ${r.hermano}</p>
-            <p><strong>Manzanas hechas:</strong> ${r.hechas.join(", ") || "Ninguna"}</p>
-            <p><strong>Manzanas pendientes:</strong> ${r.pendientes.join(", ") || "Ninguna"}</p>
-            <p><strong>Observaciones:</strong> ${r.observaciones || "-"}</p>
+            <p><strong>Conductor:</strong> ${r.nombre}</p>
+
+            <p><strong>Manzanas hechas:</strong> 
+            <span class="hechas">${r.hechas.join(", ") || "Ninguna"}</span></p>
+
+            <p><strong>Manzanas pendientes:</strong> 
+            <span class="pendientes">${r.pendientes.join(", ") || "Ninguna"}</span></p>
+
+            ${r.observaciones ? `<p><strong>Observaciones:</strong> ${r.observaciones}</p>` : ""}
         `;
-        container.appendChild(div);
+
+        cont.appendChild(div);
     });
 }
 
-mostrarReportes();
+cargarReportes();
 </script>
 
 </body>
