@@ -1,294 +1,783 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Departamento de Territorio</title>
-  <meta name="description" content="App Territorios - reportes y sincronización en tiempo real" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Departamento de Territorio</title>
+  <meta name="description" content="App Territorios - reportes y sincronización en tiempo real" />
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <style>
-    /* ---- Visual / Theme (iOS-like, Lindo e Intuitivo) ---- */
-    :root{
-      /* Paleta de colores suaves y acentos vibrantes */
-      --accent-primary: #ff8b73; /* Coral suave vibrante (antes green-500) */
-      --accent-light: #ffb58d; /* Naranja/Coral más claro (antes green-400) */
-      --bg: linear-gradient(135deg, #f8f0ff, #e6f7ff); /* Degradado pastel para fondo */
-      --card: #ffffff; /* Blanco limpio para tarjetas */
-      --text-color: #2c3e50; /* Azul oscuro para texto principal */
-      --muted-color: #7f8c8d; /* Gris suave para texto secundario */
-      --border-color: #e6eef0; /* Borde muy sutil */
-    }
-    
-    html,body{height:100%;}
-    body{
-      /* Fuente de sistema para look iOS */
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-      background:var(--bg); /* Fondo degradado */
-      color:var(--text-color);
-      margin:0;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
-
-    /* Layout containers */
-    .app-shell{min-height:100vh; display:flex; flex-direction:column;}
-    .main-row{display:flex; flex:1; min-height:0;}
-
-    /* Sidebar (PC) */
-    .pc-sidebar{display:none;}
-    @media(min-width:1024px){
-      .pc-sidebar{display:flex; width:88px; background:var(--card); border-right:1px solid var(--border-color); flex-direction:column; align-items:center; padding-top:1.25rem; gap:0.75rem; position:fixed; left:0; top:0; bottom:0; z-index:40;}
-      .content-area{margin-left:88px; flex:1;}
-    }
-
-    /* Header */
-    header.app-header{background:rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom:1px solid var(--border-color); padding:14px; display:flex; align-items:center; justify-content:space-between; gap:12px; position:sticky; top:0; z-index:30;}
-    .brand{ text-align:center; }
-    .brand .title{ color:var(--accent-primary); font-weight:700; font-size:1.05rem; }
-    .brand .subtitle{ font-size:0.85rem; color:var(--muted-color); }
-
-    /* Search */
-    .search-box{display:flex; align-items:center; gap:8px; background:#f7f9fc; padding:8px 12px; border-radius:999px; border:1px solid #e6eef0; width:220px;}
-    .search-box input{background:transparent; border:0; outline:none; width:100%; font-size:0.95rem;}
-
-    /* Dashboard grid / cards */
-    .dashboard{padding:16px; display:grid; grid-template-columns:repeat(2, 1fr); gap:14px;}
-    @media(min-width:768px){ .dashboard{ grid-template-columns:repeat(3,1fr); } }
-    @media(min-width:1200px){ .dashboard{ grid-template-columns:repeat(4,1fr); } }
-    .card{ 
-      background:var(--card); 
-      padding:18px; 
-      border-radius:18px; /* Más redondeado */
-      box-shadow:0 10px 30px rgba(0, 0, 0, 0.08); /* Sombra sutil iOS */
-      display:flex; flex-direction:column; justify-content:space-between; min-height:140px; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease;
-    }
-    .card:active{ transform:scale(.98); } /* Más reacción al click */
-    .card .icon-wrap{ width:48px; height:48px; border-radius:14px; /* Más redondeado */ display:flex; align-items:center; justify-content:center; margin-bottom:8px;}
-    .card .h{ font-weight:600; font-size:1.05rem; }
-
-    /* FAB center bottom in mobile */
-    .mobile-bottom{ display:flex; gap:8px; align-items:center; justify-content:space-around; position:fixed; left:0; right:0; bottom:0; padding:10px 14px; background:var(--card); border-top:1px solid var(--border-color); z-index:50; }
-    .nav-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:12px; color:var(--muted-color);}
-    .fab-center{ 
-      width:64px; height:64px; border-radius:999px; 
-      display:flex; align-items:center; justify-content:center; 
-      background:linear-gradient(135deg,var(--accent-light),var(--accent-primary)); /* Degradado coral */
-      color:white; font-weight:700; font-size:22px; 
-      box-shadow:0 12px 30px rgba(255, 139, 115, 0.35); /* Sombra más fuerte y cálida */
-      transform:translateY(-18px); transition:transform .12s; 
-    }
-    .fab-center:active{ transform:translateY(-16px) scale(.98); }
-
-    /* Screens for SPA-like */
-    .screen{ padding:16px; display:block; animation:fadeIn .2s ease; min-height:calc(100vh - 120px); }
-    .hidden{ display:none !important; }
-    @keyframes fadeIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
-
-    /* Manzanas grid */
-    .manzanas-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-    .manzana{ padding:8px 14px; background:#f7f9fc; border-radius:12px; /* Redondeado y limpio */ cursor:pointer; border:1px solid transparent; transition:all .12s; }
-    .manzana.selected{ 
-      background:linear-gradient(90deg,var(--accent-light),var(--accent-primary)); /* Degradado seleccionado */
-      color:white; transform:translateY(-2px); 
-      box-shadow:0 6px 14px rgba(255, 139, 115, 0.2); 
-    }
-
-    /* Form */
-    .form-card{ background:var(--card); padding:18px; border-radius:20px; /* Muy redondeado */ box-shadow:0 10px 30px rgba(0, 0, 0, 0.08); margin-top:12px; }
-    input[type="text"], textarea{ 
-      width:100%; padding:12px 14px; border-radius:12px; 
-      border:1px solid var(--border-color); outline:none; 
-      font-size:14px; margin-top:8px; background:#f7f9fc; /* Fondo sutil en input */
-    }
-    textarea{ min-height:84px; resize:vertical; }
-
-    /* Small utility */
-    .muted{ color:var(--muted-color); font-size:13px; }
-    .btn{ padding:10px 14px; border-radius:14px; border:0; cursor:pointer; font-weight:600; }
-    .btn-teal{ 
-      background:linear-gradient(90deg,var(--accent-light),var(--accent-primary)); 
-      color:white; 
-      box-shadow:0 8px 20px rgba(255, 139, 115, 0.3); 
-    }
-    .btn-ghost{ background:transparent; border:1px solid var(--border-color); color:var(--text-color); }
-
-    /* Toast */
-    .toast{ position:fixed; right:18px; bottom:86px; background:var(--text-color); color:white; padding:10px 14px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.3); display:none; z-index:60; }
-
-    /* Dark mode (ajustado a la nueva paleta) */
-    body.dark{ 
-      background: #1a202c; /* Fondo oscuro simple */
-      color:#e6eef5; 
-    }
-    body.dark .card, body.dark .form-card, body.dark .pc-sidebar, body.dark .mobile-bottom, body.dark header.app-header{ 
-      background:#2d3748; 
-      border-color:#4a5568; 
-    }
-    body.dark .muted{ color:#a0aec0; }
-    body.dark input, body.dark textarea { background:#1a202c; color:#e6eef5; border-color:#4a5568; }
-    body.dark .search-box{ background:#1a202c; border-color:#4a5568; }
-    body.dark .manzana{ background:#4a5568; color:#e6eef5; border-color:#4a5568; }
-    body.dark .manzana.selected{ 
-      background:linear-gradient(90deg,var(--accent-light),var(--accent-primary)); 
-      color:white; 
-    }
-
-    /* Estilo de la tarjeta de reporte en la lista */
-    #reportsList > div {
-        background: var(--card) !important;
-        border-radius: 18px !important; 
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04) !important;
+  <style>
+    /* ---- Visual / Theme ---- */
+    :root{
+      --green-500:#10b981;
+      --green-400:#34d399;
+      --bg:#f3f6f4;
+      --card:#ffffff;
     }
-  </style>
+    html,body{height:100%;}
+    body{
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:var(--bg);
+      color:#0f172a;
+      margin:0;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Layout containers */
+    .app-shell{min-height:100vh; display:flex; flex-direction:column;}
+    .main-row{display:flex; flex:1; min-height:0;}
+
+    /* Sidebar (PC) */
+    .pc-sidebar{display:none;}
+    @media(min-width:1024px){
+      .pc-sidebar{display:flex; width:88px; background:var(--card); border-right:1px solid #e6eef0; flex-direction:column; align-items:center; padding-top:1.25rem; gap:0.75rem; position:fixed; left:0; top:0; bottom:0; z-index:40;}
+      .content-area{margin-left:88px; flex:1;}
+    }
+
+    /* Header */
+    header.app-header{background:rgba(255,255,255,0.95); backdrop-filter: blur(4px); border-bottom:1px solid #e6eef0; padding:14px; display:flex; align-items:center; justify-content:space-between; gap:12px; position:sticky; top:0; z-index:30;}
+    .brand{ text-align:center; }
+    .brand .title{ color:var(--green-500); font-weight:700; font-size:1.05rem; }
+    .brand .subtitle{ font-size:0.85rem; color:#475569; }
+
+    /* Search */
+    .search-box{display:flex; align-items:center; gap:8px; background:#f1f6f4; padding:8px 12px; border-radius:999px; border:1px solid #e2f3ec; width:220px;}
+    .search-box input{background:transparent; border:0; outline:none; width:100%; font-size:0.95rem;}
+
+    /* Dashboard grid / cards */
+    .dashboard{padding:16px; display:grid; grid-template-columns:repeat(2, 1fr); gap:14px;}
+    @media(min-width:768px){ .dashboard{ grid-template-columns:repeat(3,1fr); } }
+    @media(min-width:1200px){ .dashboard{ grid-template-columns:repeat(4,1fr); } }
+    .card{ background:var(--card); padding:18px; border-radius:18px; box-shadow:0 8px 20px rgba(8,22,18,0.04); display:flex; flex-direction:column; justify-content:space-between; min-height:140px; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease;}
+    .card:active{ transform:scale(.995); }
+    .card .icon-wrap{ width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;}
+    .card .h{ font-weight:700; font-size:1.05rem; }
+
+    /* FAB center bottom in mobile */
+    .mobile-bottom{ display:flex; gap:8px; align-items:center; justify-content:space-around; position:fixed; left:0; right:0; bottom:0; padding:10px 14px; background:var(--card); border-top:1px solid #e6eef0; z-index:50; }
+    .nav-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:12px; color:#64748b;}
+    .fab-center{ width:64px; height:64px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--green-400),var(--green-500)); color:white; font-weight:700; font-size:22px; box-shadow:0 10px 30px rgba(16,185,129,0.22); transform:translateY(-18px); transition:transform .12s; }
+    .fab-center:active{ transform:translateY(-16px) scale(.98); }
+
+    /* Screens for SPA-like */
+    .screen{ padding:16px; display:block; animation:fadeIn .2s ease; min-height:calc(100vh - 120px); }
+    .hidden{ display:none !important; }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+
+    /* Manzanas grid */
+    .manzanas-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .manzana{ padding:8px 12px; background:#f3faf6; border-radius:10px; cursor:pointer; border:1px solid transparent; transition:all .12s; }
+    .manzana.selected{ background:linear-gradient(90deg,var(--green-400),var(--green-500)); color:white; transform:translateY(-4px); box-shadow:0 10px 20px rgba(16,185,129,0.12); }
+
+    /* Form */
+    .form-card{ background:var(--card); padding:14px; border-radius:12px; box-shadow:0 8px 20px rgba(8,22,18,0.04); margin-top:12px; }
+    input[type="text"], textarea{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid #e6eef0; outline:none; font-size:14px; margin-top:8px; }
+    textarea{ min-height:84px; resize:vertical; }
+
+    /* Small utility */
+    .muted{ color:#64748b; font-size:13px; }
+    .btn{ padding:10px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:600; }
+    .btn-teal{ background:linear-gradient(90deg,var(--green-400),var(--green-500)); color:white; box-shadow:0 10px 30px rgba(16,185,129,0.12); }
+    .btn-ghost{ background:transparent; border:1px solid #e6eef0; color:#0f172a; }
+
+    /* Toast */
+    .toast{ position:fixed; right:18px; bottom:86px; background:#0f172a; color:white; padding:10px 14px; border-radius:10px; box-shadow:0 8px 20px rgba(2,6,23,0.24); display:none; z-index:60; }
+
+    /* Dark mode */
+    body.dark{ background:#0b1220; color:#e6eef5; }
+    body.dark .card, body.dark .form-card, body.dark .pc-sidebar, body.dark .mobile-bottom{ background:#0f1728; border-color:#0b1722; }
+    body.dark .muted{ color:#9fb4c6; }
+    body.dark input, body.dark textarea { background:#071223; color:#e6eef5; border-color:#163042; }
+  </style>
 </head>
 <body>
 
-  <div class="app-shell">
+  <div class="app-shell">
 
-        <header class="app-header">
-      <div style="width:88px"></div>       <div class="brand">
-        <div class="title">Departamento de Territorio</div>
-        <div class="subtitle">Congregación Cuatro Plazas</div>
-      </div>
-              <div style="display:flex; align-items:center; gap:12px;">
-        <div class="search-box hidden sm:flex">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <input id="searchInput" placeholder="Buscar reportes..." />
-        </div>
-        <button id="loginBtn" class="btn btn-ghost hidden sm:inline">Iniciar sesión</button>
-        <div style="position:relative;">
-          <button id="settingsBtn" class="btn btn-ghost" title="Ajustes">⚙️</button>
-          <div id="settingsMenu" style="display:none; position:absolute; right:0; top:44px; background:var(--card); border-radius:10px; box-shadow:0 8px 30px rgba(2,6,23,0.06); padding:10px; min-width:200px;">
-            <label style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <span>Modo oscuro</span>
-              <input id="darkToggle" type="checkbox" />
-            </label>
-            <div style="font-size:12px; color:#64748b; margin-top:8px;">Opciones</div>
-          </div>
-        </div>
-      </div>
-    </header>
+    <!-- Header -->
+    <header class="app-header">
+      <div style="width:88px"></div> <!-- placeholder left so center title truly centered -->
+      <div class="brand">
+        <div class="title">Departamento de Territorio</div>
+        <div class="subtitle">Congregación Cuatro Plazas</div>
+      </div>
 
-    <div class="main-row">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="search-box hidden sm:flex">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="searchInput" placeholder="Buscar reportes..." />
+        </div>
+        <button id="loginBtn" class="btn btn-ghost hidden sm:inline">Iniciar sesión</button>
+        <div style="position:relative;">
+          <button id="settingsBtn" class="btn btn-ghost" title="Ajustes">⚙️</button>
+          <div id="settingsMenu" style="display:none; position:absolute; right:0; top:44px; background:var(--card); border-radius:10px; box-shadow:0 8px 30px rgba(2,6,23,0.06); padding:10px; min-width:200px;">
+            <label style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span>Modo oscuro</span>
+              <input id="darkToggle" type="checkbox" />
+            </label>
+            <div style="font-size:12px; color:#64748b; margin-top:8px;">Opciones</div>
+          </div>
+        </div>
+      </div>
+    </header>
 
-            <aside class="pc-sidebar">
-                <button class="nav pc-nav" data-nav="home" title="Inicio" style="background:transparent; border:none; padding:6px; width:56px;">
-          <div style="font-size:20px; color:var(--accent-primary)">🏠</div>
-          <div style="font-size:11px; color:var(--muted-color); margin-top:6px;">Inicio</div>
-        </button>
-                <button class="nav pc-nav" data-nav="reports" title="Reportes" style="background:transparent; border:none; padding:6px; width:56px;">
-          <div style="font-size:20px; color:var(--muted-color)">📰</div>
-          <div style="font-size:11px; color:var(--muted-color); margin-top:6px;">Noticias</div>
-        </button>
+    <div class="main-row">
 
-        <button id="pcFab" title="Acción" style="margin-top:6px; width:56px; height:56px; border-radius:16px; /* Ajuste más cuadrado-redondeado */ background:linear-gradient(135deg,var(--accent-light),var(--accent-primary)); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; border:none;">+</button>
+      <!-- Sidebar (PC) -->
+      <aside class="pc-sidebar">
+        <button class="nav pc-nav" data-nav="home" title="Inicio" style="background:transparent; border:none; padding:6px; width:56px;">
+          <div style="font-size:20px; color:var(--green-500)">🏠</div>
+          <div style="font-size:11px; color:#475569; margin-top:6px;">Inicio</div>
+        </button>
 
-        <button class="nav pc-nav" data-nav="help" title="Ayuda" style="background:transparent; border:none; padding:6px; width:56px;">
-          <div style="font-size:20px; color:var(--muted-color)">❓</div>
-          <div style="font-size:11px; color:var(--muted-color); margin-top:6px;">Ayuda</div>
-        </button>
+        <button class="nav pc-nav" data-nav="reports" title="Reportes" style="background:transparent; border:none; padding:6px; width:56px;">
+          <div style="font-size:20px; color:#64748b">📰</div>
+          <div style="font-size:11px; color:#475569; margin-top:6px;">Noticias</div>
+        </button>
 
-        <button class="nav pc-nav" data-nav="profile" title="Perfil" style="background:transparent; border:none; padding:6px; width:56px;">
-          <div style="font-size:20px; color:var(--muted-color)">👤</div>
-          <div style="font-size:11px; color:var(--muted-color); margin-top:6px;">Perfil</div>
-        </button>
-      </aside>
+        <button id="pcFab" title="Acción" style="margin-top:6px; width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--green-400),var(--green-500)); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; border:none;">+</button>
 
-            <div class="content-area" style="flex:1;">
+        <button class="nav pc-nav" data-nav="help" title="Ayuda" style="background:transparent; border:none; padding:6px; width:56px;">
+          <div style="font-size:20px; color:#64748b">❓</div>
+          <div style="font-size:11px; color:#475569; margin-top:6px;">Ayuda</div>
+        </button>
 
-                <main id="homeScreen" class="screen">
-                  </main>
+        <button class="nav pc-nav" data-nav="profile" title="Perfil" style="background:transparent; border:none; padding:6px; width:56px;">
+          <div style="font-size:20px; color:#64748b">👤</div>
+          <div style="font-size:11px; color:#475569; margin-top:6px;">Perfil</div>
+        </button>
+      </aside>
 
-                <section id="newScreen" class="screen hidden">
-                  </section>
+      <!-- Content area -->
+      <div class="content-area" style="flex:1;">
 
-                <section id="reportsScreen" class="screen hidden">
-                  </section>
+        <!-- HOME SCREEN -->
+        <main id="homeScreen" class="screen">
 
-                <section id="helpScreen" class="screen hidden">
-          <h2 style="font-weight:700;">Ayuda</h2>
-          <p class="muted">Información y contactos.</p>
-        </section>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
+            <h2 style="margin:0; font-weight:700; font-size:18px;">Inicio</h2>
+            <div class="muted" id="connectionState">Conexión: desconectado</div>
+          </div>
 
-        <section id="profileScreen" class="screen hidden">
-          <h2 style="font-weight:700;">Perfil</h2>
-          <p class="muted">Datos del usuario.</p>
-        </section>
+          <div class="dashboard" id="cardsGrid">
+            <!-- cards populated by JS -->
+          </div>
+        </main>
 
-      </div>
-    </div>
+        <!-- NEW / MANZANAS SCREEN -->
+        <section id="newScreen" class="screen hidden">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <button id="backFromNew" class="btn btn-ghost">← Volver</button>
+            <div style="font-weight:700; font-size:18px;" id="newTitle">Territorio</div>
+          </div>
 
-        <nav class="mobile-bottom hidden lg:hidden mobile-bottom" style="display:flex;">
-            <button class="nav-btn" data-mobile="home"><div style="font-size:20px">🏠</div><div>Inicio</div></button>
-      <button class="nav-btn" data-mobile="reports"><div style="font-size:20px">📰</div><div>Noticias</div></button>
-      <button id="fabMobile" class="fab-center">+</button>
-      <button class="nav-btn" data-mobile="help"><div style="font-size:20px">❓</div><div>Ayuda</div></button>
-      <button class="nav-btn" data-mobile="profile"><div style="font-size:20px">👤</div><div>Perfil</div></button>
-    </nav>
+          <div class="form-card">
+            <div class="muted">Tildá las manzanas predicadas:</div>
+            <div id="manzanasWrap" class="manzanas-grid"></div>
 
-    <div id="toast" class="toast"></div>
+            <div style="margin-top:12px;">
+              <label class="muted">Conductor</label>
+              <input id="conductorInput" type="text" placeholder="Nombre del conductor" />
+            </div>
 
-  </div>
-    
-<script>
-// ... Tu código JavaScript (no modificado) ...
-// Asegúrate de que los estilos inline en JS se actualicen si es necesario,
-// como en la función renderReportsList (lo actualicé arriba en el CSS global).
+            <div style="margin-top:10px;">
+              <label class="muted">Observación</label>
+              <textarea id="obsInput" placeholder="Ej: Calle X incompleta, puerta cerrada..."></textarea>
+            </div>
 
-/*******************************
- * RENDER: Cards Grid (modificado para usar nuevos colores)
- *******************************/
-const cardsGrid = document.getElementById('cardsGrid');
-function renderCards(){
-    cardsGrid.innerHTML = '';
-    Object.keys(territoryMap).forEach(k=>{
-      const n = Number(k);
-      const card = document.createElement('div');
-      card.className = 'card';
-      
-      // Uso de las nuevas variables de color para los iconos de las tarjetas
-      if(n===1) card.innerHTML = `<div class="icon-wrap" style="background:linear-gradient(135deg,var(--accent-light),var(--accent-primary)); color:white; font-size:22px;">📍</div><div class="h">Mapa Interactivo</div>`;
-      else card.innerHTML = `<div class="icon-wrap" style="background:#f7f9fc; color:var(--accent-primary); font-size:22px;">${n}</div><div class="h">Territorio ${n}</div><div class="muted" style="margin-top:6px;">${territoryMap[n]} manzanas</div>`;
-      
-      card.addEventListener('click', ()=>{
-        openNewScreenForTerritory(n);
-      });
-      cardsGrid.appendChild(card);
-    });
+            <label style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+              <input id="incompleteFace" type="checkbox" />
+              <span class="muted">Informar si hay alguna cara incompleta</span>
+            </label>
 
-    // Tarjetas especiales
-    const specials = [
-      {title:'Mapa Interactivo', icon:'🗺️', action:()=> openNewScreenForTerritory(1)},
-      {title:'Nuevo Reporte', icon:'✍️', action:()=> { showToast('Elegí un territorio en Inicio'); }},
-      {title:'Tablero de Anuncios', icon:'📣', action:()=> navigateTo('reportsScreen')},
-      {title:'Reportes', icon:'📓', action:()=> navigateTo('reportsScreen')},
-      {title:'Sugerencia próximas salidas', icon:'📅', action:()=> navigateTo('reportsScreen')}
-    ];
-    for(let i=specials.length-1;i>=0;i--){
-      const s = specials[i];
-      const el = document.createElement('div');
-      el.className = 'card';
-      // Uso de los nuevos colores para el envoltorio del icono
-      el.innerHTML = `<div class="icon-wrap" style="background:#f7f9fc; color:var(--accent-primary);">${s.icon}</div><div class="h">${s.title}</div>`;
-      el.addEventListener('click', s.action);
-      cardsGrid.insertBefore(el, cardsGrid.firstChild);
-    }
-  }
+            <div style="display:flex; gap:10px; margin-top:12px;">
+              <button id="saveAndSend" class="btn btn-teal">Guardar y enviar WhatsApp</button>
+              <button id="saveLocal" class="btn btn-ghost">Guardar local</button>
+            </div>
 
-// ... El resto de tus funciones JS (navigateTo, saveAndSend, etc.) ...
-// La función renderReportsList en tu JS tiene estilos inline; si quieres que se vean bien, asegúrate de que el CSS al principio del archivo maneje el estilo de #reportsList > div. (Lo agregué al final de la sección <style>).
+            <div id="newMsg" class="muted" style="margin-top:10px;"></div>
+          </div>
+        </section>
 
-// ... Tu código JavaScript continúa aquí ...
-/*******************************
- * Load initial UI and events
- *******************************/
-renderCards();
-renderReportsList();
-// ... el resto de tu JS ...
-</script>
+        <!-- REPORTS SCREEN -->
+        <section id="reportsScreen" class="screen hidden">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h2 style="margin:0; font-weight:700;">Reportes</h2>
+            <div class="muted">Total: <span id="reportsCount">0</span></div>
+          </div>
 
+          <div id="reportsList" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </section>
+
+        <!-- HELP, PROFILE placeholders -->
+        <section id="helpScreen" class="screen hidden">
+          <h2 style="font-weight:700;">Ayuda</h2>
+          <p class="muted">Información y contactos.</p>
+        </section>
+
+        <section id="profileScreen" class="screen hidden">
+          <h2 style="font-weight:700;">Perfil</h2>
+          <p class="muted">Datos del usuario.</p>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- bottom nav mobile -->
+    <nav class="mobile-bottom hidden lg:hidden mobile-bottom" style="display:flex;">
+      <button class="nav-btn" data-mobile="home"><div style="font-size:20px">🏠</div><div>Inicio</div></button>
+      <button class="nav-btn" data-mobile="reports"><div style="font-size:20px">📰</div><div>Noticias</div></button>
+      <button id="fabMobile" class="fab-center">+</button>
+      <button class="nav-btn" data-mobile="help"><div style="font-size:20px">❓</div><div>Ayuda</div></button>
+      <button class="nav-btn" data-mobile="profile"><div style="font-size:20px">👤</div><div>Perfil</div></button>
+    </nav>
+
+    <div id="toast" class="toast"></div>
+
+  </div>
+
+  <!-- ========== SCRIPTS: App logic incl. Firebase ========== -->
+  <script>
+  /*******************************
+   * CONFIG - Firebase (User's)
+   *******************************/
+  const firebaseConfig = {
+    apiKey: "AIzaSyAbAnz0hAHwttGtoDPjSzSgiJ9HP1wz-YY",
+    authDomain: "territorio-3c28d.firebaseapp.com",
+    databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com/",
+    projectId: "territorio-3c28d",
+    storageBucket: "territorio-3c28d.appspot.com",
+    messagingSenderId: "369901367983",
+    appId: "1:369901367983:web:33237b1b5661b82023a763"
+  };
+
+  // Initialize Firebase
+  try {
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    var dbRef = database.ref('reportes');
+    document.getElementById('connectionState').innerText = 'Conexión: conectado';
+    showToast('Firebase conectado');
+  } catch(e) {
+    console.error('firebase init error', e);
+    document.getElementById('connectionState').innerText = 'Conexión: error';
+    showToast('Error conectando Firebase');
+  }
+
+  /*******************************
+   * TERRITORIOS MAP (manzanas per territory)
+   *******************************/
+  const territoryMap = {
+    1:4,2:4,3:4,4:5,5:8,6:4,7:4,8:4,
+    9:4,10:5,11:4,12:4,13:4,14:4,15:4,16:4,
+    17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,
+    25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4
+  };
+
+  /*******************************
+   * APP STATE
+   *******************************/
+  let selectedTerritory = null;
+  let selectedManzanas = new Set();
+  let reports = {}; // local in-memory cache
+
+  /*******************************
+   * UI Helpers
+   *******************************/
+  function showToast(msg, time=2500){
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.style.display = 'block';
+    setTimeout(()=> t.style.display = 'none', time);
+  }
+
+  function formatDateISO(ts){
+    const d = new Date(ts);
+    return d.toLocaleString();
+  }
+
+  /*******************************
+   * RENDER: Cards Grid
+   *******************************/
+  const cardsGrid = document.getElementById('cardsGrid');
+  function renderCards(){
+    cardsGrid.innerHTML = '';
+    Object.keys(territoryMap).forEach(k=>{
+      const n = Number(k);
+      const card = document.createElement('div');
+      card.className = 'card';
+      // different colors for first two special cards
+      if(n===1) card.innerHTML = `<div class="icon-wrap" style="background:linear-gradient(135deg,var(--green-400),var(--green-500)); color:white; font-size:22px;">📍</div><div class="h">Mapa Interactivo</div>`;
+      else card.innerHTML = `<div class="icon-wrap" style="background:#f3faf6; color:var(--green-500); font-size:22px;">${n}</div><div class="h">Territorio ${n}</div><div class="muted" style="margin-top:6px;">${territoryMap[n]} manzanas</div>`;
+      card.addEventListener('click', ()=>{
+        // If clicked on card representing territory -> open newScreen selecting territory
+        openNewScreenForTerritory(n);
+      });
+      cardsGrid.appendChild(card);
+    });
+
+    // Add special cards at the top: Nuevo Reporte, Tablero, Reportes, Sugerencias
+    // We'll ensure first visible cards include them — for aesthetics insert at beginning
+    const specials = [
+      {title:'Mapa Interactivo', icon:'🗺️', action:()=> openNewScreenForTerritory(1)},
+      {title:'Nuevo Reporte', icon:'✍️', action:()=> { showToast('Elegí un territorio en Inicio'); }},
+      {title:'Tablero de Anuncios', icon:'📣', action:()=> navigateTo('reportsScreen')},
+      {title:'Reportes', icon:'📓', action:()=> navigateTo('reportsScreen')},
+      {title:'Sugerencia próximas salidas', icon:'📅', action:()=> navigateTo('reportsScreen')}
+    ];
+    // Prepend specials by inserting at start
+    for(let i=specials.length-1;i>=0;i--){
+      const s = specials[i];
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<div class="icon-wrap" style="background:#f3faf6; color:var(--green-500);">${s.icon}</div><div class="h">${s.title}</div>`;
+      el.addEventListener('click', s.action);
+      cardsGrid.insertBefore(el, cardsGrid.firstChild);
+    }
+  }
+
+  /*******************************
+   * OPEN NEW SCREEN (MANZANAS)
+   *******************************/
+  const newScreen = document.getElementById('newScreen');
+  const homeScreen = document.getElementById('homeScreen');
+
+  function openNewScreenForTerritory(n){
+    selectedTerritory = n;
+    selectedManzanas = new Set();
+    document.getElementById('newTitle').innerText = `Territorio ${n}`;
+    // render manzanas
+    const wrap = document.getElementById('manzanasWrap');
+    wrap.innerHTML = '';
+    const count = territoryMap[n] || 4;
+    for(let i=0;i<count;i++){
+      const label = String.fromCharCode(65+i); // A, B, C...
+      const b = document.createElement('button');
+      b.className = 'manzana';
+      b.innerText = label;
+      b.addEventListener('click', ()=>{
+        if(selectedManzanas.has(label)){ selectedManzanas.delete(label); b.classList.remove('selected'); }
+        else { selectedManzanas.add(label); b.classList.add('selected'); }
+      });
+      wrap.appendChild(b);
+    }
+    // show screen
+    navigateTo('newScreen');
+  }
+
+  /*******************************
+   * NAVIGATION helpers
+   *******************************/
+  function navigateTo(screenId){
+    // hide all screens
+    ['homeScreen','newScreen','reportsScreen','helpScreen','profileScreen'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(id === screenId) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    });
+    // hide settings menu if open
+    document.getElementById('settingsMenu').style.display = 'none';
+  }
+
+  // Back button on new screen
+  document.getElementById('backFromNew').addEventListener('click', ()=>{
+    navigateTo('homeScreen');
+    selectedTerritory = null;
+    selectedManzanas = new Set();
+  });
+
+  // bottom/pc nav
+  document.querySelectorAll('.nav').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const nav = btn.getAttribute('data-nav');
+      if(nav === 'home') navigateTo('homeScreen');
+      if(nav === 'reports') navigateTo('reportsScreen');
+      if(nav === 'help') navigateTo('helpScreen');
+      if(nav === 'profile') navigateTo('profileScreen');
+    });
+  });
+  document.querySelectorAll('.pc-nav').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const nav = btn.getAttribute('data-nav');
+      if(nav) {
+        if(nav==='home') navigateTo('homeScreen');
+        if(nav==='reports') navigateTo('reportsScreen');
+        if(nav==='help') navigateTo('helpScreen');
+        if(nav==='profile') navigateTo('profileScreen');
+      }
+    });
+  });
+
+  // mobile nav
+  document.querySelectorAll('[data-mobile]').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const t = btn.getAttribute('data-mobile');
+      if(t==='home') navigateTo('homeScreen');
+      if(t==='reports') navigateTo('reportsScreen');
+      if(t==='help') navigateTo('helpScreen');
+      if(t==='profile') navigateTo('profileScreen');
+    });
+  });
+
+  // PC FAB and mobile FAB open new screen (require a territory selected -> if none, show toast)
+  document.getElementById('pcFab').addEventListener('click', ()=> {
+    if(!selectedTerritory){ showToast('Elegí primero un territorio en Inicio'); return; }
+    openNewScreenForTerritory(selectedTerritory);
+  });
+  const fabMobile = document.getElementById('fabMobile');
+  if(fabMobile) fabMobile.addEventListener('click', ()=> {
+    if(!selectedTerritory){ showToast('Elegí primero un territorio en Inicio'); return; }
+    openNewScreenForTerritory(selectedTerritory);
+  });
+
+  /*******************************
+   * SAVE REPORT - Firebase + local + WhatsApp
+   *******************************/
+  document.getElementById('saveAndSend').addEventListener('click', async ()=>{
+    // validations
+    if(!selectedTerritory){ showToast('No hay territorio seleccionado'); return; }
+    if(selectedManzanas.size === 0){ showToast('Tildá al menos una manzana'); return; }
+    const conductor = document.getElementById('conductorInput').value.trim();
+    if(!conductor){ showToast('Ingresá el nombre del conductor'); return; }
+    const obs = document.getElementById('obsInput').value.trim();
+    const incomplete = document.getElementById('incompleteFace').checked;
+    const payload = {
+      territory: selectedTerritory,
+      manzanas: Array.from(selectedManzanas).sort(),
+      conductor,
+      observation: obs,
+      incompleteFace: incomplete,
+      timestamp: new Date().toISOString()
+    };
+
+    // Save to Firebase (if available)
+    try {
+      if(dbRef) {
+        const pushRef = await dbRef.push(payload);
+        // pushed
+      } else {
+        throw new Error('dbRef no inicializado');
+      }
+      showToast('Reporte guardado (sincronizado)');
+    } catch(e){
+      // fallback local
+      const id = localSave(payload);
+      showToast('Guardado local (sin conexión)');
+      console.error('save error', e);
+    }
+
+    // Save local backup as well
+    localSave(payload);
+
+    // send WhatsApp
+    sendWhatsApp(payload);
+
+    // Clear form and return
+    document.getElementById('conductorInput').value = '';
+    document.getElementById('obsInput').value = '';
+    document.getElementById('incompleteFace').checked = false;
+    selectedManzanas = new Set();
+    navigateTo('homeScreen');
+  });
+
+  document.getElementById('saveLocal').addEventListener('click', ()=>{
+    if(!selectedTerritory){ showToast('No hay territorio seleccionado'); return; }
+    if(selectedManzanas.size === 0){ showToast('Tildá al menos una manzana'); return; }
+    const conductor = document.getElementById('conductorInput').value.trim();
+    if(!conductor){ showToast('Ingresá el nombre del conductor'); return; }
+    const obs = document.getElementById('obsInput').value.trim();
+    const incomplete = document.getElementById('incompleteFace').checked;
+    const payload = {
+      territory: selectedTerritory,
+      manzanas: Array.from(selectedManzanas).sort(),
+      conductor,
+      observation: obs,
+      incompleteFace: incomplete,
+      timestamp: new Date().toISOString()
+    };
+    localSave(payload);
+    showToast('Guardado local');
+    document.getElementById('conductorInput').value = '';
+    document.getElementById('obsInput').value = '';
+    document.getElementById('incompleteFace').checked = false;
+    selectedManzanas = new Set();
+    navigateTo('homeScreen');
+  });
+
+  /*******************************
+   * Local persistence (localStorage)
+   *******************************/
+  function localSave(payload){
+    const key = 'territorios_reports_v2';
+    const raw = localStorage.getItem(key);
+    const obj = raw ? JSON.parse(raw) : {};
+    const id = 'local_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+    obj[id] = payload;
+    localStorage.setItem(key, JSON.stringify(obj));
+    // add to in-memory and UI
+    reports[id] = payload;
+    renderReportsList();
+    return id;
+  }
+  function localLoadAll(){
+    const key = 'territorios_reports_v2';
+    const raw = localStorage.getItem(key);
+    if(!raw) return {};
+    try{
+      return JSON.parse(raw);
+    }catch(e){ return {}; }
+  }
+
+  /*******************************
+   * Render reports list (realtime merged)
+   *******************************/
+  function renderReportsList(){
+    // merge localStorage and reports (reports holds DB entries + locals added)
+    const listWrap = document.getElementById('reportsList');
+    listWrap.innerHTML = '';
+    const merged = Object.assign({}, reports, localLoadAll());
+    const keys = Object.keys(merged).sort((a,b)=>{
+      const ta = new Date(merged[a].timestamp).getTime();
+      const tb = new Date(merged[b].timestamp).getTime();
+      return tb - ta;
+    });
+    document.getElementById('reportsCount').innerText = keys.length;
+    keys.forEach(k=>{
+      const r = merged[k];
+      const card = document.createElement('div');
+      card.style.background = 'var(--card)';
+      card.style.borderRadius = '12px';
+      card.style.padding = '12px';
+      card.style.display = 'flex';
+      card.style.justifyContent = 'space-between';
+      card.style.alignItems = 'flex-start';
+      card.style.boxShadow = '0 6px 18px rgba(8,22,18,0.04)';
+      card.innerHTML = `<div>
+          <div style="font-weight:700">Territorio ${r.territory} — ${r.manzanas.join(', ')}</div>
+          <div style="color:#475569; margin-top:6px">${r.conductor} • ${new Date(r.timestamp).toLocaleString()}</div>
+          <div style="margin-top:6px; color:#64748b">${r.observation || ''}</div>
+        </div>
+        <div style="text-align:right">
+          <div>${r.incompleteFace ? '<span style="color:#e11d48;font-weight:700">Cara incompleta</span>' : '<span style="color:#10b981;font-weight:700">Completo</span>'}</div>
+          <div style="margin-top:8px"><button class="btn btn-ghost" onclick='openReportDetails("${k}")'>Ver</button></div>
+        </div>`;
+      listWrap.appendChild(card);
+    });
+  }
+
+  function openReportDetails(id){
+    const merged = Object.assign({}, reports, localLoadAll());
+    const r = merged[id];
+    if(!r){ showToast('Reporte no encontrado'); return; }
+    const w = window.open('', '_blank');
+    w.document.body.style.fontFamily = 'Inter, Arial, sans-serif';
+    w.document.body.innerHTML = `<div style="padding:16px">
+      <h2>Reporte — Territorio ${r.territory}</h2>
+      <p><strong>Manzanas:</strong> ${r.manzanas.join(', ')}</p>
+      <p><strong>Conductor:</strong> ${r.conductor}</p>
+      <p><strong>Observación:</strong> ${r.observation || '—'}</p>
+      <p><strong>Cara incompleta:</strong> ${r.incompleteFace ? 'Sí' : 'No'}</p>
+      <p><strong>Fecha:</strong> ${new Date(r.timestamp).toLocaleString()}</p>
+    </div>`;
+  }
+
+  /*******************************
+   * WhatsApp helper
+   *******************************/
+  function sendWhatsApp(payload){
+    const phone = '5493416715020'; // international format (ARG +54) but with 9 for mobile: 549...
+    const d = new Date(payload.timestamp);
+    const text = `Nuevo reporte de predicación:
+Territorio: ${payload.territory}
+Manzanas: ${payload.manzanas.join(', ')}
+Conductor: ${payload.conductor}
+Observación: ${payload.observation || '-'}
+Cara incompleta: ${payload.incompleteFace ? 'Sí' : 'No'}
+Fecha: ${d.toLocaleString()}`;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
+
+  /*******************************
+   * Realtime listeners: Firebase -> merge into reports & UI
+   *******************************/
+  if(typeof dbRef !== 'undefined' && dbRef !== null){
+    dbRef.on('value', snapshot=>{
+      const val = snapshot.val() || {};
+      // Normalize: each key is id with value payload
+      // Replace reports map
+      reports = {};
+      Object.keys(val).forEach(k=>{
+        reports[k] = val[k];
+      });
+      renderReportsList();
+    });
+    dbRef.on('child_added', snap => {
+      // handled by value
+    });
+  } else {
+    // no dbRef: fallback to local only
+    const local = localLoadAll();
+    Object.keys(local).forEach(k=> reports[k] = local[k]);
+    renderReportsList();
+  }
+
+  /*******************************
+   * Load initial UI and events
+   *******************************/
+  renderCards();
+  renderReportsList();
+
+  // Settings menu toggle
+  document.getElementById('settingsBtn').addEventListener('click', ()=>{
+    const m = document.getElementById('settingsMenu');
+    m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+  });
+  // Dark mode toggle
+  document.getElementById('darkToggle').addEventListener('change', (e)=>{
+    if(e.target.checked) document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+  });
+
+  // Search input (simple filter by conductor / territory)
+  document.getElementById('searchInput').addEventListener('input', (e)=>{
+    const q = e.target.value.trim().toLowerCase();
+    if(!q){ renderReportsList(); return; }
+    const merged = Object.assign({}, reports, localLoadAll());
+    const filteredKeys = Object.keys(merged).filter(k=>{
+      const r = merged[k];
+      return (String(r.territory).toLowerCase().includes(q) || (r.conductor||'').toLowerCase().includes(q) || (r.observation||'').toLowerCase().includes(q));
+    });
+    // render only filtered
+    const listWrap = document.getElementById('reportsList');
+    listWrap.innerHTML = '';
+    filteredKeys.sort((a,b)=> new Date(merged[b].timestamp) - new Date(merged[a].timestamp)).forEach(k=>{
+      const r = merged[k];
+      const card = document.createElement('div');
+      card.style.background = 'var(--card)';
+      card.style.borderRadius = '12px';
+      card.style.padding = '12px';
+      card.style.display = 'flex';
+      card.style.justifyContent = 'space-between';
+      card.style.alignItems = 'flex-start';
+      card.style.boxShadow = '0 6px 18px rgba(8,22,18,0.04)';
+      card.innerHTML = `<div>
+          <div style="font-weight:700">Territorio ${r.territory} — ${r.manzanas.join(', ')}</div>
+          <div style="color:#475569; margin-top:6px">${r.conductor} • ${new Date(r.timestamp).toLocaleString()}</div>
+          <div style="margin-top:6px; color:#64748b">${r.observation || ''}</div>
+        </div>
+        <div style="text-align:right">
+          <div>${r.incompleteFace ? '<span style="color:#e11d48;font-weight:700">Cara incompleta</span>' : '<span style="color:#10b981;font-weight:700">Completo</span>'}</div>
+          <div style="margin-top:8px"><button class="btn btn-ghost" onclick='openReportDetails("${k}")'>Ver</button></div>
+        </div>`;
+      listWrap.appendChild(card);
+    });
+  });
+
+  // mobile bottom nav wiring (for small screens)
+  document.querySelectorAll('.mobile-bottom .nav-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const nav = btn.getAttribute('data-mobile');
+      if(nav === 'home') navigateTo('homeScreen');
+      if(nav === 'reports') navigateTo('reportsScreen');
+      if(nav === 'help') navigateTo('helpScreen');
+      if(nav === 'profile') navigateTo('profileScreen');
+    });
+  });
+
+  // clicking on "Inicio" text (brand) goes home
+  document.querySelectorAll('.brand').forEach(b=> b.addEventListener('click', ()=> navigateTo('homeScreen')));
+
+  // small UX improvement: clicking territory cards selects and highlights that territory in the grid,
+  // and stores selectedTerritory so user can press + to open new screen quickly
+  function highlightSelectedTerritory(n){
+    // simple highlight: iterate deck of cards and toggle border
+    Array.from(cardsGrid.children).forEach(child=>{
+      child.style.border = '';
+      child.style.boxShadow = '0 8px 20px rgba(8,22,18,0.04)';
+    });
+    // find first card with innerText containing 'Territorio n'
+    for(const child of cardsGrid.children){
+      if(child.innerText && child.innerText.indexOf(String(n)) !== -1){
+        child.style.boxShadow = '0 12px 28px rgba(16,185,129,0.12)';
+        child.style.border = '2px solid rgba(16,185,129,0.12)';
+        break;
+      }
+    }
+  }
+
+  // When user clicks a territory card (renderCards' listener does openNewScreenForTerritory),
+  // but we also want clicking the inner numeric card to simply select it (without opening new screen) on second click.
+  // We'll add a short selection mechanism: click once selects, double click opens form.
+  (function attachSelectionBehavior(){
+    const cardClickState = {};
+    cardsGrid.addEventListener('click', (ev)=>{
+      let el = ev.target;
+      while(el && !el.classList.contains('card')) el = el.parentElement;
+      if(!el) return;
+      // determine territory number inside element (search text)
+      const txt = el.innerText || '';
+      const match = txt.match(/Territorio\\s*(\\d+)/i) || txt.match(/^(\\d+)/);
+      let n = null;
+      if(match) n = Number(match[1]);
+      // if no number, ignore
+      if(!n) { /* could be special, ignore */ return; }
+      const now = Date.now();
+      if(cardClickState[n] && (now - cardClickState[n] < 400)){
+        // double click -> open form
+        openNewScreenForTerritory(n);
+        cardClickState[n] = 0;
+      } else {
+        // single click -> select
+        selectedTerritory = n;
+        highlightSelectedTerritory(n);
+        showToast(`Territorio ${n} seleccionado. Presioná + para reportar.`);
+        cardClickState[n] = now;
+      }
+    });
+  })();
+
+  // initial load: if DB present will load via listeners; otherwise load local backups
+  (function initialLoad(){
+    // if dbRef exists, value event will populate reports via listeners; else load local
+    if(!dbRef){
+      const local = localLoadAll();
+      reports = Object.assign({}, reports, local);
+      renderReportsList();
+      showToast('Trabajando en modo local (sin Firebase)');
+    } else {
+      // ensure listener exists (we attached earlier with on('value'))
+      // start by reading once to populate
+      dbRef.once('value').then(snap=>{
+        const val = snap.val() || {};
+        reports = {};
+        Object.keys(val).forEach(k=> reports[k] = val[k]);
+        renderReportsList();
+      }).catch(e=> { console.warn('db read once failed', e); });
+    }
+  })();
+
+  // helper to load local
+  function localLoadAll(){
+    const raw = localStorage.getItem('territorios_reports_v2');
+    if(!raw) return {};
+    try{ return JSON.parse(raw); }catch(e){ return {}; }
+  }
+
+  // small accessibility: pressing ESC closes settings menu
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape'){ document.getElementById('settingsMenu').style.display = 'none'; }
+  });
+
+  // final: export debug helper
+  window._reports = reports;
+  </script>
 </body>
 </html>
