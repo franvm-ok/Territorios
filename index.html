@@ -6,72 +6,104 @@
 <title>Departamento de Territorio — Congregación Cuatro Plazas</title>
 
 <style>
+    :root {
+        --primary: #2f5d87;
+        --primary-light: #3f7ab3;
+        --bg: #f4f6f8;
+        --card-bg: #ffffff;
+        --radius: 18px;
+        --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
     body {
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: #eef5ee;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: var(--bg);
         color: #1e1e1e;
     }
 
+    /* Encabezado estilo JW.org */
     header {
+        background: var(--primary);
+        padding: 16px 22px;
+        color: #ffffff;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 15px 20px;
-        background: #ffffff;
-        border-bottom: 1px solid #dcdcdc;
         position: sticky;
         top: 0;
         z-index: 10;
+        box-shadow: var(--shadow);
     }
 
     header h1 {
-        font-size: 1.2rem;
         margin: 0;
+        font-size: 1.2rem;
         font-weight: 600;
+        letter-spacing: 0.5px;
     }
 
     .login-btn {
-        padding: 10px 16px;
-        background: #4a7c59;
-        color: #fff;
+        padding: 10px 18px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: var(--primary);
         border: none;
-        border-radius: 10px;
         font-size: 0.9rem;
+        font-weight: 600;
         cursor: pointer;
+        transition: 0.2s;
+        box-shadow: var(--shadow);
     }
 
+    .login-btn:hover {
+        background: #e6e6e6;
+    }
+
+    /* Contenedor principal */
     .container {
-        max-width: 600px;
+        max-width: 650px;
         margin: auto;
-        padding: 20px;
+        padding: 25px;
         text-align: center;
     }
 
+    /* Tarjetas estilo JW Library */
     .btn-card {
         width: 100%;
-        background: white;
-        padding: 22px;
-        margin: 14px 0;
-        border-radius: 16px;
-        font-size: 1.2rem;
-        border: 2px solid #c6dfc6;
+        background: var(--card-bg);
+        padding: 26px;
+        margin: 16px 0;
+        border-radius: var(--radius);
+        font-size: 1.25rem;
+        border: none;
         cursor: pointer;
-        transition: 0.2s;
+        transition: 0.25s;
+        box-shadow: var(--shadow);
+        font-weight: 600;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 16px;
     }
 
     .btn-card:hover {
-        background: #dceedd;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .icon {
+        font-size: 1.7rem;
     }
 
     footer {
         text-align: center;
-        padding: 25px;
+        padding: 28px;
         color: #6e6e6e;
         font-size: 0.9rem;
     }
-</style>
 
+</style>
 </head>
 <body>
 
@@ -83,23 +115,23 @@
 <div class="container">
 
     <button class="btn-card" onclick="location.href='reportar.html'">
-        📋 Reportar Territorio
+        <span class="icon">📋</span> Reportar Territorio
     </button>
 
     <button class="btn-card" onclick="location.href='territorios.html'">
-        🗺️ Ver Territorios
+        <span class="icon">🗺️</span> Ver Territorios
     </button>
 
     <button class="btn-card" onclick="location.href='reportes.html'">
-        📑 Reportes
+        <span class="icon">📑</span> Reportes
     </button>
 
     <button class="btn-card" onclick="location.href='sugerencias.html'">
-        💡 Sugerencias de próximas salidas
+        <span class="icon">💡</span> Sugerencias Próximas Salidas
     </button>
 
     <button class="btn-card" onclick="location.href='mapa.html'">
-        📍 Mapa Interactivo
+        <span class="icon">📍</span> Mapa Interactivo
     </button>
 
 </div>
