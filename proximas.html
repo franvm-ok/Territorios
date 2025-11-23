@@ -4,61 +4,103 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Próximas Salidas</title>
+
 <style>
-body { font-family: Arial, sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
-h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
-.territorio-card { background:white; border-radius:15px; padding:15px; margin-bottom:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
-.territorio-card h3 { margin:0 0 10px 0; color:#2d6a4f; }
-.territorio-card p { margin:4px 0; }
-.manzana-pendiente { color:red; font-weight:bold; }
-
-.btn {
-    padding:14px 18px;
-    border-radius:15px;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-    border:none;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-    transition:0.2s;
+body {
+    margin: 0;
+    padding: 20px;
+    background: #f4f4f4;
+    font-family: Arial, sans-serif;
 }
-.btn.enviar, .btn.agregar { background:#2d6a4f; color:white; }
-.btn.enviar:hover, .btn.agregar:hover { background:#1f4d37; }
-.btn.volver { background:white; color:#1a4b27; }
-.btn.volver:hover { background:#e8e8e8; }
 
+h1 {
+    text-align: center;
+    color: #1a4b27;
+    margin-bottom: 20px;
+}
+
+/* Tarjetas */
+.card {
+    background: white;
+    padding: 18px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-bottom: 18px;
+    font-size: 17px;
+}
+
+.titulo {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1a4b27;
+    margin-bottom: 8px;
+}
+
+.pendientes {
+    color: #c1121f;
+    font-weight: bold;
+}
+
+.conductor {
+    color: #444;
+    font-weight: bold;
+}
+
+.btn-volver {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    background: white;
+    color: #1a4b27;
+    border: none;
+    padding: 14px 18px;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
 </style>
 </head>
 <body>
 
 <h1>Próximas Salidas</h1>
-<div id="proximasContainer"></div>
 
-<button class="btn volver" onclick="history.back()">⬅️ Volver</button>
+<div id="contenedorPendientes"></div>
+
+<button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
 
 <script>
-const container=document.getElementById("proximasContainer");
+function cargarPendientes(){
+    const cont = document.getElementById("contenedorPendientes");
+    cont.innerHTML = "";
 
-function mostrarProximas(){
-    const proximas=JSON.parse(localStorage.getItem("proximas"))||[];
-    container.innerHTML="";
-    if(proximas.length===0){
-        container.innerHTML="<p>No hay manzanas pendientes.</p>";
+    let reportes = JSON.parse(localStorage.getItem("reportes") || "[]");
+
+    // Filtramos solo los que tienen pendientes
+    let conPendientes = reportes.filter(r => r.pendientes.length > 0);
+
+    if(conPendientes.length === 0){
+        cont.innerHTML = "<p style='text-align:center;color:#555;'>No hay manzanas pendientes.</p>";
         return;
     }
-    proximas.forEach(p=>{
-        const div=document.createElement("div");
-        div.className="territorio-card";
-        div.innerHTML=`
-            <h3>Territorio ${p.territorio}</h3>
-            <p><strong>Manzanas pendientes:</strong> <span class="manzana-pendiente">${p.manzanas.join(", ")}</span></p>
-            <p><strong>Último conductor:</strong> ${p.ultimoConductor}</p>
+
+    conPendientes.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+            <div class="titulo">Territorio ${r.territorio}</div>
+            <p><strong>Conductor:</strong> <span class="conductor">${r.nombre}</span></p>
+            <p><strong>Manzanas pendientes:</strong> 
+            <span class="pendientes">${r.pendientes.join(", ")}</span></p>
         `;
-        container.appendChild(div);
+
+        cont.appendChild(div);
     });
 }
 
-mostrarProximas();
+cargarPendientes();
 </script>
 
 </body>
