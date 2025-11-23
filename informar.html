@@ -43,7 +43,7 @@ textarea{resize:vertical;min-height:60px}
 <script>
 const territorios = Array.from({length:32},(_,i)=>({
     numero:i+1,
-    manzanas:["A","B","C","D","E"]
+    manzanas:["A","B","C","D","E"] 
 }));
 
 const grid=document.getElementById("territoriosGrid");
@@ -51,9 +51,9 @@ const manzanasSection=document.getElementById("manzanasSection");
 const formSection=document.getElementById("formSection");
 let territorioSeleccionado=null;
 
-function renderTarjetas(filtro=""){
+function renderTarjetas(){
     grid.innerHTML="";
-    territorios.filter(t=>t.numero.toString().includes(filtro)).forEach(t=>{
+    territorios.forEach(t=>{
         const card=document.createElement("div");
         card.className="card";
         card.textContent=`Territorio ${t.numero}`;
@@ -101,6 +101,7 @@ function guardarReporte(){
 
     const fecha=new Date().toLocaleDateString();
     const reporte={fecha,nombre,territorio:territorioSeleccionado.numero,hechas,pendientes,observaciones};
+
     const reportesGuardados=JSON.parse(localStorage.getItem("reportes")||"[]");
     reportesGuardados.push(reporte);
     localStorage.setItem("reportes",JSON.stringify(reportesGuardados));
