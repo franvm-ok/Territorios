@@ -7,14 +7,14 @@
 <style>
 body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
 h1{color:#1a4b27;text-align:center;margin-bottom:20px}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box;font-size:16px}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
 .card{background:white;padding:18px;border-radius:15px;text-align:center;font-size:18px;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.1);cursor:pointer;transition:.2s}
 .card:hover{transform:scale(1.05)}
 .manzanas-section{display:none;margin-top:20px}
 .manzana{background:white;padding:12px;margin-bottom:10px;border-radius:10px;border:1px solid #ddd;cursor:pointer;font-weight:bold;font-size:17px}
 .checked{background:#d8f3dc;border-color:#2d6a4f;color:#2d6a4f}
-input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box;font-size:16px}
-textarea{resize:vertical;min-height:60px}
+textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box;font-size:16px;resize:vertical;min-height:60px}
 .btn{padding:14px 18px;border-radius:15px;font-size:18px;font-weight:bold;cursor:pointer;border:none;box-shadow:0 4px 10px rgba(0,0,0,0.08);transition:.15s}
 .enviar{background:#2d6a4f;color:white;float:right;margin-left:5px}
 .enviar:hover{background:#1f4d37}
@@ -26,6 +26,8 @@ textarea{resize:vertical;min-height:60px}
 <body>
 
 <h1>Informar Territorio</h1>
+
+<input type="text" id="searchInput" placeholder="Buscar territorio por número…">
 
 <div id="territoriosGrid" class="grid"></div>
 
@@ -41,19 +43,49 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const territorios = Array.from({length:32},(_,i)=>({
-    numero:i+1,
-    manzanas:["A","B","C","D","E"] 
-}));
+const territorios=[
+    {numero:1,manzanas:["A","B","C","D"]},
+    {numero:2,manzanas:["A","B","C","D"]},
+    {numero:3,manzanas:["A","B","C","D"]},
+    {numero:4,manzanas:["A","B","C","D","E"]},
+    {numero:5,manzanas:["A","B","C","D","E","F","G","H"]},
+    {numero:6,manzanas:["A","B","C","D","E","F"]},
+    {numero:7,manzanas:["A","B","C","D","E","F"]},
+    {numero:8,manzanas:["A","B","C","D","E","F","G"]},
+    {numero:9,manzanas:["A","B","C","D","E","F","G","H","I"]},
+    {numero:10,manzanas:["A","B","C","D","E","F","G","H","I"]},
+    {numero:11,manzanas:["A","B","C","D","E"]},
+    {numero:12,manzanas:["A","B","C","D","E","F"]},
+    {numero:13,manzanas:["A","B","C","D","E","F","G","H","I"]},
+    {numero:14,manzanas:["A","B","C","D","E","F"]},
+    {numero:15,manzanas:["A","B","C","D","E"]},
+    {numero:16,manzanas:["A","B","C","D","E","F","G"]},
+    {numero:17,manzanas:["A","B","C","D","E","F","G"]},
+    {numero:18,manzanas:["A","B","C","D","E","F"]},
+    {numero:19,manzanas:["A","B","C","D","E","F"]},
+    {numero:20,manzanas:["A","B","C","D","E","F","G"]},
+    {numero:21,manzanas:["A","B","C","D","E","F","G","H"]},
+    {numero:22,manzanas:["A","B","C","D","E","F"]},
+    {numero:23,manzanas:["A","B","C","D","E","F"]},
+    {numero:24,manzanas:["A","B","C","D","E"]},
+    {numero:25,manzanas:["A","B","C","D","E","F"]},
+    {numero:26,manzanas:["A","B","C","D","E","F","G"]},
+    {numero:27,manzanas:["A","B","C","D","E","F","G"]},
+    {numero:28,manzanas:["A","B","C","D","E","F"]},
+    {numero:29,manzanas:["A","B","C","D","E"]},
+    {numero:30,manzanas:["A","B","C","D","E","F","G","H"]},
+    {numero:31,manzanas:["A","B","C","D","E","F","G","H"]},
+    {numero:32,manzanas:["A","B","C","D","E","F"]}
+];
 
 const grid=document.getElementById("territoriosGrid");
 const manzanasSection=document.getElementById("manzanasSection");
 const formSection=document.getElementById("formSection");
 let territorioSeleccionado=null;
 
-function renderTarjetas(){
+function renderTarjetas(filtro=""){
     grid.innerHTML="";
-    territorios.forEach(t=>{
+    territorios.filter(t=>t.numero.toString().includes(filtro)).forEach(t=>{
         const card=document.createElement("div");
         card.className="card";
         card.textContent=`Territorio ${t.numero}`;
@@ -61,11 +93,17 @@ function renderTarjetas(){
         grid.appendChild(card);
     });
 }
+
 renderTarjetas();
+
+document.getElementById("searchInput").addEventListener("input",e=>{
+    renderTarjetas(e.target.value);
+});
 
 function abrirTerritorio(t){
     territorioSeleccionado=t;
-    grid.style.display="none"; // ocultar grilla de territorios
+    grid.style.display="none";
+    document.getElementById("searchInput").style.display="none";
     manzanasSection.style.display="block";
     formSection.style.display="block";
 
@@ -78,6 +116,12 @@ function abrirTerritorio(t){
         manzanasSection.appendChild(div);
     });
 
+    const volverBtn=document.createElement("button");
+    volverBtn.className="btn volver";
+    volverBtn.textContent="⬅️ Volver a territorios";
+    volverBtn.onclick=volverTerritorios;
+    manzanasSection.appendChild(volverBtn);
+
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -85,6 +129,7 @@ function volverTerritorios(){
     manzanasSection.style.display="none";
     formSection.style.display="none";
     grid.style.display="grid";
+    document.getElementById("searchInput").style.display="block";
     renderTarjetas();
 }
 
@@ -114,5 +159,6 @@ function guardarReporte(){
     document.getElementById("observaciones").value="";
 }
 </script>
+
 </body>
 </html>
