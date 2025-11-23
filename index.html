@@ -1,753 +1,112 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Departamento de Territorio</title>
-  <meta name="description" content="App Territorios - reportes y sincronización en tiempo real" />
-  <style>
-    /* ---------- iOS-like theme & layout (all styles included) ---------- */
-    :root{
-      --green-500:#10b981;
-      --green-400:#34d399;
-      --bg:#f5f5f7;
-      --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background:var(--bg);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      -webkit-tap-highlight-color: transparent;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Departamento de Territorio — Congregación Cuatro Plazas</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #eef5ee;
+        color: #1e1e1e;
     }
 
-    /* App shell */
-    .app-shell{min-height:100vh; display:flex; flex-direction:column;}
-    .main-row{display:flex; flex:1; min-height:0;}
-
-    /* Header */
-    header.app-header{
-      background: rgba(255,255,255,0.82);
-      backdrop-filter: saturate(180%) blur(18px);
-      border-bottom:1px solid rgba(0,0,0,0.06);
-      padding:14px 18px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      position:sticky; top:0; z-index:60;
-    }
-    .left-placeholder{width:92px}
-    .brand{ text-align:center; width:100%;}
-    .brand .title{ color:var(--green-500); font-weight:700; font-size:1.12rem; letter-spacing:-0.2px;}
-    .brand .subtitle{ font-size:0.82rem; color:var(--muted); margin-top:2px;}
-
-    .header-right{display:flex; align-items:center; gap:12px;}
-    .search-box{ display:flex; align-items:center; gap:8px; background:#f7faf8; padding:8px 12px; border-radius:999px; border:1px solid rgba(0,0,0,0.04); width:220px;}
-    .search-box input{background:transparent; border:0; outline:none; width:100%; font-size:0.95rem;color:var(--text);}
-
-    /* Sidebar PC */
-    .pc-sidebar{display:none}
-    @media(min-width:1024px){
-      .pc-sidebar{
-        display:flex; width:92px; background: rgba(255,255,255,0.86); backdrop-filter: blur(14px); border-right:1px solid rgba(0,0,0,0.06);
-        flex-direction:column; align-items:center; padding-top:1.25rem; gap:0.75rem; position:fixed; left:0; top:0; bottom:0; z-index:40;
-      }
-      .content-area{margin-left:92px; flex:1;}
-      .pc-nav{ background:transparent; border:0; padding:6px; width:64px; cursor:pointer; display:flex; flex-direction:column; align-items:center;}
-      .pc-icon{ font-size:20px; color:var(--muted); }
-      .pc-label{ font-size:11px; color:var(--muted); margin-top:6px; }
-      .pc-fab{ margin-top:6px; width:64px; height:64px; border-radius:12px; background:linear-gradient(135deg,var(--green-400),var(--green-500)); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; border:none; cursor:pointer;}
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #ffffff;
+        border-bottom: 1px solid #dcdcdc;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 
-    /* Hero / dashboard */
-    .hero-wrap{ max-width:1100px; margin:0 auto 14px; border-radius:14px; overflow:hidden; box-shadow:0 12px 30px rgba(15,23,42,0.06); }
-    .hero-img{ width:100%; display:block; height:auto; }
-
-    .dashboard{ padding:18px; display:grid; grid-template-columns:repeat(2,1fr); gap:14px; max-width:1200px; margin:0 auto;}
-    @media(min-width:780px){ .dashboard{ grid-template-columns:repeat(3,1fr); } }
-    @media(min-width:1200px){ .dashboard{ grid-template-columns:repeat(4,1fr);} }
-
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.92));
-      padding:18px; border-radius:20px; box-shadow:0 10px 26px rgba(15,23,42,0.06);
-      display:flex; flex-direction:column; justify-content:space-between; min-height:140px; cursor:pointer; transition: transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .16s;
-      -webkit-tap-highlight-color: transparent;
+    header h1 {
+        font-size: 1.2rem;
+        margin: 0;
+        font-weight: 600;
     }
-    .card:hover{ transform: translateY(-6px); box-shadow:0 18px 36px rgba(15,23,42,0.10); }
-    .card:active{ transform: translateY(-2px) scale(.997); }
-    .card .icon-wrap{ width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; background: rgba(243,250,246,0.9); font-size:22px; }
-    .card .h{ font-weight:700; font-size:1.06rem; color:var(--text); }
 
-    /* Manzanas & Form */
-    .manzanas-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-    .manzana{ padding:8px 12px; background:#f2f6f3; border-radius:12px; cursor:pointer; border:1px solid transparent; transition:all .12s; font-weight:700; color:#0b3a28;}
-    .manzana.selected{ background: linear-gradient(90deg,var(--green-400),var(--green-500)); color:white; transform:translateY(-4px); box-shadow:0 12px 24px rgba(16,185,129,0.12); }
+    .login-btn {
+        padding: 10px 16px;
+        background: #4a7c59;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
 
-    .form-card{ background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98)); padding:16px; border-radius:14px; box-shadow:0 10px 24px rgba(15,23,42,0.06); margin-top:12px;}
-    .field{ margin-top:12px; display:block; }
-    .field input, .field textarea{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,0,0.06); background:#fbfbfd; font-size:14px; outline:none; }
-    .field textarea{ min-height:90px; resize:vertical; }
+    .container {
+        max-width: 600px;
+        margin: auto;
+        padding: 20px;
+        text-align: center;
+    }
 
-    /* Buttons */
-    .btn{ padding:10px 12px; border-radius:12px; border:0; cursor:pointer; font-weight:700; font-size:15px; }
-    .btn-teal{ background: linear-gradient(90deg,var(--green-400),var(--green-500)); color:white; box-shadow:0 12px 34px rgba(16,185,129,0.12); }
-    .btn-ghost{ background:transparent; border:1px solid rgba(0,0,0,0.06); color:var(--text); }
-    .actions-row{ display:flex; gap:10px; margin-top:12px; }
+    .btn-card {
+        width: 100%;
+        background: white;
+        padding: 22px;
+        margin: 14px 0;
+        border-radius: 16px;
+        font-size: 1.2rem;
+        border: 2px solid #c6dfc6;
+        cursor: pointer;
+        transition: 0.2s;
+    }
 
-    /* Bottom nav mobile */
-    .mobile-bottom{ display:flex; gap:6px; align-items:center; justify-content:space-around; position:fixed; left:8px; right:8px; bottom:12px; padding:10px 12px; background: rgba(255,255,255,0.94); border-radius:16px; box-shadow:0 12px 36px rgba(15,23,42,0.08); z-index:60; border:1px solid rgba(0,0,0,0.04); }
-    .nav-btn{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:12px; color:var(--muted); background:transparent; border:0; cursor:pointer; }
-    .fab-center{ width:64px; height:64px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--green-400),var(--green-500)); color:white; font-weight:700; font-size:22px; box-shadow:0 16px 36px rgba(16,185,129,0.18); transform:translateY(-6px); }
+    .btn-card:hover {
+        background: #dceedd;
+    }
 
-    .reports-list{ display:flex; flex-direction:column; gap:12px; padding:0 18px 120px 18px; }
+    footer {
+        text-align: center;
+        padding: 25px;
+        color: #6e6e6e;
+        font-size: 0.9rem;
+    }
+</style>
 
-    .muted{ color:var(--muted); font-size:13px; }
-    .small{ font-size:12px; color:var(--muted); }
-    .settings-menu{ display:none; position:absolute; right:0; top:44px; background:var(--card); border-radius:12px; box-shadow:0 10px 30px rgba(2,6,23,0.06); padding:12px; min-width:200px;}
-    .settings-row{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
-    .toast{ position:fixed; right:18px; bottom:86px; background: rgba(20,22,25,0.95); color:white; padding:10px 14px; border-radius:12px; box-shadow:0 8px 20px rgba(2,6,23,0.24); display:none; z-index:80; }
-
-    /* Screen transitions (iOS-like) */
-    .screen{ padding:16px; display:block; min-height: calc(100vh - 120px); transform-origin:left center; transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .22s ease; }
-    .screen.hidden{ display:none; opacity:0; transform: translateX(8px); }
-
-    /* Dark mode */
-    body.dark{ background:#071021; color:#dbeafe; }
-    body.dark .card, body.dark .form-card, body.dark .pc-sidebar, body.dark .mobile-bottom, body.dark .app-header{ background: rgba(6,12,20,0.76); border-color: rgba(255,255,255,0.03); }
-    body.dark input, body.dark textarea{ background:#071424; color:#e6eef5; border-color:#0f3b3a; }
-  </style>
 </head>
 <body>
 
-  <div class="app-shell">
+<header>
+    <h1>Departamento de Territorio</h1>
+    <button class="login-btn">Iniciar sesión</button>
+</header>
 
-    <!-- Header -->
-    <header class="app-header">
-      <div class="left-placeholder" aria-hidden="true"></div>
-      <div class="brand" role="banner">
-        <div class="title">Departamento de Territorio</div>
-        <div class="subtitle">Congregación Cuatro Plazas</div>
-      </div>
+<div class="container">
 
-      <div class="header-right">
-        <div class="search-box hidden sm:flex" role="search" aria-label="Buscar reportes">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.35-4.35" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <input id="searchInput" placeholder="Buscar reportes..." />
-        </div>
+    <button class="btn-card" onclick="location.href='reportar.html'">
+        📋 Reportar Territorio
+    </button>
 
-        <button id="loginBtn" class="btn btn-ghost hidden sm:inline" aria-label="Iniciar sesión">Iniciar sesión</button>
+    <button class="btn-card" onclick="location.href='territorios.html'">
+        🗺️ Ver Territorios
+    </button>
 
-        <div style="position:relative;">
-          <button id="settingsBtn" class="btn btn-ghost" title="Ajustes" aria-haspopup="true" aria-expanded="false">⚙️</button>
-          <div id="settingsMenu" class="settings-menu" aria-hidden="true">
-            <label class="settings-row">
-              <span>Modo oscuro</span>
-              <input id="darkToggle" type="checkbox" aria-label="Modo oscuro" />
-            </label>
-            <div class="muted small">Opciones</div>
-          </div>
-        </div>
-      </div>
-    </header>
+    <button class="btn-card" onclick="location.href='reportes.html'">
+        📑 Reportes
+    </button>
 
-    <div class="main-row">
+    <button class="btn-card" onclick="location.href='sugerencias.html'">
+        💡 Sugerencias de próximas salidas
+    </button>
 
-      <!-- Sidebar (PC) -->
-      <aside class="pc-sidebar" role="navigation" aria-label="Navegación principal">
-        <button class="nav pc-nav" data-nav="home" title="Inicio">
-          <div class="pc-icon">🏠</div><div class="pc-label">Inicio</div>
-        </button>
+    <button class="btn-card" onclick="location.href='mapa.html'">
+        📍 Mapa Interactivo
+    </button>
 
-        <button class="nav pc-nav" data-nav="reports" title="Reportes">
-          <div class="pc-icon">📰</div><div class="pc-label">Noticias</div>
-        </button>
+</div>
 
-        <button id="pcFab" title="Nuevo Reporte" class="pc-fab">+</button>
+<footer>
+    Congregación Cuatro Plazas — Departamento de Territorio
+</footer>
 
-        <button class="nav pc-nav" data-nav="help" title="Ayuda">
-          <div class="pc-icon">❓</div><div class="pc-label">Ayuda</div>
-        </button>
-
-        <button class="nav pc-nav" data-nav="profile" title="Perfil">
-          <div class="pc-icon">👤</div><div class="pc-label">Perfil</div>
-        </button>
-      </aside>
-
-      <!-- Content area -->
-      <div class="content-area">
-
-        <!-- HOME SCREEN -->
-        <main id="homeScreen" class="screen" role="main">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
-            <h2 style="margin:0; font-weight:700; font-size:18px;">Inicio</h2>
-            <div class="muted" id="connectionState">Conexión: desconectado</div>
-          </div>
-
-          <div class="hero-wrap">
-            <!-- local image path; replace with images/hero.png in repo if you upload -->
-            <img src="/mnt/data/A_2D_digital_illustration_features_a_cartoon-like_.png" alt="Hero" class="hero-img" />
-          </div>
-
-          <div class="dashboard" id="cardsGrid" aria-live="polite"></div>
-        </main>
-
-        <!-- NEW / MANZANAS SCREEN -->
-        <section id="newScreen" class="screen hidden" aria-hidden="true">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <button id="backFromNew" class="btn btn-ghost">← Volver</button>
-            <div style="font-weight:700; font-size:18px;" id="newTitle">Territorio</div>
-          </div>
-
-          <div class="form-card" role="form">
-            <div class="muted">Tildá las manzanas predicadas:</div>
-            <div id="manzanasWrap" class="manzanas-grid" aria-label="selección de manzanas"></div>
-
-            <div style="margin-top:12px;">
-              <label class="muted">Conductor</label>
-              <input id="conductorInput" type="text" placeholder="Nombre del conductor" />
-            </div>
-
-            <div style="margin-top:10px;">
-              <label class="muted">Observación</label>
-              <textarea id="obsInput" placeholder="Ej: Calle X incompleta, puerta cerrada..."></textarea>
-            </div>
-
-            <label style="display:flex; gap:8px; align-items:center; margin-top:8px;">
-              <input id="incompleteFace" type="checkbox" />
-              <span class="muted">Informar si hay alguna cara incompleta</span>
-            </label>
-
-            <div style="display:flex; gap:10px; margin-top:12px;">
-              <button id="saveAndSend" class="btn btn-teal">Guardar y enviar WhatsApp</button>
-              <button id="saveLocal" class="btn btn-ghost">Guardar local</button>
-            </div>
-
-            <div id="newMsg" class="muted" style="margin-top:10px;"></div>
-          </div>
-        </section>
-
-        <!-- REPORTS SCREEN -->
-        <section id="reportsScreen" class="screen hidden" aria-hidden="true">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <h2 style="margin:0; font-weight:700;">Reportes</h2>
-            <div class="muted">Total: <span id="reportsCount">0</span></div>
-          </div>
-
-          <div id="reportsList" class="reports-list"></div>
-        </section>
-
-        <!-- HELP, PROFILE placeholders -->
-        <section id="helpScreen" class="screen hidden" aria-hidden="true">
-          <h2 style="font-weight:700;">Ayuda</h2>
-          <p class="muted">Información y contactos.</p>
-        </section>
-
-        <section id="profileScreen" class="screen hidden" aria-hidden="true">
-          <h2 style="font-weight:700;">Perfil</h2>
-          <p class="muted">Datos del usuario.</p>
-        </section>
-
-      </div>
-    </div>
-
-    <!-- bottom nav mobile (iOS-like) -->
-    <nav class="mobile-bottom lg:hidden" role="navigation" aria-label="Barra inferior">
-      <button class="nav-btn" data-mobile="home" aria-label="Inicio">🏠<div class="nav-label">Inicio</div></button>
-      <button class="nav-btn" data-mobile="reports" aria-label="Noticias">📰<div class="nav-label">Noticias</div></button>
-      <button id="fabMobile" class="fab-center" aria-label="Nuevo reporte">+</button>
-      <button class="nav-btn" data-mobile="help" aria-label="Ayuda">❓<div class="nav-label">Ayuda</div></button>
-      <button class="nav-btn" data-mobile="profile" aria-label="Perfil">👤<div class="nav-label">Perfil</div></button>
-    </nav>
-
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  </div>
-
-  <!-- ========== JAVASCRIPT: Full SPA logic (Firebase, UI, WhatsApp, storage) ========== -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script>
-  /*******************************
-   * Firebase config (your project)
-   *******************************/
-  const firebaseConfig = {
-    apiKey: "AIzaSyAbAnz0hAHwttGtoDPjSzSgiJ9HP1wz-YY",
-    authDomain: "territorio-3c28d.firebaseapp.com",
-    databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com/",
-    projectId: "territorio-3c28d",
-    storageBucket: "territorio-3c28d.appspot.com",
-    messagingSenderId: "369901367983",
-    appId: "1:369901367983:web:33237b1b5661b82023a763"
-  };
-
-  // Init Firebase
-  let dbRef = null;
-  try {
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    dbRef = database.ref('reportes');
-    document.getElementById('connectionState').innerText = 'Conexión: conectado';
-    showToast('Firebase conectado');
-  } catch(e){
-    console.warn('firebase init error', e);
-    document.getElementById('connectionState').innerText = 'Conexión: error';
-    showToast('Modo local (sin Firebase)');
-  }
-
-  /*******************************
-   * Territory map (manzanas per territorio)
-   *******************************/
-  const territoryMap = {
-    1:4,2:4,3:4,4:5,5:8,6:4,7:4,8:4,
-    9:4,10:5,11:4,12:4,13:4,14:4,15:4,16:4,
-    17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,
-    25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4
-  };
-
-  /*******************************
-   * App state
-   *******************************/
-  let selectedTerritory = null;
-  let selectedManzanas = new Set();
-  let reports = {}; // in-memory cache
-
-  /*******************************
-   * UI helpers
-   *******************************/
-  function showToast(msg, time=2500){
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.style.display = 'block';
-    clearTimeout(t._hideTimer);
-    t._hideTimer = setTimeout(()=> t.style.display = 'none', time);
-  }
-
-  function formatDateISO(ts){
-    const d = new Date(ts);
-    return d.toLocaleString();
-  }
-
-  /*******************************
-   * Render cards grid (home)
-   *******************************/
-  const cardsGrid = document.getElementById('cardsGrid');
-  function renderCards(){
-    cardsGrid.innerHTML = '';
-    // special cards
-    const specials = [
-      {title:'Mapa Interactivo', icon:'🗺️', action:()=> openNewScreenForTerritory(1)},
-      {title:'Nuevo Reporte', icon:'✍️', action:()=> { showToast('Elegí un territorio en Inicio'); }},
-      {title:'Tablero de Anuncios', icon:'📣', action:()=> navigateTo('reportsScreen')},
-      {title:'Reportes', icon:'📓', action:()=> navigateTo('reportsScreen')},
-      {title:'Sugerencia próximas salidas', icon:'📅', action:()=> navigateTo('reportsScreen')}
-    ];
-    for(let i=specials.length-1;i>=0;i--){
-      const s = specials[i];
-      const el = document.createElement('div');
-      el.className = 'card';
-      el.innerHTML = `<div class="icon-wrap" style="background:#f3faf6; color:var(--green-500);">${s.icon}</div><div class="h">${s.title}</div>`;
-      el.addEventListener('click', s.action);
-      cardsGrid.insertBefore(el, cardsGrid.firstChild);
-    }
-
-    Object.keys(territoryMap).forEach(k=>{
-      const n = Number(k);
-      const card = document.createElement('div');
-      card.className = 'card';
-      if(n===1) card.innerHTML = `<div class="icon-wrap" style="background:linear-gradient(135deg,var(--green-400),var(--green-500)); color:white; font-size:22px;">📍</div><div class="h">Mapa Interactivo</div>`;
-      else card.innerHTML = `<div class="icon-wrap" style="background:#f3faf6; color:var(--green-500); font-size:22px;">${n}</div><div class="h">Territorio ${n}</div><div class="muted" style="margin-top:6px;">${territoryMap[n]} manzanas</div>`;
-      card.addEventListener('click', ()=> {
-        // selection/double-click handled globally - keep simple
-      });
-      cardsGrid.appendChild(card);
-    });
-  }
-
-  /*******************************
-   * Open new screen (manzanas)
-   *******************************/
-  function openNewScreenForTerritory(n){
-    selectedTerritory = n;
-    selectedManzanas = new Set();
-    document.getElementById('newTitle').innerText = `Territorio ${n}`;
-    const wrap = document.getElementById('manzanasWrap');
-    wrap.innerHTML = '';
-    const count = territoryMap[n] || 4;
-    for(let i=0;i<count;i++){
-      const label = String.fromCharCode(65+i);
-      const b = document.createElement('button');
-      b.className = 'manzana';
-      b.innerText = label;
-      b.addEventListener('click', ()=>{
-        if(selectedManzanas.has(label)){ selectedManzanas.delete(label); b.classList.remove('selected'); }
-        else { selectedManzanas.add(label); b.classList.add('selected'); }
-      });
-      wrap.appendChild(b);
-    }
-    navigateTo('newScreen', { animation: 'slideIn' });
-  }
-
-  /*******************************
-   * Navigation with iOS-style animations
-   *******************************/
-  function navigateTo(screenId, opts = {}){
-    const screens = ['homeScreen','newScreen','reportsScreen','helpScreen','profileScreen'];
-    screens.forEach(id=>{
-      const el = document.getElementById(id);
-      if(!el) return;
-      if(id === screenId){
-        el.classList.remove('hidden');
-        el.setAttribute('aria-hidden','false');
-        el.style.transform = 'translateX(10px)';
-        el.style.opacity = '0';
-        requestAnimationFrame(()=>{
-          el.style.transition = 'transform .28s cubic-bezier(.2,.9,.2,1), opacity .22s ease';
-          el.style.transform = 'translateX(0)';
-          el.style.opacity = '1';
-        });
-        setTimeout(()=>{ el.style.transition = ''; el.style.transform=''; el.style.opacity=''; }, 320);
-      } else {
-        if(!el.classList.contains('hidden')){
-          el.style.transition = 'transform .22s ease, opacity .18s ease';
-          el.style.transform = 'translateX(-8px)';
-          el.style.opacity = '0';
-          setTimeout(()=>{ el.classList.add('hidden'); el.setAttribute('aria-hidden','true'); el.style.transition=''; el.style.transform=''; el.style.opacity=''; }, 240);
-        } else {
-          el.classList.add('hidden');
-          el.setAttribute('aria-hidden','true');
-        }
-      }
-    });
-    const s = document.getElementById('settingsMenu'); if(s) s.style.display = 'none';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // back button
-  document.getElementById('backFromNew').addEventListener('click', ()=>{
-    navigateTo('homeScreen');
-    selectedTerritory = null;
-    selectedManzanas = new Set();
-  });
-
-  // nav wiring (pc & bottom)
-  document.querySelectorAll('.nav').forEach(btn=>{
-    btn.addEventListener('click', ()=> {
-      const nav = btn.getAttribute('data-nav');
-      if(nav) navigateTo(nav + 'Screen');
-    });
-  });
-  document.querySelectorAll('.pc-nav').forEach(btn=>{
-    btn.addEventListener('click', ()=> {
-      const nav = btn.getAttribute('data-nav');
-      if(nav) navigateTo(nav + 'Screen');
-    });
-  });
-  document.querySelectorAll('[data-mobile]').forEach(btn=>{
-    btn.addEventListener('click', ()=> {
-      const t = btn.getAttribute('data-mobile');
-      if(t) navigateTo(t + 'Screen');
-    });
-  });
-
-  // FAB behavior
-  const pcFab = document.getElementById('pcFab');
-  if(pcFab) pcFab.addEventListener('click', ()=> {
-    if(!selectedTerritory){ showToast('Elegí primero un territorio en Inicio'); return; }
-    openNewScreenForTerritory(selectedTerritory);
-  });
-  const fabMobile = document.getElementById('fabMobile');
-  if(fabMobile) fabMobile.addEventListener('click', ()=> {
-    if(!selectedTerritory){ showToast('Elegí primero un territorio en Inicio'); return; }
-    openNewScreenForTerritory(selectedTerritory);
-  });
-
-  /*******************************
-   * Save report (Firebase / local) + WhatsApp
-   *******************************/
-  document.getElementById('saveAndSend').addEventListener('click', async ()=>{
-    if(!selectedTerritory){ showToast('No hay territorio seleccionado'); return; }
-    if(selectedManzanas.size === 0){ showToast('Tildá al menos una manzana'); return; }
-    const conductor = document.getElementById('conductorInput').value.trim();
-    if(!conductor){ showToast('Ingresá el nombre del conductor'); return; }
-    const obs = document.getElementById('obsInput').value.trim();
-    const incomplete = document.getElementById('incompleteFace').checked;
-    const payload = {
-      territory: selectedTerritory,
-      manzanas: Array.from(selectedManzanas).sort(),
-      conductor,
-      observation: obs,
-      incompleteFace: incomplete,
-      timestamp: new Date().toISOString()
-    };
-
-    try {
-      if(dbRef) {
-        await dbRef.push(payload);
-      } else throw new Error('db not initialized');
-      showToast('Reporte guardado (sincronizado)');
-    } catch(e){
-      localSave(payload);
-      showToast('Guardado local (sin conexión)');
-      console.warn(e);
-    }
-
-    localSave(payload);
-    sendWhatsApp(payload);
-
-    document.getElementById('conductorInput').value = '';
-    document.getElementById('obsInput').value = '';
-    document.getElementById('incompleteFace').checked = false;
-    selectedManzanas = new Set();
-    navigateTo('homeScreen');
-  });
-
-  document.getElementById('saveLocal').addEventListener('click', ()=>{
-    if(!selectedTerritory){ showToast('No hay territorio seleccionado'); return; }
-    if(selectedManzanas.size === 0){ showToast('Tildá al menos una manzana'); return; }
-    const conductor = document.getElementById('conductorInput').value.trim();
-    if(!conductor){ showToast('Ingresá el nombre del conductor'); return; }
-    const obs = document.getElementById('obsInput').value.trim();
-    const incomplete = document.getElementById('incompleteFace').checked;
-    const payload = {
-      territory: selectedTerritory,
-      manzanas: Array.from(selectedManzanas).sort(),
-      conductor,
-      observation: obs,
-      incompleteFace: incomplete,
-      timestamp: new Date().toISOString()
-    };
-    localSave(payload);
-    showToast('Guardado local');
-    document.getElementById('conductorInput').value = '';
-    document.getElementById('obsInput').value = '';
-    document.getElementById('incompleteFace').checked = false;
-    selectedManzanas = new Set();
-    navigateTo('homeScreen');
-  });
-
-  /*******************************
-   * Local persistence
-   *******************************/
-  function localSave(payload){
-    const key = 'territorios_reports_v2';
-    const raw = localStorage.getItem(key);
-    const obj = raw ? JSON.parse(raw) : {};
-    const id = 'local_' + Date.now() + '_' + Math.floor(Math.random()*9999);
-    obj[id] = payload;
-    localStorage.setItem(key, JSON.stringify(obj));
-    reports[id] = payload;
-    renderReportsList();
-    return id;
-  }
-  function localLoadAll(){
-    const raw = localStorage.getItem('territorios_reports_v2');
-    if(!raw) return {};
-    try{ return JSON.parse(raw); }catch(e){ return {}; }
-  }
-
-  /*******************************
-   * Render reports list
-   *******************************/
-  function renderReportsList(){
-    const listWrap = document.getElementById('reportsList');
-    listWrap.innerHTML = '';
-    const merged = Object.assign({}, reports, localLoadAll());
-    const keys = Object.keys(merged).sort((a,b)=> new Date(merged[b].timestamp) - new Date(merged[a].timestamp));
-    document.getElementById('reportsCount').innerText = keys.length;
-    keys.forEach(k=>{
-      const r = merged[k];
-      const card = document.createElement('div');
-      card.style.background = 'var(--card)';
-      card.style.borderRadius = '12px';
-      card.style.padding = '12px';
-      card.style.display = 'flex';
-      card.style.justifyContent = 'space-between';
-      card.style.alignItems = 'flex-start';
-      card.style.boxShadow = '0 6px 18px rgba(8,22,18,0.04)';
-      card.innerHTML = `<div>
-          <div style="font-weight:700">Territorio ${r.territory} — ${r.manzanas.join(', ')}</div>
-          <div style="color:#475569; margin-top:6px">${r.conductor} • ${new Date(r.timestamp).toLocaleString()}</div>
-          <div style="margin-top:6px; color:#64748b">${r.observation || ''}</div>
-        </div>
-        <div style="text-align:right">
-          <div>${r.incompleteFace ? '<span style="color:#e11d48;font-weight:700">Cara incompleta</span>' : '<span style="color:#10b981;font-weight:700">Completo</span>'}</div>
-          <div style="margin-top:8px"><button class="btn btn-ghost" onclick='openReportDetails("${k}")'>Ver</button></div>
-        </div>`;
-      listWrap.appendChild(card);
-    });
-  }
-
-  function openReportDetails(id){
-    const merged = Object.assign({}, reports, localLoadAll());
-    const r = merged[id];
-    if(!r){ showToast('Reporte no encontrado'); return; }
-    const w = window.open('', '_blank');
-    w.document.body.style.fontFamily = '-apple-system, Inter, Arial, sans-serif';
-    w.document.body.innerHTML = `<div style="padding:16px">
-      <h2>Reporte — Territorio ${r.territory}</h2>
-      <p><strong>Manzanas:</strong> ${r.manzanas.join(', ')}</p>
-      <p><strong>Conductor:</strong> ${r.conductor}</p>
-      <p><strong>Observación:</strong> ${r.observation || '—'}</p>
-      <p><strong>Cara incompleta:</strong> ${r.incompleteFace ? 'Sí' : 'No'}</p>
-      <p><strong>Fecha:</strong> ${new Date(r.timestamp).toLocaleString()}</p>
-    </div>`;
-  }
-
-  /*******************************
-   * WhatsApp helper (auto)
-   *******************************/
-  function sendWhatsApp(payload){
-    const phone = '5493416715020';
-    const d = new Date(payload.timestamp);
-    const text = `Nuevo reporte de predicación:
-Territorio: ${payload.territory}
-Manzanas: ${payload.manzanas.join(', ')}
-Conductor: ${payload.conductor}
-Observación: ${payload.observation || '-'}
-Cara incompleta: ${payload.incompleteFace ? 'Sí' : 'No'}
-Fecha: ${d.toLocaleString()}`;
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  }
-
-  /*******************************
-   * Firebase realtime listener
-   *******************************/
-  if(typeof dbRef !== 'undefined' && dbRef !== null){
-    dbRef.on('value', snapshot=>{
-      const val = snapshot.val() || {};
-      reports = {};
-      Object.keys(val).forEach(k=> reports[k] = val[k]);
-      renderReportsList();
-    });
-  } else {
-    const local = localLoadAll();
-    Object.keys(local).forEach(k=> reports[k] = local[k]);
-    renderReportsList();
-  }
-
-  /*******************************
-   * Initial load + UI wiring
-   *******************************/
-  renderCards();
-  renderReportsList();
-
-  // settings toggle
-  document.getElementById('settingsBtn').addEventListener('click', ()=>{
-    const m = document.getElementById('settingsMenu');
-    m.style.display = (m.style.display === 'block') ? 'none' : 'block';
-  });
-  // dark toggle
-  document.getElementById('darkToggle').addEventListener('change', (e)=>{
-    if(e.target.checked) document.body.classList.add('dark');
-    else document.body.classList.remove('dark');
-  });
-
-  // search
-  document.getElementById('searchInput').addEventListener('input', (e)=>{
-    const q = e.target.value.trim().toLowerCase();
-    if(!q){ renderReportsList(); return; }
-    const merged = Object.assign({}, reports, localLoadAll());
-    const filteredKeys = Object.keys(merged).filter(k=>{
-      const r = merged[k];
-      return (String(r.territory).toLowerCase().includes(q) || (r.conductor||'').toLowerCase().includes(q) || (r.observation||'').toLowerCase().includes(q));
-    });
-    const listWrap = document.getElementById('reportsList');
-    listWrap.innerHTML = '';
-    filteredKeys.sort((a,b)=> new Date(merged[b].timestamp) - new Date(merged[a].timestamp)).forEach(k=>{
-      const r = merged[k];
-      const card = document.createElement('div');
-      card.style.background = 'var(--card)'; card.style.borderRadius='12px'; card.style.padding='12px';
-      card.style.display='flex'; card.style.justifyContent='space-between'; card.style.alignItems='flex-start';
-      card.style.boxShadow='0 6px 18px rgba(8,22,18,0.04)';
-      card.innerHTML = `<div>
-          <div style="font-weight:700">Territorio ${r.territory} — ${r.manzanas.join(', ')}</div>
-          <div style="color:#475569; margin-top:6px">${r.conductor} • ${new Date(r.timestamp).toLocaleString()}</div>
-          <div style="margin-top:6px; color:#64748b">${r.observation || ''}</div>
-        </div>
-        <div style="text-align:right">
-          <div>${r.incompleteFace ? '<span style="color:#e11d48;font-weight:700">Cara incompleta</span>' : '<span style="color:#10b981;font-weight:700">Completo</span>'}</div>
-          <div style="margin-top:8px"><button class="btn btn-ghost" onclick='openReportDetails("${k}")'>Ver</button></div>
-        </div>`;
-      listWrap.appendChild(card);
-    });
-  });
-
-  // mobile bottom wiring
-  document.querySelectorAll('.mobile-bottom .nav-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const nav = btn.getAttribute('data-mobile');
-      if(nav) navigateTo(nav + 'Screen');
-    });
-  });
-
-  // brand clickable
-  document.querySelectorAll('.brand').forEach(b=> b.addEventListener('click', ()=> navigateTo('homeScreen')));
-
-  // selection behavior: single click selects, double click opens form
-  (function attachSelectionBehavior(){
-    const cardClickState = {};
-    cardsGrid.addEventListener('click', (ev)=>{
-      let el = ev.target;
-      while(el && !el.classList.contains('card')) el = el.parentElement;
-      if(!el) return;
-      const txt = el.innerText || '';
-      const match = txt.match(/Territorio\s*(\d+)/i) || txt.match(/^(\d+)/);
-      let n = null;
-      if(match) n = Number(match[1]);
-      if(!n) return;
-      const now = Date.now();
-      if(cardClickState[n] && (now - cardClickState[n] < 420)){
-        openNewScreenForTerritory(n);
-        cardClickState[n] = 0;
-      } else {
-        selectedTerritory = n;
-        highlightSelectedTerritory(n);
-        showToast(`Territorio ${n} seleccionado. Presioná + para reportar.`);
-        cardClickState[n] = now;
-      }
-    });
-  })();
-
-  function highlightSelectedTerritory(n){
-    Array.from(cardsGrid.children).forEach(child=>{
-      child.style.border=''; child.style.boxShadow='';
-    });
-    for(const child of cardsGrid.children){
-      if(child.innerText && child.innerText.indexOf(String(n)) !== -1){
-        child.style.boxShadow='0 18px 40px rgba(16,185,129,0.12)'; child.style.border='2px solid rgba(16,185,129,0.12)';
-        break;
-      }
-    }
-  }
-
-  // initial load
-  (function initialLoad(){
-    if(!dbRef){
-      const local = localLoadAll();
-      reports = Object.assign({}, reports, local);
-      renderReportsList();
-      showToast('Trabajando en modo local (sin Firebase)');
-    } else {
-      dbRef.once('value').then(snap=>{
-        const val = snap.val() || {};
-        reports = {};
-        Object.keys(val).forEach(k=> reports[k] = val[k]);
-        renderReportsList();
-      }).catch(e=> console.warn('db read once failed', e));
-    }
-  })();
-
-  // accessibility: ESC closes settings menu
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape'){ const m = document.getElementById('settingsMenu'); if(m) m.style.display = 'none'; }
-  });
-
-  // export for debug
-  window._reports = reports;
-  </script>
 </body>
 </html>
