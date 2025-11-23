@@ -3,12 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sugerencias de Salidas</title>
-<link rel="stylesheet" href="estilos.css">
+<title>Sugerencias</title>
+<style>
+body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
+h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
+textarea { width:100%; padding:12px; font-size:16px; border-radius:10px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box; resize: vertical; min-height:60px; }
+.btn { padding:12px 18px; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; border:none; }
+.agregar { background:#2d6a4f; color:white; float:right; }
+.agregar:hover { background:#1f4d37; }
+.volver { background:#cccccc; color:#333; float:left; width:auto; padding:12px 20px; margin-top:10px; border:none; border-radius:10px; cursor:pointer; }
+.volver:hover { background:#aaaaaa; }
+.sugerencia-card { background:white; border-radius:12px; padding:12px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); font-size:16px; }
+</style>
 </head>
 <body>
 
-<h1 style="text-align:center; color:#003399; font-family:Calibri;">Sugerencias de Próximas Salidas</h1>
+<h1>Sugerencias</h1>
+
+<textarea id="nuevaSugerencia" placeholder="Escriba su sugerencia aquí…"></textarea>
+<button class="btn agregar" onclick="agregarSugerencia()">✅ Agregar</button>
+
+<div id="sugerenciasContainer" style="margin-top:20px;"></div>
+
+<button class="volver" onclick="history.back()">⬅️ Volver</button>
+
+<script>
+const container = document.getElementById("sugerenciasContainer");
+
+// Mostrar sugerencias guardadas
+function mostrarSugerencias(){
+    const sugerencias = JSON.parse(localStorage.getItem("sugerencias")) || [];
+    container.innerHTML = "";
+    if(sugerencias.length === 0){
+        container.innerHTML = "<p>No hay sugerencias aún.</p>";
+    } else {
+        sugerencias.forEach(s=>{
+            const div = document.createElement("div");
+            div.className = "sugerencia-card";
+            div.textContent = s;
+            container.appendChild(div);
+        });
+    }
+}
+
+// Agregar nueva sugerencia
+function agregarSugerencia(){
+    const text = document.getElementById("nuevaSugerencia").value.trim();
+    if(!text){ alert("Ingrese una sugerencia"); return; }
+    const sugerencias = JSON.parse(localStorage.getItem("sugerencias")) || [];
+    sugerencias.push(text);
+    localStorage.setItem("sugerencias", JSON.stringify(sugerencias));
+    document.getElementById("nuevaSugerencia").value = "";
+    mostrarSugerencias();
+}
+
+// Inicializar
+mostrarSugerencias();
+</script>
 
 </body>
 </html>
