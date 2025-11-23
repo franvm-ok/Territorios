@@ -5,15 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sugerencias</title>
 <style>
-body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
+body { font-family: Arial, sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
 h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
-textarea { width:100%; padding:12px; font-size:16px; border-radius:10px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box; resize: vertical; min-height:60px; }
-.btn { padding:12px 18px; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; border:none; }
+
+textarea { width:100%; padding:12px; font-size:16px; border-radius:15px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box; resize:vertical; min-height:60px; }
+
+.btn {
+    padding:14px 18px;
+    border-radius:15px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    border:none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition:0.2s;
+}
+
 .agregar { background:#2d6a4f; color:white; float:right; }
 .agregar:hover { background:#1f4d37; }
-.volver { background:#cccccc; color:#333; float:left; width:auto; padding:12px 20px; margin-top:10px; border:none; border-radius:10px; cursor:pointer; }
-.volver:hover { background:#aaaaaa; }
-.sugerencia-card { background:white; border-radius:12px; padding:12px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); font-size:16px; }
+
+.volver { background:white; color:#1a4b27; float:left; margin-top:10px; width:auto; }
+.volver:hover { background:#e8e8e8; }
+
+.sugerencia-card {
+    background:white;
+    border-radius:15px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    font-size:16px;
+}
 </style>
 </head>
 <body>
@@ -25,7 +46,7 @@ textarea { width:100%; padding:12px; font-size:16px; border-radius:10px; border:
 
 <div id="sugerenciasContainer" style="margin-top:20px;"></div>
 
-<button class="volver" onclick="history.back()">⬅️ Volver</button>
+<button class="btn volver" onclick="history.back()">⬅️ Volver</button>
 
 <script>
 const container = document.getElementById("sugerenciasContainer");
