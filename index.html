@@ -1,189 +1,44 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Departamento de Territorio</title>
-<script src="https://cdn.tailwindcss.com"></script>
-
-<style>
-/* Animaciones de pantallas internas */
-.pantalla {
-    transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.pantalla.oculta {
-    opacity: 0;
-    transform: translateX(20px);
-    pointer-events: none;
-}
-
-/* Animación del botón + */
-@keyframes floatButton {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-    100% { transform: translateY(0); }
-}
-.floating {
-    animation: floatButton 2s infinite ease-in-out;
-}
-
-/* Sidebar para PC */
-@media (min-width: 1024px) {
-    .pc-sidebar {
-        display: flex !important;
-    }
-    .mobile-bottom-bar {
-        display: none !important;
-    }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departamento de Territorio</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body class="h-full bg-gray-100 text-gray-800 transition-all duration-300" id="body">
+    <!-- Pantalla principal -->
+    <div id="screen-home" class="screen active">
+        <h1 class="title">Departamento de Territorio</h1>
 
-<!-- ====================== SIDEBAR PC ====================== -->
-<aside class="pc-sidebar hidden lg:flex flex-col w-64 h-full fixed left-0 top-0 bg-white border-r shadow-md p-6 z-50">
-    <h1 class="text-xl font-bold text-center mb-2">Departamento de Territorio</h1>
-    <p class="text-center text-gray-600 mb-6">Congregación Cuatro Plazas</p>
-
-    <nav class="flex flex-col space-y-3">
-        <button onclick="openScreen('inicio')" class="py-2 px-4 bg-teal-100 rounded-lg font-semibold">Inicio</button>
-        <button onclick="openScreen('noticias')" class="py-2 px-4 bg-teal-100 rounded-lg font-semibold">Noticias</button>
-        <button onclick="openScreen('nuevo')" class="py-2 px-4 bg-teal-200 rounded-lg font-semibold">Nuevo reporte</button>
-        <button onclick="openScreen('ayuda')" class="py-2 px-4 bg-teal-100 rounded-lg font-semibold">Ayuda</button>
-        <button onclick="openScreen('perfil')" class="py-2 px-4 bg-teal-100 rounded-lg font-semibold">Perfil</button>
-    </nav>
-</aside>
-
-<!-- ====================== CONTENIDO DERECHO ====================== -->
-<div class="lg:ml-64 p-4 pb-24" id="contenido">
-
-<!-- ============ HEADER ============ -->
-<header class="flex justify-between items-center mb-4">
-    <div class="text-center flex-1">
-        <h1 class="text-xl font-bold">Departamento de Territorio</h1>
-        <p class="text-sm text-gray-600">Congregación Cuatro Plazas</p>
+        <div class="card-container" id="territorios-list"></div>
     </div>
 
-    <div class="flex items-center space-x-3">
-        <button id="modo-btn" onclick="toggleDarkMode()" class="text-2xl">⚙️</button>
-        <button class="text-sm font-semibold">Iniciar sesión</button>
+    <!-- Pantalla manzanas -->
+    <div id="screen-manzanas" class="screen">
+        <button class="back-btn" onclick="volverHome()">← Volver</button>
+        <h2 id="territorio-title"></h2>
+        <div id="manzanas-container" class="card-container"></div>
+
+        <div class="form-box">
+            <label>Nombre del conductor:</label>
+            <input type="text" id="conductor" placeholder="Ingrese nombre">
+            
+            <label>Observación:</label>
+            <textarea id="observacion" placeholder="Ej: Cara incompleta"></textarea>
+
+            <button class="submit-btn" onclick="enviarReporte()">Enviar Reporte</button>
+        </div>
     </div>
-</header>
 
-<!-- BÚSQUEDA -->
-<div class="mb-4">
-    <div class="flex items-center bg-white p-2 rounded-xl shadow">
-        <span class="text-gray-400 pr-2 text-xl">🔍</span>
-        <input type="text" placeholder="Buscar…" class="w-full outline-none">
+    <!-- Pantalla confirmación -->
+    <div id="screen-confirm" class="screen">
+        <h2>Reporte Enviado ✔️</h2>
+        <p>Se envió al siervo de territorio.</p>
+        <button class="submit-btn" onclick="volverHome()">Volver al inicio</button>
     </div>
-</div>
 
-<!-- ============ PANTALLA: INICIO ============ -->
-<div id="inicio" class="pantalla">
-
-    <div class="grid grid-cols-2 gap-4">
-
-        <!-- TABLERO DE ANUNCIOS -->
-        <div onclick="openScreen('tablero')" class="p-4 bg-white shadow rounded-xl text-center active:scale-95">
-            <div class="text-4xl mb-2">📣</div>
-            <p class="font-semibold">Tablero de Anuncios</p>
-        </div>
-
-        <!-- REPORTES -->
-        <div onclick="openScreen('reportes')" class="p-4 bg-white shadow rounded-xl text-center active:scale-95">
-            <div class="text-4xl mb-2">📓</div>
-            <p class="font-semibold">Reportes</p>
-        </div>
-
-        <!-- SUGERENCIA SALIDAS -->
-        <div onclick="openScreen('salidas')" class="p-4 bg-white shadow rounded-xl text-center active:scale-95">
-            <div class="text-4xl mb-2">📅</div>
-            <p class="font-semibold">Sugerencia de Próximas Salidas</p>
-        </div>
-
-        <!-- NUEVO REPORTE -->
-        <div onclick="openScreen('nuevo')" class="p-4 bg-white shadow rounded-xl text-center active:scale-95">
-            <div class="text-4xl mb-2">➕</div>
-            <p class="font-semibold">Nuevo Reporte</p>
-        </div>
-
-    </div>
-</div>
-
-<!-- ============ OTRAS PANTALLAS (OCULTAS) ============ -->
-
-<div id="noticias" class="pantalla oculta p-4">
-    <h2 class="text-xl font-bold mb-3">Noticias</h2>
-    <p>Aquí irán las noticias.</p>
-</div>
-
-<div id="tablero" class="pantalla oculta p-4">
-    <h2 class="text-xl font-bold mb-3">Tablero de Anuncios</h2>
-</div>
-
-<div id="reportes" class="pantalla oculta p-4">
-    <h2 class="text-xl font-bold mb-3">Reportes</h2>
-</div>
-
-<div id="salidas" class="pantalla oculta p-4">
-    <h2 class="text-xl font-bold mb-3">Sugerencias de Salidas</h2>
-</div>
-
-<div id="nuevo" class="pantalla oculta p-4">
-    <h2 class="text-xl font-bold mb-3">Nuevo Reporte</h2>
-</div>
-
-<div id="ayuda" class="pantalla oculta p-4">
-    <h2 class="text-xl font-bold mb-3">Ayuda</h2>
-</div>
-
-<div id="perfil" class="pantalla oculta p-4">
-    <h2 class="text-xl font-bold mb-3">Perfil</h2>
-</div>
-
-</div>
-
-<!-- ====================== BARRA INFERIOR MÓVIL ====================== -->
-<nav class="mobile-bottom-bar fixed bottom-0 left-0 w-full bg-white border-t flex justify-around py-2 shadow-lg lg:hidden">
-
-    <button onclick="openScreen('inicio')" class="text-center">
-        <div class="text-2xl">🏠</div>
-        <p class="text-xs">Inicio</p>
-    </button>
-
-    <button onclick="openScreen('noticias')" class="text-center">
-        <div class="text-2xl">📰</div>
-        <p class="text-xs">Noticias</p>
-    </button>
-
-    <button onclick="openScreen('nuevo')" class="text-center floating">
-        <div class="text-3xl text-teal-600 font-bold">+</div>
-    </button>
-
-    <button onclick="openScreen('ayuda')" class="text-center">
-        <div class="text-2xl">❓</div>
-        <p class="text-xs">Ayuda</p>
-    </button>
-
-    <button onclick="openScreen('perfil')" class="text-center">
-        <div class="text-2xl">👤</div>
-        <p class="text-xs">Perfil</p>
-    </button>
-
-</nav>
-
-<script>
-function openScreen(id) {
-    document.querySelectorAll(".pantalla").forEach(p => p.classList.add("oculta"));
-    document.getElementById(id).classList.remove("oculta");
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle("bg-gray-900");
-    document.body.classList.toggle("text-white");
-}
-</script>
-
+    <script src="app.js"></script>
 </body>
 </html>
