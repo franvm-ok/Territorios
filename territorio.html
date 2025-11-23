@@ -5,93 +5,111 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Territorio</title>
 <style>
-body { font-family: "Segoe UI", sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
-h1 { text-align:center; color:#1a4b27; margin-bottom:15px; }
-.manzanas-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:20px; }
-.manzana { background:white; padding:20px; border-radius:12px; text-align:center; font-size:18px; font-weight:bold; border:1px solid #ccc; cursor:pointer; transition:0.15s; }
-.manzana.checked { background:#d8f3dc; border-color:#2d6a4f; color:#2d6a4f; }
-input, textarea { width:100%; padding:12px; font-size:16px; border-radius:10px; border:1px solid #ccc; margin-bottom:15px; box-sizing:border-box; }
-textarea { resize:vertical; min-height:60px; }
-.btn { padding:14px 22px; border-radius:10px; font-size:18px; font-weight:bold; cursor:pointer; text-align:center; margin-top:10px; border:none; }
-.enviar { background:#1a4b27; color:white; float:right; }
-.enviar:hover { background:#14532d; }
+body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
+h1 { text-align:center; color:#1a4b27; margin-bottom:10px; }
+.manzana { display:flex; justify-content:space-between; background:white; padding:14px; margin-bottom:10px; border-radius:10px; font-size:18px; cursor:pointer; border:1px solid #ddd; }
+.manzana.checked { background:#d8f3dc; border-color:#2d6a4f; color:#2d6a4f; font-weight:bold; }
+input, textarea { width:100%; padding:12px; font-size:16px; border-radius:10px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box; }
+.btn { padding:12px 18px; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; border:none; }
 .volver { background:#cccccc; color:#333; float:left; }
 .volver:hover { background:#aaaaaa; }
-.clearfix::after { content:""; clear:both; display:table; }
+.enviar { background:#2d6a4f; color:white; float:right; }
+.enviar:hover { background:#1f4d37; }
 </style>
 </head>
 <body>
 
 <h1 id="tituloTerritorio">Territorio</h1>
-<div class="manzanas-grid" id="manzanasGrid"></div>
-<input type="text" id="nombreHermano" placeholder="Nombre del hermano">
-<textarea id="observaciones" placeholder="Observaciones..."></textarea>
 
-<div class="clearfix">
-    <button class="btn volver" onclick="volver()">⬅️ Volver</button>
-    <button class="btn enviar" onclick="enviarReporte()">✅ Enviar</button>
-</div>
+<div id="manzanasContainer"></div>
+
+<input type="text" id="nombreHermano" placeholder="Nombre del hermano">
+<textarea id="observaciones" placeholder="Observaciones…"></textarea>
+
+<button class="btn volver" onclick="history.back()">⬅️ Volver</button>
+<button class="btn enviar" onclick="guardarReporte()">✅ Enviar</button>
 
 <script>
+// Obtener número de territorio de URL
+const params = new URLSearchParams(window.location.search);
+const numeroTerritorio = params.get('num');
+document.getElementById("tituloTerritorio").textContent = "Territorio " + numeroTerritorio;
+
+// Definir manzanas para cada territorio
 const manzanasPorTerritorio = {
-1:["A","B","C","D"],2:["A","B","C"],3:["A","B","C","D","E"],4:["A","B","C","D"],5:["A","B","C","D","E"],
-6:["A","B","C","D"],7:["A","B","C","D","E"],8:["A","B","C","D"],9:["A","B","C","D","E"],10:["A","B","C","D"],
-11:["A","B","C","D","E"],12:["A","B","C","D"],13:["A","B","C","D","E"],14:["A","B","C","D"],15:["A","B","C","D","E"],
-16:["A","B","C","D"],17:["A","B","C","D","E"],18:["A","B","C","D"],19:["A","B","C","D","E"],20:["A","B","C","D"],
-21:["A","B","C","D","E"],22:["A","B","C","D"],23:["A","B","C","D","E"],24:["A","B","C","D"],25:["A","B","C","D","E"],
-26:["A","B","C","D"],27:["A","B","C","D","E"],28:["A","B","C","D"],29:["A","B","C","D","E"],30:["A","B","C","D"],
-31:["A","B","C","D","E"],32:["A","B","C","D"]
+    1:["A","B","C","D","E"],
+    2:["A","B","C","D"],
+    3:["A","B","C","D","E"],
+    4:["A","B","C","D"],
+    5:["A","B","C","D","E"],
+    6:["A","B","C","D","E"],
+    7:["A","B","C","D"],
+    8:["A","B","C","D","E"],
+    9:["A","B","C","D"],
+    10:["A","B","C","D","E"],
+    11:["A","B","C","D","E"],
+    12:["A","B","C","D"],
+    13:["A","B","C","D","E"],
+    14:["A","B","C","D","E"],
+    15:["A","B","C","D"],
+    16:["A","B","C","D","E"],
+    17:["A","B","C","D","E"],
+    18:["A","B","C","D"],
+    19:["A","B","C","D","E"],
+    20:["A","B","C","D","E"],
+    21:["A","B","C","D"],
+    22:["A","B","C","D","E"],
+    23:["A","B","C","D","E"],
+    24:["A","B","C","D"],
+    25:["A","B","C","D","E"],
+    26:["A","B","C","D","E"],
+    27:["A","B","C","D"],
+    28:["A","B","C","D","E"],
+    29:["A","B","C","D","E"],
+    30:["A","B","C","D"],
+    31:["A","B","C","D","E"],
+    32:["A","B","C","D"]
 };
 
-const urlParams = new URLSearchParams(window.location.search);
-const numTerritorio = urlParams.get('num');
-document.getElementById("tituloTerritorio").textContent = `Territorio ${numTerritorio}`;
-const manzanasGrid = document.getElementById("manzanasGrid");
-
-manzanasPorTerritorio[numTerritorio].forEach(m => {
+// Render manzanas
+const container = document.getElementById("manzanasContainer");
+const manzanas = manzanasPorTerritorio[numeroTerritorio] || [];
+manzanas.forEach(m=>{
     const div = document.createElement("div");
     div.className="manzana";
-    div.textContent=`Manzana ${m}`;
-    div.onclick=()=>div.classList.toggle("checked");
-    manzanasGrid.appendChild(div);
+    div.textContent="Manzana "+m;
+    div.onclick = ()=> div.classList.toggle("checked");
+    container.appendChild(div);
 });
 
-function volver(){ window.location.href="../informar.html"; }
-
-function enviarReporte(){
+// Guardar reporte en localStorage
+function guardarReporte(){
     const nombre = document.getElementById("nombreHermano").value.trim();
+    if(!nombre){ alert("Ingrese su nombre"); return; }
     const observaciones = document.getElementById("observaciones").value.trim();
-    if(!nombre){ alert("Por favor ingrese su nombre."); return; }
+    const fecha = new Date().toLocaleDateString();
 
-    const manzanasDiv = document.querySelectorAll(".manzana");
     const manzanasHechas = [];
     const manzanasPendientes = [];
-
-    manzanasDiv.forEach(div=>{
+    container.querySelectorAll(".manzana").forEach(div=>{
         const letra = div.textContent.replace("Manzana ","");
-        if(div.classList.contains("checked")){ manzanasHechas.push(letra); }
-        else{ manzanasPendientes.push(letra); }
+        if(div.classList.contains("checked")) manzanasHechas.push(letra);
+        else manzanasPendientes.push(letra);
     });
 
-    const fecha = new Date().toLocaleDateString();
-    const reporte = { fecha, hermano:nombre, territorio:numTerritorio, manzanasHechas, manzanasPendientes, observaciones };
+    const reporte = {fecha, nombre, territorio:numeroTerritorio, manzanasHechas, manzanasPendientes, observaciones};
 
     const reportes = JSON.parse(localStorage.getItem("reportes")) || [];
     reportes.push(reporte);
     localStorage.setItem("reportes", JSON.stringify(reportes));
 
-    let proximas = JSON.parse(localStorage.getItem("proximas")) || [];
-    if(manzanasPendientes.length>0){
-        proximas.push({territorio:numTerritorio, manzanasPendientes, fecha});
-        localStorage.setItem("proximas", JSON.stringify(proximas));
-    }
+    // También guardar pendientes para próximas salidas
+    const proximas = JSON.parse(localStorage.getItem("proximas")) || [];
+    proximas.push({territorio:numeroTerritorio, manzanas:manzanasPendientes});
+    localStorage.setItem("proximas", JSON.stringify(proximas));
 
-    const mensaje = `Hola Franco, informo territorio:\nConductor: ${nombre}\nTerritorio: ${numTerritorio}\nFecha: ${fecha}\nHechas: ${manzanasHechas.join(", ")}\nPendientes: ${manzanasPendientes.join(", ")}\nObservaciones: ${observaciones}`;
-    const whatsappURL = `https://wa.me/5493416715020?text=${encodeURIComponent(mensaje)}`;
-    window.open(whatsappURL, "_blank");
-
-    alert("✅ Reporte enviado correctamente.");
-    window.location.href="../informar.html";
+    alert("✅ Reporte guardado correctamente.");
+    window.location.href = "informar.html";
 }
 </script>
 
