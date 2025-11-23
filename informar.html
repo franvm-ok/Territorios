@@ -6,47 +6,32 @@
 <title>Informar Territorio</title>
 <style>
 body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
-h1 { text-align:center; color:#1a4b27; margin-bottom:10px; }
-#searchInput { width:100%; padding:12px; font-size:18px; border-radius:10px; border:1px solid #bbb; margin-bottom:20px; box-sizing:border-box; }
+h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
 .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
-.card { background:white; padding:25px 10px; border-radius:15px; text-align:center; font-size:20px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.1); cursor:pointer; transition:0.2s; }
-.card:hover { transform:scale(1.05); }
-.volver { position:fixed; bottom:20px; left:20px; background:#cccccc; padding:12px 18px; border-radius:10px; font-size:16px; font-weight:bold; text-decoration:none; color:#333; box-shadow:0 3px 8px rgba(0,0,0,0.2); }
-.volver:hover { background:#b9b9b9; }
+.territorio-btn { background:white; border-radius:15px; padding:25px 10px; text-align:center; font-size:18px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.1); cursor:pointer; transition:0.2s; }
+.territorio-btn:hover { transform:scale(1.05); }
+.volver { background:#cccccc; color:#333; float:left; width:auto; padding:12px 20px; margin-top:20px; border:none; border-radius:10px; cursor:pointer; }
+.volver:hover { background:#aaaaaa; }
 </style>
 </head>
 <body>
 
 <h1>Informar Territorio</h1>
-<input type="text" id="searchInput" placeholder="Buscar territorio por número…">
+
 <div class="grid" id="territoriosGrid"></div>
 
-<a class="volver" href="index.html">⬅️ Volver</a>
+<button class="volver" onclick="history.back()">⬅️ Volver</button>
 
 <script>
-// Array de territorios 1 a 32
-const territorios = Array.from({length:32},(_,i)=>i+1);
+// Crear los 32 territorios
 const grid = document.getElementById("territoriosGrid");
-
-// Función para renderizar tarjetas
-function renderTerritorios(filtro=""){
-    grid.innerHTML="";
-    territorios.filter(num=>num.toString().includes(filtro)).forEach(num=>{
-        const card = document.createElement("div");
-        card.className="card";
-        card.textContent="Territorio "+num;
-        card.onclick = ()=> location.href = `territorio.html?num=${num}`;
-        grid.appendChild(card);
-    });
+for(let i=1;i<=32;i++){
+    const btn = document.createElement("div");
+    btn.className="territorio-btn";
+    btn.textContent="Territorio "+i;
+    btn.onclick = ()=> window.location.href="territorio.html?num="+i;
+    grid.appendChild(btn);
 }
-
-// Render inicial
-renderTerritorios();
-
-// Buscador
-document.getElementById("searchInput").addEventListener("input", e=>{
-    renderTerritorios(e.target.value);
-});
 </script>
 
 </body>
