@@ -79,7 +79,11 @@
         width: 38px;
         height: 38px;
         margin-bottom: 8px;
-        fill: #2a5298;
+        stroke: #2a5298;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
     }
 
     @media (max-width: 420px) {
@@ -107,50 +111,52 @@
 
     <div class="grid">
 
-        <!-- Reportar territorio -->
+        <!-- Reportar territorio (anotador) -->
         <a class="btn" href="#">
             <svg class="icon" viewBox="0 0 24 24">
-                <path d="M3 3h18v2H3V3zm2 4h14v14H5V7zm4 3v2h6v-2H9zm0 4v2h6v-2H9z"/>
+                <path d="M7 2h10v20H7zM9 6h6M9 10h6M9 14h6"/>
             </svg>
             Reportar territorio
         </a>
 
-        <!-- Tablero de anuncios -->
+        <!-- Tablero de anuncios (megáfono) -->
         <a class="btn" href="#">
             <svg class="icon" viewBox="0 0 24 24">
-                <path d="M3 5h18v2H3V5zm2 4h14v10H5V9zm3 2v2h8v-2H8zm0 4v2h8v-2H8z"/>
+                <path d="M3 10v4l10 6V4L3 10zM13 14a3 3 0 0 0 6 0V10a3 3 0 0 0-6 0"/>
             </svg>
             Tablero de anuncios
         </a>
 
-        <!-- Reportes -->
+        <!-- Reportes (estadísticas) -->
         <a class="btn" href="#">
             <svg class="icon" viewBox="0 0 24 24">
-                <path d="M5 3h14v18H5V3zm4 4v2h6V7H9zm0 4v2h6v-2H9zm0 4v2h6v-2H9z"/>
+                <path d="M4 20v-6M10 20V8M16 20V4M4 14h0M10 8h0M16 4h0"/>
             </svg>
             Reportes
         </a>
 
-        <!-- Próximas salidas -->
+        <!-- Próximas salidas (calendario) -->
         <a class="btn" href="#">
             <svg class="icon" viewBox="0 0 24 24">
-                <path d="M7 2v2H5v2h14V4h-2V2h-2v2H9V2H7zm-2 6h14v12H5V8zm4 3v2h6v-2H9z"/>
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M3 10h18M8 5V3M16 5V3"/>
             </svg>
             Próximas salidas
         </a>
 
-        <!-- Mapa interactivo -->
+        <!-- Mapa interactivo (mapa pin) -->
         <a class="btn" href="#">
             <svg class="icon" viewBox="0 0 24 24">
-                <path d="M12 2l6 6-6 14-6-14 6-6zm0 4.8L9.4 10h5.2L12 6.8z"/>
+                <path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/>
+                <circle cx="12" cy="9" r="2.5"/>
             </svg>
             Mapa interactivo
         </a>
 
-        <!-- Sugerencias -->
+        <!-- Sugerencias (foco) -->
         <a class="btn" href="#">
             <svg class="icon" viewBox="0 0 24 24">
-                <path d="M12 2a7 7 0 017 7c0 2.6-1.4 4.9-3.5 6.1l.5 2.9H8l.5-2.9A7 7 0 015 9a7 7 0 017-7zm-2 18h4v2h-4v-2z"/>
+                <path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 6l-.5 2h-7l-.5-2c-1.8-1.5-3-3.6-3-6a7 7 0 0 1 7-7z"/>
             </svg>
             Sugerencias
         </a>
