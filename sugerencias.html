@@ -1,80 +1,128 @@
+<!-- sugerencias.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Sugerencias</title>
 <style>
-body { font-family: Arial, sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
-h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
-.sugerencia-card { background:white; border-radius:15px; padding:15px; margin-bottom:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
-.sugerencia-card h3 { margin:0 0 10px 0; color:#2d6a4f; }
-.sugerencia-card p { margin:4px 0; }
+  :root{
+    --jw-green:#1a4b27;
+    --jw-dark:#2d6a4f;
+    --card-bg:#ffffff;
+    --page-bg:#f4f4f4;
+  }
 
-input, textarea { width:100%; padding:12px; margin-bottom:10px; border-radius:15px; border:1px solid #ccc; box-sizing:border-box; font-size:16px; }
-textarea { resize:vertical; min-height:60px; }
+  html,body{height:100%;margin:0;background:var(--page-bg);font-family:Arial,Helvetica,sans-serif;color:#333}
+  .wrap{max-width:920px;margin:20px auto;padding:16px}
+  h1{color:var(--jw-green);text-align:center;margin:6px 0 18px;font-size:22px}
 
-.btn {
+  .form-row{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
+  .form-row .field{flex:1}
+  input[type="text"], textarea{
+    width:100%;
+    padding:12px;
+    border-radius:15px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    font-size:15px;
+    background:#fff;
+  }
+  textarea{min-height:90px;resize:vertical}
+
+  .btn {
     padding:14px 18px;
     border-radius:15px;
     font-size:16px;
     font-weight:bold;
     cursor:pointer;
     border:none;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-    transition:0.2s;
-}
-.btn.enviar, .btn.agregar { background:#2d6a4f; color:white; }
-.btn.enviar:hover, .btn.agregar:hover { background:#1f4d37; }
-.btn.volver { background:white; color:#1a4b27; }
-.btn.volver:hover { background:#e8e8e8; }
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    transition:0.15s;
+  }
+  .btn.agregar{background:var(--jw-dark);color:#fff}
+  .btn.agregar:hover{background:#1f4d37}
+  .btn.volver{background:#fff;color:var(--jw-green)}
+  .btn.volver:hover{background:#e8e8e8}
 
+  .sugerencias-list{margin-top:20px;display:grid;gap:12px}
+  .card{background:var(--card-bg);padding:12px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,0.06)}
+  .card h3{margin:0 0 6px 0;color:var(--jw-dark);font-size:16px}
+  .card p{margin:0;font-size:15px;color:#333}
+  .empty{color:#666;text-align:center;margin-top:18px}
+
+  /* fixed bottom buttons area for mobile-friendly */
+  .bottom-row{display:flex;gap:12px;justify-content:space-between;margin-top:18px}
+  @media (max-width:520px){
+    .form-row{flex-direction:column}
+    .bottom-row{flex-direction:column-reverse}
+  }
 </style>
 </head>
 <body>
+  <div class="wrap">
+    <h1>Sugerencias</h1>
 
-<h1>Sugerencias</h1>
+    <div class="form-row">
+      <div class="field">
+        <input id="inputNombre" type="text" placeholder="Tu nombre (opcional)">
+      </div>
+      <div style="width:150px">
+        <button class="btn agregar" onclick="agregarSugerencia()">✅ Agregar</button>
+      </div>
+    </div>
 
-<textarea id="sugerenciaInput" placeholder="Escribe tu sugerencia…"></textarea>
-<button class="btn agregar" onclick="agregarSugerencia()">✅ Agregar sugerencia</button>
-<button class="btn volver" onclick="history.back()">⬅️ Volver</button>
+    <div style="margin-bottom:8px">
+      <textarea id="inputSugerencia" placeholder="Escribe tu sugerencia aquí…"></textarea>
+    </div>
 
-<h2>Lista de sugerencias:</h2>
-<div id="sugerenciasContainer"></div>
+    <div class="bottom-row">
+      <button class="btn volver" onclick="location.href='index.html'">⬅️ Volver</button>
+    </div>
+
+    <h2 style="margin-top:18px;color:var(--jw-green)">Lista de sugerencias</h2>
+    <div id="sugerenciasContainer" class="sugerencias-list"></div>
+  </div>
 
 <script>
-const container=document.getElementById("sugerenciasContainer");
+(function(){
+  const cont = document.getElementById('sugerenciasContainer');
+  const key = 'sugerencias';
 
-function mostrarSugerencias(){
-    const sugerencias=JSON.parse(localStorage.getItem("sugerencias"))||[];
-    container.innerHTML="";
-    if(sugerencias.length===0){
-        container.innerHTML="<p>No hay sugerencias aún.</p>";
-        return;
+  function render(){
+    cont.innerHTML = '';
+    const arr = JSON.parse(localStorage.getItem(key) || '[]');
+    if(!arr || arr.length===0){
+      cont.innerHTML = '<div class="empty">No hay sugerencias aún.</div>';
+      return;
     }
-    sugerencias.forEach(s=>{
-        const div=document.createElement("div");
-        div.className="sugerencia-card";
-        div.innerHTML=`<h3>${s.nombre}</h3><p>${s.texto}</p>`;
-        container.appendChild(div);
+    // newest first
+    arr.slice().reverse().forEach(item=>{
+      const card = document.createElement('div');
+      card.className = 'card';
+      const nombre = item.nombre ? `<h3>${escapeHtml(item.nombre)}</h3>` : '';
+      card.innerHTML = `${nombre}<p>${escapeHtml(item.texto)}</p>`;
+      cont.appendChild(card);
     });
-}
+  }
 
-function agregarSugerencia(){
-    const texto=document.getElementById("sugerenciaInput").value.trim();
-    if(!texto){ alert("Ingrese su sugerencia."); return; }
-    const nombre=prompt("Ingrese su nombre:");
-    if(!nombre){ alert("Debe ingresar su nombre."); return; }
+  window.agregarSugerencia = function(){
+    const texto = document.getElementById('inputSugerencia').value.trim();
+    const nombre = document.getElementById('inputNombre').value.trim();
+    if(!texto){ alert('Ingrese una sugerencia.'); return; }
+    const arr = JSON.parse(localStorage.getItem(key) || '[]');
+    arr.push({nombre: nombre || 'Anónimo', texto, fecha: new Date().toISOString()});
+    localStorage.setItem(key, JSON.stringify(arr));
+    document.getElementById('inputSugerencia').value = '';
+    document.getElementById('inputNombre').value = '';
+    render();
+  };
 
-    const sugerencias=JSON.parse(localStorage.getItem("sugerencias"))||[];
-    sugerencias.push({nombre, texto});
-    localStorage.setItem("sugerencias", JSON.stringify(sugerencias));
-    document.getElementById("sugerenciaInput").value="";
-    mostrarSugerencias();
-}
+  function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
 
-mostrarSugerencias();
+  // init
+  render();
+})();
 </script>
-
 </body>
 </html>
