@@ -1,101 +1,89 @@
+<!-- login.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Iniciar Sesión</title>
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-.login-container {
-    background: white;
-    padding: 30px 25px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-}
-
-.login-container h1 {
-    color: #1a4b27;
-    margin-bottom: 25px;
-}
-
-input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.btn {
-    padding: 14px 18px;
-    border-radius: 15px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    transition: 0.2s;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-.btn.login {
-    background: #2d6a4f;
-    color: white;
-}
-
-.btn.login:hover {
-    background: #1f4d37;
-}
-
-.btn.volver {
-    background: white;
-    color: #1a4b27;
-}
-
-.btn.volver:hover {
-    background: #e8e8e8;
-}
-
+  :root{
+    --jw-green:#1a4b27;
+    --jw-dark:#2d6a4f;
+    --page-bg:#f4f4f4;
+  }
+  html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--page-bg)}
+  .center {
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    box-sizing:border-box;
+  }
+  .login-card{
+    width:100%;
+    max-width:420px;
+    background:#fff;
+    border-radius:15px;
+    padding:28px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.12);
+    text-align:center;
+  }
+  .login-card h1{margin:0 0 18px;color:var(--jw-green)}
+  input[type="text"], input[type="password"]{
+    width:100%;
+    padding:12px 14px;
+    margin-bottom:12px;
+    border-radius:12px;
+    border:1px solid #ccc;
+    font-size:15px;
+    box-sizing:border-box;
+  }
+  .btn {
+    padding:14px 18px;
+    border-radius:15px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    border:none;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    transition:0.15s;
+  }
+  .btn.login { background:var(--jw-dark); color:#fff; width:100%; margin-bottom:10px }
+  .btn.login:hover{background:#1f4d37}
+  .btn.volver { background:#fff; color:var(--jw-green); width:100% }
+  .btn.volver:hover{background:#e8e8e8}
+  @media (max-width:420px){
+    .login-card{padding:20px}
+  }
 </style>
 </head>
 <body>
-
-<div class="login-container">
-    <h1>Iniciar Sesión</h1>
-    <input type="text" id="usuario" placeholder="Usuario">
-    <input type="password" id="contrasena" placeholder="Contraseña">
-    <button class="btn login" onclick="iniciarSesion()">✅ Entrar</button>
-    <button class="btn volver" onclick="location.href='index.html'">⬅️ Volver</button>
-</div>
+  <div class="center">
+    <div class="login-card" role="form" aria-label="Login">
+      <h1>Iniciar Sesión</h1>
+      <input id="usuario" type="text" placeholder="Usuario" autocomplete="username">
+      <input id="contrasena" type="password" placeholder="Contraseña" autocomplete="current-password">
+      <button class="btn login" onclick="iniciarSesion()">✅ Entrar</button>
+      <button class="btn volver" onclick="location.href='index.html'">⬅️ Volver</button>
+    </div>
+  </div>
 
 <script>
 function iniciarSesion(){
-    const usuario=document.getElementById("usuario").value.trim();
-    const contrasena=document.getElementById("contrasena").value.trim();
-    if(!usuario || !contrasena){
-        alert("Ingrese usuario y contraseña.");
-        return;
-    }
-    // Aquí puedes agregar validación real o simulada
-    alert("Sesión iniciada correctamente.");
-    location.href="index.html"; // Redirige al menú principal
+  const u = document.getElementById('usuario').value.trim();
+  const p = document.getElementById('contrasena').value.trim();
+  if(!u || !p){ alert('Ingrese usuario y contraseña.'); return; }
+  // validación simple (puedes reemplazar por real)
+  // ejemplo: usuario "siervo" contraseña "1234"
+  // si querés desactivar validación y permitir cualquier usuario, comentá las 4 líneas siguientes.
+  if(u === 'siervo' && p === '1234'){
+    alert('Sesión iniciada.');
+    location.href = 'index.html';
+  } else {
+    alert('Usuario o contraseña incorrectos.');
+  }
 }
 </script>
-
 </body>
 </html>
