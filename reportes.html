@@ -3,12 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reportes</title>
-<link rel="stylesheet" href="estilos.css">
+<title>Reportar Territorio</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+
+    header {
+        background: #1a4b27;
+        color: white;
+        padding: 18px;
+        font-size: 22px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    label {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    select, input, textarea {
+        width: 100%;
+        padding: 14px;
+        margin-top: 8px;
+        margin-bottom: 18px;
+        border-radius: 10px;
+        border: 1px solid #999;
+        font-size: 17px;
+    }
+
+    textarea {
+        height: 100px;
+        resize: none;
+    }
+
+    .btn {
+        width: 100%;
+        background: #1a4b27;
+        color: white;
+        font-size: 20px;
+        border: none;
+        padding: 15px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-weight: bold;
+    }
+
+    .btn:hover {
+        background: #163c20;
+        transform: scale(1.03);
+    }
+
+    .back-btn {
+        margin-top: 15px;
+        width: 100%;
+        background: #cccccc;
+        color: #333;
+        font-size: 18px;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .emoji {
+        font-size: 40px;
+        display: block;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+</style>
+
 </head>
 <body>
 
-<h1 style="text-align:center; color:#003399; font-family:Calibri;">Pantalla de Reportes</h1>
+<header>📝 Reportar Territorio</header>
+
+<div class="container">
+
+    <div class="card">
+
+        <span class="emoji">📝</span>
+
+        <label>Seleccione el territorio</label>
+        <select id="territorio">
+            <option value="">Elegir territorio...</option>
+            <option>Territorio 1</option>
+            <option>Territorio 2</option>
+            <option>Territorio 3</option>
+            <option>Territorio 4</option>
+            <option>Territorio 5</option>
+            <option>Territorio 6</option>
+            <option>Territorio 7</option>
+            <option>Territorio 8</option>
+            <option>Territorio 9</option>
+            <option>Territorio 10</option>
+            <!-- Luego agregamos los 32 completos si querés -->
+        </select>
+
+        <label>¿Qué hiciste?</label>
+        <textarea id="detalle" placeholder="Ejemplo: predicamos 3 manzanas, hablamos con 6 personas..."></textarea>
+
+        <button class="btn" onclick="enviar()">Enviar reporte</button>
+
+        <button class="back-btn" onclick="location.href='index.html'">⬅️ Volver al inicio</button>
+
+    </div>
+
+</div>
+
+<script>
+function enviar() {
+    let territorio = document.getElementById('territorio').value;
+    let detalle = document.getElementById('detalle').value;
+
+    if (territorio === "" || detalle === "") {
+        alert("Por favor complete todos los campos antes de enviar.");
+        return;
+    }
+
+    // WhatsApp al siervo de territorio
+    let numero = "3416715020"; // Tu número
+    let mensaje = encodeURIComponent(
+        "📝 *Reporte de territorio*\n\n" +
+        "📍 Territorio: " + territorio + "\n" +
+        "📘 Detalle: " + detalle
+    );
+
+    let url = "https://wa.me/" + numero + "?text=" + mensaje;
+
+    window.open(url, "_blank");
+}
+</script>
 
 </body>
 </html>
