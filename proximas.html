@@ -4,104 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Próximas Salidas</title>
-
 <style>
-body {
-    margin: 0;
-    padding: 20px;
-    background: #f4f4f4;
-    font-family: Arial, sans-serif;
-}
-
-h1 {
-    text-align: center;
-    color: #1a4b27;
-    margin-bottom: 20px;
-}
-
-/* Tarjetas */
-.card {
-    background: white;
-    padding: 18px;
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    margin-bottom: 18px;
-    font-size: 17px;
-}
-
-.titulo {
-    font-size: 20px;
-    font-weight: bold;
-    color: #1a4b27;
-    margin-bottom: 8px;
-}
-
-.pendientes {
-    color: #c1121f;
-    font-weight: bold;
-}
-
-.conductor {
-    color: #444;
-    font-weight: bold;
-}
-
-.btn-volver {
-    position: fixed;
-    left: 20px;
-    bottom: 20px;
-    background: white;
-    color: #1a4b27;
-    border: none;
-    padding: 14px 18px;
-    border-radius: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
+body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
+h1{text-align:center;color:#1a4b27;margin-bottom:20px}
+.card{background:white;padding:18px;border-radius:15px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+.card h2{margin:0 0 8px;color:#2d6a4f}
+.card p{margin:4px 0}
+.pendientes{color:#c1121f;font-weight:bold}
+.conductor{color:#444;font-weight:bold}
+.btn-volver{position:fixed;left:20px;bottom:20px;padding:14px 18px;border-radius:15px;font-size:18px;font-weight:bold;border:none;box-shadow:0 4px 10px rgba(0,0,0,0.08);background:white;color:#1a4b27;cursor:pointer}
+.btn-volver:hover{background:#e8e8e8}
 </style>
 </head>
 <body>
-
 <h1>Próximas Salidas</h1>
-
 <div id="contenedorPendientes"></div>
-
 <button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
-
 <script>
-function cargarPendientes(){
-    const cont = document.getElementById("contenedorPendientes");
-    cont.innerHTML = "";
+const cont=document.getElementById("contenedorPendientes");
+const reportes=JSON.parse(localStorage.getItem("reportes")||"[]");
+const pendientes=reportes.filter(r=>r.pendientes.length>0);
 
-    let reportes = JSON.parse(localStorage.getItem("reportes") || "[]");
-
-    // Filtramos solo los que tienen pendientes
-    let conPendientes = reportes.filter(r => r.pendientes.length > 0);
-
-    if(conPendientes.length === 0){
-        cont.innerHTML = "<p style='text-align:center;color:#555;'>No hay manzanas pendientes.</p>";
-        return;
-    }
-
-    conPendientes.forEach(r => {
-        const div = document.createElement("div");
-        div.className = "card";
-
-        div.innerHTML = `
-            <div class="titulo">Territorio ${r.territorio}</div>
-            <p><strong>Conductor:</strong> <span class="conductor">${r.nombre}</span></p>
-            <p><strong>Manzanas pendientes:</strong> 
-            <span class="pendientes">${r.pendientes.join(", ")}</span></p>
-        `;
-
-        cont.appendChild(div);
-    });
+if(pendientes.length===0){ cont.innerHTML="<p style='text-align:center;color:#555'>No hay manzanas pendientes.</p>"; }
+else{
+pendientes.slice().reverse().forEach(r=>{
+  const div=document.createElement("div"); div.className="card";
+  div.innerHTML=`<h2>Territorio ${r.territorio}</h2>
+  <p><strong>Conductor:</strong> <span class="conductor">${r.nombre}</span></p>
+  <p><strong>Manzanas pendientes:</strong> <span class="pendientes">${r.pendientes.join(", ")}</span></p>`;
+  cont.appendChild(div);
+});
 }
-
-cargarPendientes();
 </script>
-
 </body>
 </html>
