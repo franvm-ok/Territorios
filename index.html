@@ -9,11 +9,11 @@
     body {
         margin: 0;
         font-family: "Segoe UI", sans-serif;
-        background: #eef2f3; /* mismo fondo suave */
+        background: #eef2f3;
     }
 
     header {
-        background: #2a5298; /* tu azul JW original */
+        background: #2a5298;
         color: white;
         padding: 18px 25px;
         display: flex;
@@ -41,42 +41,46 @@
 
     h1 {
         color: #2a5298;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         font-weight: 600;
     }
 
+    /* GRID compacto tipo JW */
     .grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
+        grid-template-columns: repeat(2, 1fr); /* SIEMPRE 2 columnas */
+        gap: 16px;
     }
 
+    /* Botones estilo JW Library */
     .btn {
         background: white;
-        border-radius: 14px;
-        padding: 30px 20px;
-        font-size: 1.25rem;
+        border-radius: 16px;
+        padding: 25px 10px;
+        height: 120px;              /* altura fija, estilo tile de JW Library */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+        font-size: 1.1rem;
         font-weight: 600;
         color: #2a5298;
-        text-decoration: none;
         border: 2px solid #d3dce6;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        text-align: center; /* asegura centrado */
-        display: flex;
-        justify-content: center; /* más centrado */
-        align-items: center;     /* más centrado */
-        transition: 0.15s ease-in-out;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        text-align: center;
+        transition: 0.2s ease-in-out;
     }
 
     .btn:hover {
-        background: #e6eefc;
+        background: #e9f1ff;
         transform: translateY(-3px);
     }
 
-    /* Teléfonos: pasa a 1 columna */
-    @media (max-width: 600px) {
-        .grid {
-            grid-template-columns: 1fr;
+    /* Muy importante: incluso en celulares, 2 columnas */
+    @media (max-width: 420px) {
+        .btn {
+            height: 110px; /* un poquito más chico */
+            font-size: 1rem;
         }
     }
 </style>
