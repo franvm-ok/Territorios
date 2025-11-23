@@ -3,135 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reportes</title>
+<title>Reportes de Territorios</title>
 
 <style>
     body {
-        font-family: "Segoe UI", Arial, sans-serif;
         margin: 0;
-        padding: 0;
-        background: #f4f7fb;
+        font-family: Arial, sans-serif;
+        background: #f1f5f9;
+        padding-bottom: 80px;
+    }
+
+    h1 {
+        text-align: center;
+        margin: 20px 0;
+        color: #1a3d6b;
+    }
+
+    .contenedor-reportes {
+        width: 90%;
+        max-width: 900px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    /* 2 columnas en pantallas grandes */
+    @media (min-width: 700px) {
+        .contenedor-reportes {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .tarjeta-reporte {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        border-left: 6px solid #1a73e8;
+    }
+
+    .titulo-territorio {
+        font-size: 20px;
+        font-weight: bold;
+        color: #1a3d6b;
+    }
+
+    .sub {
+        font-weight: bold;
+        margin-top: 10px;
         color: #333;
     }
 
-    /* ENCABEZADO AL ESTILO DEL INDEX */
-    header {
-        background: #4D6AA6;
-        color: white;
-        text-align: center;
-        padding: 22px;
-        font-size: 1.7rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
+    .lista {
+        margin-left: 15px;
+        margin-top: 5px;
+        color: #555;
     }
 
-    .container {
-        padding: 20px;
-        max-width: 800px;
-        margin: auto;
-    }
-
-    /* TARJETAS DE REPORTES (MISMO ESTILO DE TARJETAS DEL INDEX) */
-    .reporte-card {
-        background: white;
-        border-radius: 18px;
-        padding: 18px;
-        margin-bottom: 18px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-        transition: 0.15s;
-    }
-
-    .reporte-card:hover {
-        transform: scale(1.01);
-    }
-
-    .reporte-header {
-        font-size: 1.35rem;
-        color: #4D6AA6;
-        font-weight: 700;
-        margin-bottom: 10px;
-    }
-
-    .reporte-body {
-        font-size: 1.15rem;
-        line-height: 1.55;
-    }
-
-    .no-reportes {
-        text-align: center;
-        margin-top: 40px;
-        color: #666;
-        font-size: 1.25rem;
-    }
-
-    /* BOTÓN VOLVER FLOTANTE (MISMO PARA TODAS LAS PANTALLAS) */
-    .btn-volver-float {
+    /* Botón volver */
+    #volver {
         position: fixed;
-        bottom: 20px;
-        left: 20px;
-        background: #4D6AA6;
-        color: #fff;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.6rem;
+        bottom: 15px;
+        left: 15px;
+        background: #1a73e8;
+        color: white;
+        padding: 12px 18px;
+        border-radius: 8px;
+        font-size: 16px;
         text-decoration: none;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-        transition: 0.2s;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
     }
 
-    .btn-volver-float:hover {
-        background: #3B578F;
-        transform: scale(1.07);
+    #volver:hover {
+        background: #1557b0;
     }
+
 </style>
 </head>
-
 <body>
 
-<header>Reportes</header>
+<h1>📊 Reportes Generados</h1>
 
-<div class="container" id="reportesList"></div>
+<div class="contenedor-reportes" id="listaReportes">
+    <!-- Aquí se insertan automáticamente los reportes -->
+</div>
 
-<!-- BOTÓN VOLVER AL MENÚ PRINCIPAL -->
-<a href="index.html" class="btn-volver-float">⮌</a>
+<a href="index.html" id="volver">⬅️ Volver</a>
 
 <script>
-    function cargarReportes() {
-        const reportes = JSON.parse(localStorage.getItem("reportes")) || [];
-        const contenedor = document.getElementById("reportesList");
+function cargarReportes() {
+    const contenedor = document.getElementById("listaReportes");
 
-        if (reportes.length === 0) {
-            contenedor.innerHTML = `
-                <p class="no-reportes">No hay reportes cargados aún.</p>
-            `;
-            return;
-        }
+    const reportes = JSON.parse(localStorage.getItem("reportesGenerados")) || [];
 
-        reportes.reverse();
-
-        reportes.forEach(r => {
-            const card = document.createElement("div");
-            card.className = "reporte-card";
-
-            card.innerHTML = `
-                <div class="reporte-header">
-                    📅 ${r.fecha} — 👤 ${r.nombre}
-                </div>
-                <div class="reporte-body">
-                    <strong>Observaciones:</strong><br>
-                    ${r.observaciones ? r.observaciones : "<em>Sin observaciones</em>"}
-                </div>
-            `;
-
-            contenedor.appendChild(card);
-        });
+    if (reportes.length === 0) {
+        contenedor.innerHTML = "<p style='text-align:center; color:#555;'>No hay reportes aún.</p>";
+        return;
     }
 
-    cargarReportes();
+    reportes.forEach(rep => {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "tarjeta-reporte";
+
+        tarjeta.innerHTML = `
+            <div class="titulo-territorio">🗺️ Territorio ${rep.territorio}</div>
+            <div><strong>Fecha:</strong> ${rep.fecha}</div>
+            <div><strong>Conductor:</strong> ${rep.conductor}</div>
+
+            <div class="sub">✔️ Manzanas hechas:</div>
+            <div class="lista">${rep.hechas.join(", ") || "Ninguna"}</div>
+
+            <div class="sub">⚠️ Pendientes:</div>
+            <div class="lista">${rep.pendientes.join(", ") || "Ninguna"}</div>
+
+            <div class="sub">📝 Observaciones:</div>
+            <div class="lista">${rep.observaciones || "—"}</div>
+        `;
+
+        contenedor.appendChild(tarjeta);
+    });
+}
+
+cargarReportes();
 </script>
 
 </body>
