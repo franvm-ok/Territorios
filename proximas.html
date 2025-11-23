@@ -4,150 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Próximas Salidas</title>
-
 <style>
-    body {
-        font-family: "Segoe UI", sans-serif;
-        background: #f5f5f5;
-        margin: 0;
-        padding: 15px;
-        color: #333;
-    }
-
-    h1 {
-        text-align: center;
-        color: #2d6a4f;
-        margin-bottom: 20px;
-    }
-
-    .grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .card {
-        background: white;
-        padding: 20px;
-        border-radius: 14px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        font-size: 16px;
-    }
-
-    .card h2 {
-        margin-top: 0;
-        font-size: 18px;
-        color: #1b4332;
-    }
-
-    .manzanas {
-        display: flex;
-        flex-wrap: wrap;
-        margin-top: 10px;
-        gap: 8px;
-    }
-
-    .manzana {
-        padding: 6px 12px;
-        border-radius: 8px;
-        background: #f8d7da;
-        font-weight: bold;
-        color: #842029;
-    }
-
-    .observaciones {
-        margin-top: 10px;
-        font-style: italic;
-        color: #555;
-    }
-
-    .volver {
-        display: block;
-        width: 100%;
-        padding: 14px;
-        margin-top: 15px;
-        border-radius: 10px;
-        font-size: 18px;
-        text-align: center;
-        text-decoration: none;
-        font-weight: bold;
-        background: #2d6a4f;
-        color: white;
-    }
-
-    .volver:hover {
-        background: #1f4d37;
-    }
+body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
+h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
+.card { background:white; padding:20px; margin-bottom:15px; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+.card h2 { margin:0 0 10px 0; }
+.card ul { margin:0; padding-left:20px; }
+.volver { position:fixed; bottom:20px; left:20px; background:#cccccc; padding:12px 18px; border-radius:10px; font-size:16px; font-weight:bold; text-decoration:none; color:#333; box-shadow:0 3px 8px rgba(0,0,0,0.2); }
+.volver:hover { background:#b9b9b9; }
 </style>
 </head>
 <body>
 
 <h1>Próximas Salidas</h1>
+<div id="proximasContainer"></div>
 
-<div class="grid" id="proximasGrid"></div>
-
-<a class="volver" href="index.html">⬅️ Volver al menú principal</a>
+<a class="volver" href="index.html">⬅️ Volver</a>
 
 <script>
-    // Leer reportes de localStorage
-    const reportes = JSON.parse(localStorage.getItem("reportes")) || [];
-    const grid = document.getElementById("proximasGrid");
+const container = document.getElementById("proximasContainer");
+const proximas = JSON.parse(localStorage.getItem("proximas")) || [];
 
-    // Filtrar solo manzanas pendientes
-    const pendientes = reportes
-        .map(r => {
-            const manzanasPendientes = {};
-            for(const m in r.manzanas){
-                if(!r.manzanas[m]){
-                    manzanasPendientes[m] = false;
-                }
-            }
-            if(Object.keys(manzanasPendientes).length > 0){
-                return {...r, manzanas: manzanasPendientes};
-            }
-            return null;
-        })
-        .filter(r => r !== null);
+// Agrupar por territorio y mostrar pendientes
+const pendientesPorTerritorio = {};
 
-    if(pendientes.length === 0){
-        grid.innerHTML = "<p style='text-align:center;'>No hay manzanas pendientes.</p>";
-    } else {
-        pendientes.forEach(r => {
-            const card = document.createElement("div");
-            card.className = "card";
+proximas.forEach(r=>{
+    if(!pendientesPorTerritorio[r.territorio]) pendientesPorTerritorio[r.territorio]=[];
+    pendientesPorTerritorio[r.territorio] = pendientesPorTerritorio[r.territorio].concat(r.manzanas);
+});
 
-            const fecha = document.createElement("p");
-            fecha.textContent = `📅 Fecha: ${r.fecha}`;
-
-            const hermano = document.createElement("p");
-            hermano.textContent = `👤 Hermano: ${r.hermano}`;
-
-            const territorio = document.createElement("h2");
-            territorio.textContent = `Territorio ${r.territorio}`;
-
-            const manzanasDiv = document.createElement("div");
-            manzanasDiv.className = "manzanas";
-
-            for(const m in r.manzanas){
-                const span = document.createElement("span");
-                span.className = "manzana";
-                span.textContent = `Manzana ${m}`;
-                manzanasDiv.appendChild(span);
-            }
-
-            const obs = document.createElement("div");
-            obs.className = "observaciones";
-            obs.textContent = r.observaciones ? `💬 Observaciones: ${r.observaciones}` : "";
-
-            card.appendChild(fecha);
-            card.appendChild(hermano);
-            card.appendChild(territorio);
-            card.appendChild(manzanasDiv);
-            card.appendChild(obs);
-
-            grid.appendChild(card);
-        });
-    }
+for(const [territorio, manzanas] of Object.entries(pendientesPorTerritorio)){
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML = `
+        <h2>Territorio ${territorio}</h2>
+        <strong>Manzanas pendientes:</strong> ${manzanas.join(", ")}
+    `;
+    container.appendChild(div);
+}
 </script>
 
 </body>
