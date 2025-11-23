@@ -30,48 +30,21 @@ input, textarea { width:100%; padding:12px; font-size:16px; border-radius:10px; 
 <button class="btn enviar" onclick="guardarReporte()">✅ Enviar</button>
 
 <script>
-// Obtener número de territorio de URL
 const params = new URLSearchParams(window.location.search);
 const numeroTerritorio = params.get('num');
 document.getElementById("tituloTerritorio").textContent = "Territorio " + numeroTerritorio;
 
-// Definir manzanas para cada territorio
 const manzanasPorTerritorio = {
-    1:["A","B","C","D","E"],
-    2:["A","B","C","D"],
-    3:["A","B","C","D","E"],
-    4:["A","B","C","D"],
-    5:["A","B","C","D","E"],
-    6:["A","B","C","D","E"],
-    7:["A","B","C","D"],
-    8:["A","B","C","D","E"],
-    9:["A","B","C","D"],
-    10:["A","B","C","D","E"],
-    11:["A","B","C","D","E"],
-    12:["A","B","C","D"],
-    13:["A","B","C","D","E"],
-    14:["A","B","C","D","E"],
-    15:["A","B","C","D"],
-    16:["A","B","C","D","E"],
-    17:["A","B","C","D","E"],
-    18:["A","B","C","D"],
-    19:["A","B","C","D","E"],
-    20:["A","B","C","D","E"],
-    21:["A","B","C","D"],
-    22:["A","B","C","D","E"],
-    23:["A","B","C","D","E"],
-    24:["A","B","C","D"],
-    25:["A","B","C","D","E"],
-    26:["A","B","C","D","E"],
-    27:["A","B","C","D"],
-    28:["A","B","C","D","E"],
-    29:["A","B","C","D","E"],
-    30:["A","B","C","D"],
-    31:["A","B","C","D","E"],
-    32:["A","B","C","D"]
+    1:["A","B","C","D","E"],2:["A","B","C","D"],3:["A","B","C","D","E"],4:["A","B","C","D"],
+    5:["A","B","C","D","E"],6:["A","B","C","D","E"],7:["A","B","C","D"],8:["A","B","C","D","E"],
+    9:["A","B","C","D"],10:["A","B","C","D","E"],11:["A","B","C","D","E"],12:["A","B","C","D"],
+    13:["A","B","C","D","E"],14:["A","B","C","D","E"],15:["A","B","C","D"],16:["A","B","C","D","E"],
+    17:["A","B","C","D","E"],18:["A","B","C","D"],19:["A","B","C","D","E"],20:["A","B","C","D","E"],
+    21:["A","B","C","D"],22:["A","B","C","D","E"],23:["A","B","C","D","E"],24:["A","B","C","D"],
+    25:["A","B","C","D","E"],26:["A","B","C","D","E"],27:["A","B","C","D"],28:["A","B","C","D","E"],
+    29:["A","B","C","D","E"],30:["A","B","C","D"],31:["A","B","C","D","E"],32:["A","B","C","D"]
 };
 
-// Render manzanas
 const container = document.getElementById("manzanasContainer");
 const manzanas = manzanasPorTerritorio[numeroTerritorio] || [];
 manzanas.forEach(m=>{
@@ -82,7 +55,6 @@ manzanas.forEach(m=>{
     container.appendChild(div);
 });
 
-// Guardar reporte en localStorage
 function guardarReporte(){
     const nombre = document.getElementById("nombreHermano").value.trim();
     if(!nombre){ alert("Ingrese su nombre"); return; }
@@ -99,13 +71,16 @@ function guardarReporte(){
 
     const reporte = {fecha, nombre, territorio:numeroTerritorio, manzanasHechas, manzanasPendientes, observaciones};
 
+    // Guardar en reportes
     const reportes = JSON.parse(localStorage.getItem("reportes")) || [];
     reportes.push(reporte);
     localStorage.setItem("reportes", JSON.stringify(reportes));
 
-    // También guardar pendientes para próximas salidas
-    const proximas = JSON.parse(localStorage.getItem("proximas")) || [];
-    proximas.push({territorio:numeroTerritorio, manzanas:manzanasPendientes});
+    // Guardar pendientes en proximas
+    let proximas = JSON.parse(localStorage.getItem("proximas")) || [];
+    const existente = proximas.find(p => p.territorio == numeroTerritorio);
+    if(existente){ existente.manzanas = manzanasPendientes; }
+    else{ proximas.push({territorio:numeroTerritorio, manzanas:manzanasPendientes}); }
     localStorage.setItem("proximas", JSON.stringify(proximas));
 
     alert("✅ Reporte guardado correctamente.");
