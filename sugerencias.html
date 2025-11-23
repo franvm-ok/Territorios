@@ -7,8 +7,12 @@
 <style>
 body { font-family: Arial, sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
 h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
+.sugerencia-card { background:white; border-radius:15px; padding:15px; margin-bottom:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
+.sugerencia-card h3 { margin:0 0 10px 0; color:#2d6a4f; }
+.sugerencia-card p { margin:4px 0; }
 
-textarea { width:100%; padding:12px; font-size:16px; border-radius:15px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box; resize:vertical; min-height:60px; }
+input, textarea { width:100%; padding:12px; margin-bottom:10px; border-radius:15px; border:1px solid #ccc; box-sizing:border-box; font-size:16px; }
+textarea { resize:vertical; min-height:60px; }
 
 .btn {
     padding:14px 18px;
@@ -17,68 +21,58 @@ textarea { width:100%; padding:12px; font-size:16px; border-radius:15px; border:
     font-weight:bold;
     cursor:pointer;
     border:none;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
     transition:0.2s;
 }
+.btn.enviar, .btn.agregar { background:#2d6a4f; color:white; }
+.btn.enviar:hover, .btn.agregar:hover { background:#1f4d37; }
+.btn.volver { background:white; color:#1a4b27; }
+.btn.volver:hover { background:#e8e8e8; }
 
-.agregar { background:#2d6a4f; color:white; float:right; }
-.agregar:hover { background:#1f4d37; }
-
-.volver { background:white; color:#1a4b27; float:left; margin-top:10px; width:auto; }
-.volver:hover { background:#e8e8e8; }
-
-.sugerencia-card {
-    background:white;
-    border-radius:15px;
-    padding:12px;
-    margin-bottom:10px;
-    box-shadow:0 3px 8px rgba(0,0,0,0.1);
-    font-size:16px;
-}
 </style>
 </head>
 <body>
 
 <h1>Sugerencias</h1>
 
-<textarea id="nuevaSugerencia" placeholder="Escriba su sugerencia aquí…"></textarea>
-<button class="btn agregar" onclick="agregarSugerencia()">✅ Agregar</button>
-
-<div id="sugerenciasContainer" style="margin-top:20px;"></div>
-
+<textarea id="sugerenciaInput" placeholder="Escribe tu sugerencia…"></textarea>
+<button class="btn agregar" onclick="agregarSugerencia()">✅ Agregar sugerencia</button>
 <button class="btn volver" onclick="history.back()">⬅️ Volver</button>
 
-<script>
-const container = document.getElementById("sugerenciasContainer");
+<h2>Lista de sugerencias:</h2>
+<div id="sugerenciasContainer"></div>
 
-// Mostrar sugerencias guardadas
+<script>
+const container=document.getElementById("sugerenciasContainer");
+
 function mostrarSugerencias(){
-    const sugerencias = JSON.parse(localStorage.getItem("sugerencias")) || [];
-    container.innerHTML = "";
-    if(sugerencias.length === 0){
-        container.innerHTML = "<p>No hay sugerencias aún.</p>";
-    } else {
-        sugerencias.forEach(s=>{
-            const div = document.createElement("div");
-            div.className = "sugerencia-card";
-            div.textContent = s;
-            container.appendChild(div);
-        });
+    const sugerencias=JSON.parse(localStorage.getItem("sugerencias"))||[];
+    container.innerHTML="";
+    if(sugerencias.length===0){
+        container.innerHTML="<p>No hay sugerencias aún.</p>";
+        return;
     }
+    sugerencias.forEach(s=>{
+        const div=document.createElement("div");
+        div.className="sugerencia-card";
+        div.innerHTML=`<h3>${s.nombre}</h3><p>${s.texto}</p>`;
+        container.appendChild(div);
+    });
 }
 
-// Agregar nueva sugerencia
 function agregarSugerencia(){
-    const text = document.getElementById("nuevaSugerencia").value.trim();
-    if(!text){ alert("Ingrese una sugerencia"); return; }
-    const sugerencias = JSON.parse(localStorage.getItem("sugerencias")) || [];
-    sugerencias.push(text);
+    const texto=document.getElementById("sugerenciaInput").value.trim();
+    if(!texto){ alert("Ingrese su sugerencia."); return; }
+    const nombre=prompt("Ingrese su nombre:");
+    if(!nombre){ alert("Debe ingresar su nombre."); return; }
+
+    const sugerencias=JSON.parse(localStorage.getItem("sugerencias"))||[];
+    sugerencias.push({nombre, texto});
     localStorage.setItem("sugerencias", JSON.stringify(sugerencias));
-    document.getElementById("nuevaSugerencia").value = "";
+    document.getElementById("sugerenciaInput").value="";
     mostrarSugerencias();
 }
 
-// Inicializar
 mostrarSugerencias();
 </script>
 
