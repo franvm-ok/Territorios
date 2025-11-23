@@ -7,32 +7,45 @@
 <style>
 body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
 h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
-.card { background:white; padding:20px; margin-bottom:15px; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-.card h2 { margin:0 0 10px 0; }
-.volver { position:fixed; bottom:20px; left:20px; background:#cccccc; padding:12px 18px; border-radius:10px; font-size:16px; font-weight:bold; text-decoration:none; color:#333; box-shadow:0 3px 8px rgba(0,0,0,0.2); }
-.volver:hover { background:#b9b9b9; }
+.territorio-card { background:white; border-radius:15px; padding:15px; margin-bottom:15px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
+.territorio-card h2 { margin:0 0 10px 0; color:#2d6a4f; font-size:18px; }
+.manzanas { display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; }
+.manzana-pendiente { background:#f8d7da; color:#842029; padding:4px 8px; border-radius:6px; font-weight:bold; }
+.conductor { font-size:14px; margin-top:6px; color:#555; }
+.volver { background:#cccccc; color:#333; float:left; width:auto; padding:12px 20px; margin-top:20px; border:none; border-radius:10px; cursor:pointer; }
+.volver:hover { background:#aaaaaa; }
 </style>
 </head>
 <body>
 
 <h1>Próximas Salidas</h1>
+
 <div id="proximasContainer"></div>
-<a class="volver" href="index.html">⬅️ Volver</a>
+
+<button class="volver" onclick="history.back()">⬅️ Volver</button>
 
 <script>
 const container = document.getElementById("proximasContainer");
 const proximas = JSON.parse(localStorage.getItem("proximas")) || [];
 
-proximas.forEach(r=>{
-    if(r.manzanas.length === 0) return;
-    const div = document.createElement("div");
-    div.className="card";
-    div.innerHTML = `
-        <h2>Territorio ${r.territorio}</h2>
-        <strong>Manzanas pendientes:</strong> ${r.manzanas.join(", ")}
-    `;
-    container.appendChild(div);
-});
+if(proximas.length === 0){
+    container.innerHTML = "<p>No hay manzanas pendientes.</p>";
+} else {
+    proximas.forEach(p=>{
+        if(p.manzanas.length > 0){
+            const div = document.createElement("div");
+            div.className = "territorio-card";
+            div.innerHTML = `
+                <h2>Territorio ${p.territorio}</h2>
+                <div class="manzanas">
+                    ${p.manzanas.map(m=>`<span class="manzana-pendiente">${m}</span>`).join("")}
+                </div>
+                <p class="conductor">Último conductor: ${p.ultimoConductor}</p>
+            `;
+            container.appendChild(div);
+        }
+    });
+}
 </script>
 
 </body>
