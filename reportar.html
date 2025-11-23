@@ -14,29 +14,32 @@
         color: #333;
     }
 
-    h1 {
-        font-size: 24px;
+    h1, h2 {
         text-align: center;
-        margin-bottom: 15px;
         color: #2d6a4f;
+        margin-bottom: 15px;
     }
 
-    /* BUSCADOR */
-    #searchInput {
+    input, textarea {
         width: 100%;
         padding: 12px;
         font-size: 16px;
         border-radius: 10px;
         border: 1px solid #ccc;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         box-sizing: border-box;
     }
 
-    /* GRID DE TARJETAS */
+    textarea {
+        resize: vertical;
+        min-height: 60px;
+    }
+
     .grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
+        margin-bottom: 15px;
     }
 
     .card {
@@ -54,7 +57,6 @@
         transform: scale(1.04);
     }
 
-    /* MANZANAS */
     #manzanasSection {
         display: none;
         margin-top: 20px;
@@ -79,18 +81,37 @@
         font-weight: bold;
     }
 
-    .volver {
-        margin-top: 20px;
+    .btn {
         display: block;
         width: 100%;
         padding: 14px;
-        background: #2d6a4f;
-        color: white;
-        text-align: center;
         border-radius: 10px;
         font-size: 18px;
+        text-align: center;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
         text-decoration: none;
     }
+
+    .enviar {
+        background: #2d6a4f;
+        color: white;
+    }
+
+    .enviar:hover {
+        background: #1f4d37;
+    }
+
+    .volver-menu {
+        background: #cccccc;
+        color: #333;
+    }
+
+    .volver-menu:hover {
+        background: #aaaaaa;
+    }
+
 </style>
 </head>
 <body>
@@ -101,20 +122,28 @@
 
 <div class="grid" id="territoriosGrid"></div>
 
-<!-- Sección donde aparecen las manzanas -->
 <div id="manzanasSection"></div>
 
+<!-- Formulario de nombre y observaciones -->
+<div id="formSection" style="display:none;">
+    <input type="text" id="nombreHermano" placeholder="Nombre del hermano">
+    <textarea id="observaciones" placeholder="Observaciones..."></textarea>
+    <button class="btn enviar" onclick="guardarReporte()">✅ Enviar Reporte</button>
+</div>
+
+<a class="btn volver-menu" href="index.html">⬅️ Volver al menú principal</a>
+
 <script>
-    // Crear 32 territorios
     const territorios = Array.from({length: 32}, (_, i) => ({
         numero: i + 1,
-        manzanas: ["A", "B", "C", "D", "E"] // puedes poner otras luego
+        manzanas: ["A", "B", "C", "D", "E"]
     }));
 
     const grid = document.getElementById("territoriosGrid");
     const manzanasSection = document.getElementById("manzanasSection");
+    const formSection = document.getElementById("formSection");
+    let territorioSeleccionado = null;
 
-    // Render tarjetas
     function renderTarjetas(filtro = "") {
         grid.innerHTML = "";
         territorios
@@ -130,42 +159,81 @@
 
     renderTarjetas();
 
-    // Buscador
     document.getElementById("searchInput").addEventListener("input", (e) => {
         renderTarjetas(e.target.value);
     });
 
-    // Abrir las manzanas del territorio seleccionado
     function abrirTerritorio(t) {
+        territorioSeleccionado = t;
         grid.style.display = "none";
         document.getElementById("searchInput").style.display = "none";
 
         manzanasSection.style.display = "block";
-        manzanasSection.innerHTML = `
-            <h2 style="text-align:center;color:#2d6a4f;">Territorio ${t.numero}</h2>
-        `;
+        formSection.style.display = "block";
+
+        manzanasSection.innerHTML = `<h2>Territorio ${t.numero}</h2>`;
 
         t.manzanas.forEach(m => {
             const div = document.createElement("div");
             div.className = "manzana";
             div.textContent = `Manzana ${m}`;
-
-            div.onclick = () => {
-                div.classList.toggle("checked");
-            };
-
+            div.onclick = () => div.classList.toggle("checked");
             manzanasSection.appendChild(div);
         });
 
-        manzanasSection.innerHTML += `
-            <a href="#" class="volver" onclick="volver()">Volver</a>
-        `;
+        // Botón volver dentro de la sección
+        const volverBtn = document.createElement("a");
+        volverBtn.className = "btn volver-menu";
+        volverBtn.href = "#";
+        volverBtn.textContent = "⬅️ Volver a territorios";
+        volverBtn.onclick = () => {
+            manzanasSection.style.display = "none";
+            formSection.style.display = "none";
+            grid.style.display = "grid";
+            document.getElementById("searchInput").style.display = "block";
+        };
+        manzanasSection.appendChild(volverBtn);
     }
 
-    function volver() {
+    function guardarReporte() {
+        const nombre = document.getElementById("nombreHermano").value.trim();
+        const observaciones = document.getElementById("observaciones").value.trim();
+        if(!nombre){
+            alert("Por favor ingrese su nombre.");
+            return;
+        }
+
+        const manzanasDivs = manzanasSection.querySelectorAll(".manzana");
+        const manzanasEstado = {};
+        manzanasDivs.forEach(div => {
+            const letra = div.textContent.replace("Manzana ","");
+            manzanasEstado[letra] = div.classList.contains("checked");
+        });
+
+        const fecha = new Date().toLocaleDateString();
+
+        const reporte = {
+            fecha,
+            hermano: nombre,
+            territorio: territorioSeleccionado.numero,
+            manzanas: manzanasEstado,
+            observaciones
+        };
+
+        const reportesGuardados = JSON.parse(localStorage.getItem("reportes")) || [];
+        reportesGuardados.push(reporte);
+        localStorage.setItem("reportes", JSON.stringify(reportesGuardados));
+
+        alert("✅ Reporte guardado correctamente.");
+        // Volver a lista de territorios
         manzanasSection.style.display = "none";
+        formSection.style.display = "none";
         grid.style.display = "grid";
         document.getElementById("searchInput").style.display = "block";
+
+        // Limpiar form
+        document.getElementById("nombreHermano").value = "";
+        document.getElementById("observaciones").value = "";
     }
 </script>
 
