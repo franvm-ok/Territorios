@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reportes de Territorios</title>
+
+<style>
+    body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+        padding: 15px;
+        color: #333;
+    }
+
+    h1 {
+        text-align: center;
+        color: #2d6a4f;
+        margin-bottom: 20px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 14px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        font-size: 16px;
+    }
+
+    .card h2 {
+        margin-top: 0;
+        font-size: 18px;
+        color: #1b4332;
+    }
+
+    .manzanas {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        gap: 8px;
+    }
+
+    .manzana {
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: #d8f3dc;
+        font-weight: bold;
+        color: #2d6a4f;
+    }
+
+    .pendiente {
+        background: #f8d7da;
+        color: #842029;
+    }
+
+    .observaciones {
+        margin-top: 10px;
+        font-style: italic;
+        color: #555;
+    }
+
+    .volver {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        margin-top: 15px;
+        border-radius: 10px;
+        font-size: 18px;
+        text-align: center;
+        text-decoration: none;
+        font-weight: bold;
+        background: #2d6a4f;
+        color: white;
+    }
+
+    .volver:hover {
+        background: #1f4d37;
+    }
+</style>
+</head>
+<body>
+
+<h1>Reportes de Territorios</h1>
+
+<div class="grid" id="reportesGrid"></div>
+
+<a class="volver" href="index.html">⬅️ Volver al menú principal</a>
+
+<script>
+    // Leer reportes de localStorage
+    const reportes = JSON.parse(localStorage.getItem("reportes")) || [];
+    const grid = document.getElementById("reportesGrid");
+
+    if(reportes.length === 0){
+        grid.innerHTML = "<p style='text-align:center;'>No hay reportes todavía.</p>";
+    } else {
+        reportes.forEach(r => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            const fecha = document.createElement("p");
+            fecha.textContent = `📅 Fecha: ${r.fecha}`;
+
+            const hermano = document.createElement("p");
+            hermano.textContent = `👤 Hermano: ${r.hermano}`;
+
+            const territorio = document.createElement("h2");
+            territorio.textContent = `Territorio ${r.territorio}`;
+
+            const manzanasDiv = document.createElement("div");
+            manzanasDiv.className = "manzanas";
+
+            for(const m in r.manzanas){
+                const span = document.createElement("span");
+                span.className = "manzana";
+                span.textContent = `Manzana ${m}`;
+                if(!r.manzanas[m]) {
+                    span.classList.add("pendiente");
+                }
+                manzanasDiv.appendChild(span);
+            }
+
+            const obs = document.createElement("div");
+            obs.className = "observaciones";
+            obs.textContent = r.observaciones ? `💬 Observaciones: ${r.observaciones}` : "";
+
+            card.appendChild(fecha);
+            card.appendChild(hermano);
+            card.appendChild(territorio);
+            card.appendChild(manzanasDiv);
+            card.appendChild(obs);
+
+            grid.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>
