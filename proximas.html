@@ -5,47 +5,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Próximas Salidas</title>
 <style>
-body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
+body { font-family: Arial, sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
 h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
-.territorio-card { background:white; border-radius:15px; padding:15px; margin-bottom:15px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
-.territorio-card h2 { margin:0 0 10px 0; color:#2d6a4f; font-size:18px; }
-.manzanas { display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; }
-.manzana-pendiente { background:#f8d7da; color:#842029; padding:4px 8px; border-radius:6px; font-weight:bold; }
-.conductor { font-size:14px; margin-top:6px; color:#555; }
-.volver { background:#cccccc; color:#333; float:left; width:auto; padding:12px 20px; margin-top:20px; border:none; border-radius:10px; cursor:pointer; }
-.volver:hover { background:#aaaaaa; }
+.territorio-card { background:white; border-radius:15px; padding:15px; margin-bottom:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
+.territorio-card h3 { margin:0 0 10px 0; color:#2d6a4f; }
+.territorio-card p { margin:4px 0; }
+.manzana-pendiente { color:red; font-weight:bold; }
+
+.btn {
+    padding:14px 18px;
+    border-radius:15px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    border:none;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    transition:0.2s;
+}
+.btn.enviar, .btn.agregar { background:#2d6a4f; color:white; }
+.btn.enviar:hover, .btn.agregar:hover { background:#1f4d37; }
+.btn.volver { background:white; color:#1a4b27; }
+.btn.volver:hover { background:#e8e8e8; }
+
 </style>
 </head>
 <body>
 
 <h1>Próximas Salidas</h1>
-
 <div id="proximasContainer"></div>
 
-<button class="volver" onclick="history.back()">⬅️ Volver</button>
+<button class="btn volver" onclick="history.back()">⬅️ Volver</button>
 
 <script>
-const container = document.getElementById("proximasContainer");
-const proximas = JSON.parse(localStorage.getItem("proximas")) || [];
+const container=document.getElementById("proximasContainer");
 
-if(proximas.length === 0){
-    container.innerHTML = "<p>No hay manzanas pendientes.</p>";
-} else {
+function mostrarProximas(){
+    const proximas=JSON.parse(localStorage.getItem("proximas"))||[];
+    container.innerHTML="";
+    if(proximas.length===0){
+        container.innerHTML="<p>No hay manzanas pendientes.</p>";
+        return;
+    }
     proximas.forEach(p=>{
-        if(p.manzanas.length > 0){
-            const div = document.createElement("div");
-            div.className = "territorio-card";
-            div.innerHTML = `
-                <h2>Territorio ${p.territorio}</h2>
-                <div class="manzanas">
-                    ${p.manzanas.map(m=>`<span class="manzana-pendiente">${m}</span>`).join("")}
-                </div>
-                <p class="conductor">Último conductor: ${p.ultimoConductor}</p>
-            `;
-            container.appendChild(div);
-        }
+        const div=document.createElement("div");
+        div.className="territorio-card";
+        div.innerHTML=`
+            <h3>Territorio ${p.territorio}</h3>
+            <p><strong>Manzanas pendientes:</strong> <span class="manzana-pendiente">${p.manzanas.join(", ")}</span></p>
+            <p><strong>Último conductor:</strong> ${p.ultimoConductor}</p>
+        `;
+        container.appendChild(div);
     });
 }
+
+mostrarProximas();
 </script>
 
 </body>
