@@ -22,7 +22,6 @@ textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin
 .volver:hover{background:#e8e8e8}
 .clearfix::after{content:"";display:table;clear:both}
 
-/* ⭐ Botón flotante (igual texto y estilo general del index) */
 .fab-back{
     position:fixed;
     bottom:20px;
@@ -41,16 +40,13 @@ textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin
     z-index:9999;
     box-shadow:0 4px 10px rgba(0,0,0,0.25);
 }
-.fab-back:hover{
-    background:#e8e8e8;
-}
+.fab-back:hover{background:#e8e8e8}
 </style>
 </head>
 <body>
 
 <h1>Informar Territorio</h1>
 
-<!-- ⭐ Buscador restaurado -->
 <input type="text" id="searchInput" placeholder="Buscar territorio por número…">
 
 <div id="territoriosGrid" class="grid"></div>
@@ -67,13 +63,9 @@ textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin
     </div>
 </div>
 
-<!-- ⭐ Botón flotante -->
 <div class="fab-back" onclick="history.back()">←</div>
 
 <script>
-/* =========================================================
-   LISTA CORRECTA DE MANZANAS SEGÚN TU DETALLE EXACTO
-   ========================================================= */
 const territorios=[
     {numero:1,manzanas:[1,2,3,4]},
     {numero:2,manzanas:[1,2,3,4]},
@@ -114,30 +106,22 @@ const manzanasSection=document.getElementById("manzanasSection");
 const formSection=document.getElementById("formSection");
 let territorioSeleccionado=null;
 
-/* =========================================================
-   TARJETAS
-   ========================================================= */
-function renderTarjetas(filtro=""){
+function renderTarjetas(f=""){
     grid.innerHTML="";
     territorios
-        .filter(t=>t.numero.toString().includes(filtro))
-        .forEach(t=>{
-            const card=document.createElement("div");
-            card.className="card";
-            card.textContent=`Territorio ${t.numero}`;
-            card.onclick=()=>abrirTerritorio(t);
-            grid.appendChild(card);
-        });
+      .filter(t=>t.numero.toString().includes(f))
+      .forEach(t=>{
+          const c=document.createElement("div");
+          c.className="card";
+          c.textContent=`Territorio ${t.numero}`;
+          c.onclick=()=>abrirTerritorio(t);
+          grid.appendChild(c);
+      });
 }
-
 renderTarjetas();
 
-document.getElementById("searchInput")
-.addEventListener("input",e=>renderTarjetas(e.target.value));
+document.getElementById("searchInput").addEventListener("input",e=>renderTarjetas(e.target.value));
 
-/* =========================================================
-   ABRIR TERRITORIO
-   ========================================================= */
 function abrirTerritorio(t){
     territorioSeleccionado=t;
 
@@ -150,19 +134,16 @@ function abrirTerritorio(t){
     manzanasSection.innerHTML=`<h2>Territorio ${t.numero}</h2>`;
 
     t.manzanas.forEach(m=>{
-        const div=document.createElement("div");
-        div.className="manzana";
-        div.textContent=`Manzana ${m}`;
-        div.onclick=()=>div.classList.toggle("checked");
-        manzanasSection.appendChild(div);
+        const d=document.createElement("div");
+        d.className="manzana";
+        d.textContent=`Manzana ${m}`;
+        d.onclick=()=>d.classList.toggle("checked");
+        manzanasSection.appendChild(d);
     });
 
-    window.scrollTo({top:0,behavior:'smooth'});
+    window.scrollTo({top:0,behavior:"smooth"});
 }
 
-/* =========================================================
-   VOLVER
-   ========================================================= */
 function volverTerritorios(){
     manzanasSection.style.display="none";
     formSection.style.display="none";
@@ -173,30 +154,31 @@ function volverTerritorios(){
     renderTarjetas();
 }
 
-/* =========================================================
-   GUARDAR REPORTE
-   ========================================================= */
 function guardarReporte(){
-    const nombre=document.getElementById("nombreHermano").value.trim();
+    const conductor=document.getElementById("nombreHermano").value.trim();
     const observaciones=document.getElementById("observaciones").value.trim();
-    if(!nombre){alert("Por favor ingrese su nombre.");return;}
+
+    if(!conductor){alert("Por favor ingrese su nombre.");return;}
 
     const manzanasDivs=manzanasSection.querySelectorAll(".manzana");
 
-    const hechas=[],pendientes=[];
+    const manzanasHechas=[],manzanasPendientes=[];
     manzanasDivs.forEach(div=>{
         const num=div.textContent.replace("Manzana ","");
-        if(div.classList.contains("checked")) hechas.push(num);
-        else pendientes.push(num);
+        if(div.classList.contains("checked")) manzanasHechas.push(num);
+        else manzanasPendientes.push(num);
     });
 
     const fecha=new Date().toLocaleDateString();
+    const hora=new Date().toLocaleTimeString();
+
     const reporte={
-        fecha,
-        nombre,
         territorio:territorioSeleccionado.numero,
-        hechas,
-        pendientes,
+        fecha,
+        hora,
+        conductor,
+        manzanasHechas,
+        manzanasPendientes,
         observaciones
     };
 
@@ -211,6 +193,5 @@ function guardarReporte(){
     document.getElementById("observaciones").value="";
 }
 </script>
-
 </body>
 </html>
