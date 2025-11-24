@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Departamento de Territorio - Cuatro Plazas</title>
+
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -13,7 +14,7 @@
     }
 
     header {
-        background: #1a4b27; /* Verde JW Library */
+        background: #1a4b27;
         padding: 20px;
         display: flex;
         justify-content: space-between;
@@ -113,6 +114,49 @@
 
     </div>
 </div>
+
+<!-- ============================= -->
+<!--     FIREBASE CONFIGURACIÓN     -->
+<!-- ============================= -->
+
+<script type="module">
+    ////////////////////////////////////////////////
+    // IMPORTS DE FIREBASE (Versión 12.6.0)
+    ////////////////////////////////////////////////
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+    import { 
+        getDatabase, 
+        ref, 
+        onValue, 
+        set, 
+        push, 
+        update 
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+
+    ////////////////////////////////////////////////
+    // CONFIGURACIÓN DE TU PROYECTO
+    ////////////////////////////////////////////////
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
+        authDomain: "territorio-3c28d.firebaseapp.com",
+        databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com",
+        projectId: "territorio-3c28d",
+        storageBucket: "territorio-3c28d.firebasestorage.app",
+        messagingSenderId: "170925082008",
+        appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed",
+        measurementId: "G-ZL63C8VN36"
+    };
+
+    ////////////////////////////////////////////////
+    // INICIALIZAR APP Y BASE DE DATOS
+    ////////////////////////////////////////////////
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
+
+    console.log("Firebase cargado correctamente ✔️");
+</script>
 
 </body>
 </html>
