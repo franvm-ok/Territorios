@@ -17,26 +17,48 @@ h1{text-align:center;color:#1a4b27;margin-bottom:20px}
 </style>
 </head>
 <body>
+
 <h1>Reportes Generados</h1>
 <div id="contenedorReportes"></div>
-<button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
-<script>
-const cont=document.getElementById("contenedorReportes");
-const reportes=JSON.parse(localStorage.getItem("reportes")||"[]");
 
-if(reportes.length===0){ cont.innerHTML="<p style='text-align:center;color:#555'>No hay reportes aún.</p>"; }
-else{
-reportes.slice().reverse().forEach(r=>{
-  const div=document.createElement("div"); div.className="card";
-  div.innerHTML=`<h2>Territorio ${r.territorio}</h2>
-  <p><strong>Fecha:</strong> ${r.fecha}</p>
-  <p><strong>Conductor:</strong> ${r.nombre}</p>
-  <p><strong>Manzanas hechas:</strong> <span class="hechas">${r.hechas.join(", ")}</span></p>
-  <p><strong>Manzanas pendientes:</strong> <span class="pendientes">${r.pendientes.join(", ")}</span></p>
-  <p><strong>Observaciones:</strong> ${r.observaciones||'-'}</p>`;
-  cont.appendChild(div);
-});
+<button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
+
+<script>
+// Contenedor donde van las tarjetas
+const cont = document.getElementById("contenedorReportes");
+
+// Cargar desde localStorage
+const reportes = JSON.parse(localStorage.getItem("reportes") || "[]");
+
+if(reportes.length === 0){
+    cont.innerHTML = "<p style='text-align:center;color:#555'>No hay reportes aún.</p>";
+} else {
+    // Mostrar reportes más recientes primero
+    reportes.slice().reverse().forEach(r => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+            <h2>Territorio ${r.territorio}</h2>
+            <p><strong>Fecha:</strong> ${r.fecha}</p>
+            <p><strong>Hora:</strong> ${r.hora || "-"}</p>
+            <p><strong>Conductor:</strong> ${r.conductor}</p>
+
+            <p><strong>Manzanas hechas:</strong> 
+                <span class="hechas">${(r.manzanasHechas || []).join(", ") || "-"}</span>
+            </p>
+
+            <p><strong>Manzanas pendientes:</strong> 
+                <span class="pendientes">${(r.manzanasPendientes || []).join(", ") || "-"}</span>
+            </p>
+
+            <p><strong>Observaciones:</strong> ${r.observaciones || "-"}</p>
+        `;
+
+        cont.appendChild(div);
+    });
 }
 </script>
+
 </body>
-</html> 
+</html>
