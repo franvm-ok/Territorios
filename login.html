@@ -1,89 +1,140 @@
-<!-- login.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Iniciar Sesión</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión</title>
+
 <style>
-  :root{
-    --jw-green:#1a4b27;
-    --jw-dark:#2d6a4f;
-    --page-bg:#f4f4f4;
-  }
-  html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--page-bg)}
-  .center {
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    box-sizing:border-box;
-  }
-  .login-card{
-    width:100%;
-    max-width:420px;
-    background:#fff;
-    border-radius:15px;
-    padding:28px;
-    box-shadow:0 6px 20px rgba(0,0,0,0.12);
-    text-align:center;
-  }
-  .login-card h1{margin:0 0 18px;color:var(--jw-green)}
-  input[type="text"], input[type="password"]{
-    width:100%;
-    padding:12px 14px;
-    margin-bottom:12px;
-    border-radius:12px;
-    border:1px solid #ccc;
-    font-size:15px;
-    box-sizing:border-box;
-  }
-  .btn {
-    padding:14px 18px;
-    border-radius:15px;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-    border:none;
-    box-shadow:0 4px 10px rgba(0,0,0,0.08);
-    transition:0.15s;
-  }
-  .btn.login { background:var(--jw-dark); color:#fff; width:100%; margin-bottom:10px }
-  .btn.login:hover{background:#1f4d37}
-  .btn.volver { background:#fff; color:var(--jw-green); width:100% }
-  .btn.volver:hover{background:#e8e8e8}
-  @media (max-width:420px){
-    .login-card{padding:20px}
-  }
+    body {
+        margin: 0;
+        background: #f4f4f4;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        padding: 20px;
+    }
+
+    .login-box {
+        background: white;
+        width: 100%;
+        max-width: 380px;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        text-align: center;
+    }
+
+    h2 {
+        margin-bottom: 25px;
+        color: #1a4b27;
+        font-size: 26px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 16px;
+    }
+
+    button {
+        width: 100%;
+        background: #1a4b27;
+        color: white;
+        padding: 14px;
+        font-size: 18px;
+        font-weight: bold;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #163d20;
+    }
+
+    .mensaje-error {
+        margin-top: 15px;
+        color: red;
+        font-weight: bold;
+    }
 </style>
 </head>
 <body>
-  <div class="center">
-    <div class="login-card" role="form" aria-label="Login">
-      <h1>Iniciar Sesión</h1>
-      <input id="usuario" type="text" placeholder="Usuario" autocomplete="username">
-      <input id="contrasena" type="password" placeholder="Contraseña" autocomplete="current-password">
-      <button class="btn login" onclick="iniciarSesion()">✅ Entrar</button>
-      <button class="btn volver" onclick="location.href='index.html'">⬅️ Volver</button>
-    </div>
-  </div>
 
-<script>
-function iniciarSesion(){
-  const u = document.getElementById('usuario').value.trim();
-  const p = document.getElementById('contrasena').value.trim();
-  if(!u || !p){ alert('Ingrese usuario y contraseña.'); return; }
-  // validación simple (puedes reemplazar por real)
-  // ejemplo: usuario "siervo" contraseña "1234"
-  // si querés desactivar validación y permitir cualquier usuario, comentá las 4 líneas siguientes.
-  if(u === 'siervo' && p === '1234'){
-    alert('Sesión iniciada.');
-    location.href = 'index.html';
-  } else {
-    alert('Usuario o contraseña incorrectos.');
-  }
-}
+<div class="login-box">
+    <h2>Inicio de sesión</h2>
+
+    <input id="user" type="text" placeholder="Usuario">
+    <input id="pass" type="password" placeholder="Contraseña">
+
+    <button onclick="login()">Ingresar</button>
+
+    <div id="error" class="mensaje-error"></div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+    import { db, ref, onValue } from "./firebase.js";
+
+    const errorBox = document.getElementById("error");
+
+    function login() {
+        const usuario = document.getElementById("user").value.trim();
+        const clave = document.getElementById("pass").value.trim();
+
+        if (!usuario || !clave) {
+            errorBox.textContent = "Complete ambos campos.";
+            return;
+        }
+
+        // ADMIN FIJO
+        if (usuario === "admin" && clave === "1234") {
+            localStorage.setItem("rol", "admin");
+            location.href = "admin.html";
+            return;
+        }
+
+        // INVITADO (sin contraseña)
+        if (usuario === "invitado") {
+            localStorage.setItem("rol", "invitado");
+            location.href = "invitado.html";
+            return;
+        }
+
+        // CONDUCTORES DESDE FIREBASE
+        const conductoresRef = ref(db, "usuarios/conductores");
+
+        onValue(conductoresRef, (snapshot) => {
+            if (!snapshot.exists()) {
+                errorBox.textContent = "No hay usuarios registrados.";
+                return;
+            }
+
+            let validado = false;
+
+            snapshot.forEach((child) => {
+                const data = child.val();
+
+                if (data.usuario === usuario && data.clave === clave) {
+                    validado = true;
+                    localStorage.setItem("rol", "conductor");
+                    localStorage.setItem("usuario", usuario);
+                    location.href = "conductor.html";
+                }
+            });
+
+            if (!validado) {
+                errorBox.textContent = "Usuario o contraseña incorrectos.";
+            }
+        });
+    }
 </script>
+
 </body>
 </html>
