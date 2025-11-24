@@ -21,12 +21,36 @@ textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin
 .volver{background:white;color:#1a4b27;float:left;margin-right:5px}
 .volver:hover{background:#e8e8e8}
 .clearfix::after{content:"";display:table;clear:both}
+
+/* ⭐ Botón flotante (igual texto y estilo general del index) */
+.fab-back{
+    position:fixed;
+    bottom:20px;
+    left:20px;
+    width:55px;
+    height:55px;
+    background:white;
+    color:#1a4b27;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    font-weight:bold;
+    cursor:pointer;
+    z-index:9999;
+    box-shadow:0 4px 10px rgba(0,0,0,0.25);
+}
+.fab-back:hover{
+    background:#e8e8e8;
+}
 </style>
 </head>
 <body>
 
 <h1>Informar Territorio</h1>
 
+<!-- ⭐ Buscador restaurado -->
 <input type="text" id="searchInput" placeholder="Buscar territorio por número…">
 
 <div id="territoriosGrid" class="grid"></div>
@@ -36,46 +60,53 @@ textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin
 <div id="formSection" class="manzanas-section">
     <input type="text" id="nombreHermano" placeholder="Nombre del hermano">
     <textarea id="observaciones" placeholder="Observaciones..."></textarea>
+
     <div class="clearfix">
         <button class="btn volver" onclick="volverTerritorios()">⬅️ Volver</button>
         <button class="btn enviar" onclick="guardarReporte()">✅ Enviar Informe</button>
     </div>
 </div>
 
+<!-- ⭐ Botón flotante -->
+<div class="fab-back" onclick="history.back()">←</div>
+
 <script>
+/* =========================================================
+   LISTA CORRECTA DE MANZANAS SEGÚN TU DETALLE EXACTO
+   ========================================================= */
 const territorios=[
-    {numero:1,manzanas:["A","B","C","D"]},
-    {numero:2,manzanas:["A","B","C","D"]},
-    {numero:3,manzanas:["A","B","C","D"]},
-    {numero:4,manzanas:["A","B","C","D","E"]},
-    {numero:5,manzanas:["A","B","C","D","E","F","G","H"]},
-    {numero:6,manzanas:["A","B","C","D","E","F"]},
-    {numero:7,manzanas:["A","B","C","D","E","F"]},
-    {numero:8,manzanas:["A","B","C","D","E","F","G"]},
-    {numero:9,manzanas:["A","B","C","D","E","F","G","H","I"]},
-    {numero:10,manzanas:["A","B","C","D","E","F","G","H","I"]},
-    {numero:11,manzanas:["A","B","C","D","E"]},
-    {numero:12,manzanas:["A","B","C","D","E","F"]},
-    {numero:13,manzanas:["A","B","C","D","E","F","G","H","I"]},
-    {numero:14,manzanas:["A","B","C","D","E","F"]},
-    {numero:15,manzanas:["A","B","C","D","E"]},
-    {numero:16,manzanas:["A","B","C","D","E","F","G"]},
-    {numero:17,manzanas:["A","B","C","D","E","F","G"]},
-    {numero:18,manzanas:["A","B","C","D","E","F"]},
-    {numero:19,manzanas:["A","B","C","D","E","F"]},
-    {numero:20,manzanas:["A","B","C","D","E","F","G"]},
-    {numero:21,manzanas:["A","B","C","D","E","F","G","H"]},
-    {numero:22,manzanas:["A","B","C","D","E","F"]},
-    {numero:23,manzanas:["A","B","C","D","E","F"]},
-    {numero:24,manzanas:["A","B","C","D","E"]},
-    {numero:25,manzanas:["A","B","C","D","E","F"]},
-    {numero:26,manzanas:["A","B","C","D","E","F","G"]},
-    {numero:27,manzanas:["A","B","C","D","E","F","G"]},
-    {numero:28,manzanas:["A","B","C","D","E","F"]},
-    {numero:29,manzanas:["A","B","C","D","E"]},
-    {numero:30,manzanas:["A","B","C","D","E","F","G","H"]},
-    {numero:31,manzanas:["A","B","C","D","E","F","G","H"]},
-    {numero:32,manzanas:["A","B","C","D","E","F"]}
+    {numero:1,manzanas:[1,2,3,4]},
+    {numero:2,manzanas:[1,2,3,4]},
+    {numero:3,manzanas:[1,2,3,4]},
+    {numero:4,manzanas:[1,2,3,4,5]},
+    {numero:5,manzanas:[1,2,3,4,5,6,7,8]},
+    {numero:6,manzanas:[1,2,3,4,5,6]},
+    {numero:7,manzanas:[1,2,3,4,5,6]},
+    {numero:8,manzanas:[1,2,3,4,5,6,7]},
+    {numero:9,manzanas:[1,2,3,4,5,6,7,8,9]},
+    {numero:10,manzanas:[1,2,3,4,5,6,7,8,9]},
+    {numero:11,manzanas:[1,2,3,4,5]},
+    {numero:12,manzanas:[1,2,3,4,5,6]},
+    {numero:13,manzanas:[1,2,3,4,5,6,7,8,9]},
+    {numero:14,manzanas:[1,2,3,4,5,6]},
+    {numero:15,manzanas:[1,2,3,4,5]},
+    {numero:16,manzanas:[1,2,3,4,5,6,7]},
+    {numero:17,manzanas:[1,2,3,4,5,6,7]},
+    {numero:18,manzanas:[1,2,3,4,5,6]},
+    {numero:19,manzanas:[1,2,3,4,5,6]},
+    {numero:20,manzanas:[1,2,3,4,5,6,7]},
+    {numero:21,manzanas:[1,2,3,4,5,6,7,8]},
+    {numero:22,manzanas:[1,2,3,4,5,6]},
+    {numero:23,manzanas:[1,2,3,4,5,6]},
+    {numero:24,manzanas:[1,2,3,4,5]},
+    {numero:25,manzanas:[1,2,3,4,5,6]},
+    {numero:26,manzanas:[1,2,3,4,5,6,7]},
+    {numero:27,manzanas:[1,2,3,4,5,6,7]},
+    {numero:28,manzanas:[1,2,3,4,5,6]},
+    {numero:29,manzanas:[1,2,3,4,5]},
+    {numero:30,manzanas:[1,2,3,4,5,6,7,8]},
+    {numero:31,manzanas:[1,2,3,4,5,6,7,8]},
+    {numero:32,manzanas:[1,2,3,4,5,6]}
 ];
 
 const grid=document.getElementById("territoriosGrid");
@@ -83,31 +114,41 @@ const manzanasSection=document.getElementById("manzanasSection");
 const formSection=document.getElementById("formSection");
 let territorioSeleccionado=null;
 
+/* =========================================================
+   TARJETAS
+   ========================================================= */
 function renderTarjetas(filtro=""){
     grid.innerHTML="";
-    territorios.filter(t=>t.numero.toString().includes(filtro)).forEach(t=>{
-        const card=document.createElement("div");
-        card.className="card";
-        card.textContent=`Territorio ${t.numero}`;
-        card.onclick=()=>abrirTerritorio(t);
-        grid.appendChild(card);
-    });
+    territorios
+        .filter(t=>t.numero.toString().includes(filtro))
+        .forEach(t=>{
+            const card=document.createElement("div");
+            card.className="card";
+            card.textContent=`Territorio ${t.numero}`;
+            card.onclick=()=>abrirTerritorio(t);
+            grid.appendChild(card);
+        });
 }
 
 renderTarjetas();
 
-document.getElementById("searchInput").addEventListener("input",e=>{
-    renderTarjetas(e.target.value);
-});
+document.getElementById("searchInput")
+.addEventListener("input",e=>renderTarjetas(e.target.value));
 
+/* =========================================================
+   ABRIR TERRITORIO
+   ========================================================= */
 function abrirTerritorio(t){
     territorioSeleccionado=t;
+
     grid.style.display="none";
     document.getElementById("searchInput").style.display="none";
+
     manzanasSection.style.display="block";
     formSection.style.display="block";
 
     manzanasSection.innerHTML=`<h2>Territorio ${t.numero}</h2>`;
+
     t.manzanas.forEach(m=>{
         const div=document.createElement("div");
         div.className="manzana";
@@ -116,44 +157,55 @@ function abrirTerritorio(t){
         manzanasSection.appendChild(div);
     });
 
-    const volverBtn=document.createElement("button");
-    volverBtn.className="btn volver";
-    volverBtn.textContent="⬅️ Volver a territorios";
-    volverBtn.onclick=volverTerritorios;
-    manzanasSection.appendChild(volverBtn);
-
     window.scrollTo({top:0,behavior:'smooth'});
 }
 
+/* =========================================================
+   VOLVER
+   ========================================================= */
 function volverTerritorios(){
     manzanasSection.style.display="none";
     formSection.style.display="none";
+
     grid.style.display="grid";
     document.getElementById("searchInput").style.display="block";
+
     renderTarjetas();
 }
 
+/* =========================================================
+   GUARDAR REPORTE
+   ========================================================= */
 function guardarReporte(){
     const nombre=document.getElementById("nombreHermano").value.trim();
     const observaciones=document.getElementById("observaciones").value.trim();
     if(!nombre){alert("Por favor ingrese su nombre.");return;}
 
     const manzanasDivs=manzanasSection.querySelectorAll(".manzana");
+
     const hechas=[],pendientes=[];
     manzanasDivs.forEach(div=>{
-        const letra=div.textContent.replace("Manzana ","");
-        if(div.classList.contains("checked")) hechas.push(letra);
-        else pendientes.push(letra);
+        const num=div.textContent.replace("Manzana ","");
+        if(div.classList.contains("checked")) hechas.push(num);
+        else pendientes.push(num);
     });
 
     const fecha=new Date().toLocaleDateString();
-    const reporte={fecha,nombre,territorio:territorioSeleccionado.numero,hechas,pendientes,observaciones};
+    const reporte={
+        fecha,
+        nombre,
+        territorio:territorioSeleccionado.numero,
+        hechas,
+        pendientes,
+        observaciones
+    };
 
     const reportesGuardados=JSON.parse(localStorage.getItem("reportes")||"[]");
     reportesGuardados.push(reporte);
     localStorage.setItem("reportes",JSON.stringify(reportesGuardados));
 
     alert("✅ Informe guardado correctamente.");
+
     volverTerritorios();
     document.getElementById("nombreHermano").value="";
     document.getElementById("observaciones").value="";
