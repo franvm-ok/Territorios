@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informar Territorio</title>
+
 <style>
 body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
 h1{color:#1a4b27;text-align:center;margin-bottom:20px}
@@ -21,24 +22,10 @@ textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin
 .volver{background:white;color:#1a4b27;float:left;margin-right:5px}
 .volver:hover{background:#e8e8e8}
 .clearfix::after{content:"";display:table;clear:both}
-
 .fab-back{
-    position:fixed;
-    bottom:20px;
-    left:20px;
-    width:55px;
-    height:55px;
-    background:white;
-    color:#1a4b27;
-    border-radius:50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:28px;
-    font-weight:bold;
-    cursor:pointer;
-    z-index:9999;
-    box-shadow:0 4px 10px rgba(0,0,0,0.25);
+    position:fixed;bottom:20px;left:20px;width:55px;height:55px;background:white;color:#1a4b27;
+    border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:28px;
+    font-weight:bold;cursor:pointer;z-index:9999;box-shadow:0 4px 10px rgba(0,0,0,0.25);
 }
 .fab-back:hover{background:#e8e8e8}
 </style>
@@ -65,40 +52,45 @@ textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin
 
 <div class="fab-back" onclick="history.back()">←</div>
 
-<script>
+<!-- =========================== -->
+<!-- firebase.js - IMPORTACIÓN   -->
+<!-- =========================== -->
+<script type="module">
+import { db, ref, push, set } from "./firebase.js";
+
 const territorios=[
-    {numero:1,manzanas:[1,2,3,4]},
-    {numero:2,manzanas:[1,2,3,4]},
-    {numero:3,manzanas:[1,2,3,4]},
-    {numero:4,manzanas:[1,2,3,4,5]},
-    {numero:5,manzanas:[1,2,3,4,5,6,7,8]},
-    {numero:6,manzanas:[1,2,3,4,5,6]},
-    {numero:7,manzanas:[1,2,3,4,5,6]},
-    {numero:8,manzanas:[1,2,3,4,5,6,7]},
-    {numero:9,manzanas:[1,2,3,4,5,6,7,8,9]},
-    {numero:10,manzanas:[1,2,3,4,5,6,7,8,9]},
-    {numero:11,manzanas:[1,2,3,4,5]},
-    {numero:12,manzanas:[1,2,3,4,5,6]},
-    {numero:13,manzanas:[1,2,3,4,5,6,7,8,9]},
-    {numero:14,manzanas:[1,2,3,4,5,6]},
-    {numero:15,manzanas:[1,2,3,4,5]},
-    {numero:16,manzanas:[1,2,3,4,5,6,7]},
-    {numero:17,manzanas:[1,2,3,4,5,6,7]},
-    {numero:18,manzanas:[1,2,3,4,5,6]},
-    {numero:19,manzanas:[1,2,3,4,5,6]},
-    {numero:20,manzanas:[1,2,3,4,5,6,7]},
-    {numero:21,manzanas:[1,2,3,4,5,6,7,8]},
-    {numero:22,manzanas:[1,2,3,4,5,6]},
-    {numero:23,manzanas:[1,2,3,4,5,6]},
-    {numero:24,manzanas:[1,2,3,4,5]},
-    {numero:25,manzanas:[1,2,3,4,5,6]},
-    {numero:26,manzanas:[1,2,3,4,5,6,7]},
-    {numero:27,manzanas:[1,2,3,4,5,6,7]},
-    {numero:28,manzanas:[1,2,3,4,5,6]},
-    {numero:29,manzanas:[1,2,3,4,5]},
-    {numero:30,manzanas:[1,2,3,4,5,6,7,8]},
-    {numero:31,manzanas:[1,2,3,4,5,6,7,8]},
-    {numero:32,manzanas:[1,2,3,4,5,6]}
+    {numero:1,manzanas:4},
+    {numero:2,manzanas:4},
+    {numero:3,manzanas:4},
+    {numero:4,manzanas:5},
+    {numero:5,manzanas:8},
+    {numero:6,manzanas:6},
+    {numero:7,manzanas:6},
+    {numero:8,manzanas:7},
+    {numero:9,manzanas:9},
+    {numero:10,manzanas:9},
+    {numero:11,manzanas:5},
+    {numero:12,manzanas:6},
+    {numero:13,manzanas:9},
+    {numero:14,manzanas:6},
+    {numero:15,manzanas:5},
+    {numero:16,manzanas:7},
+    {numero:17,manzanas:7},
+    {numero:18,manzanas:6},
+    {numero:19,manzanas:6},
+    {numero:20,manzanas:7},
+    {numero:21,manzanas:8},
+    {numero:22,manzanas:6},
+    {numero:23,manzanas:6},
+    {numero:24,manzanas:5},
+    {numero:25,manzanas:6},
+    {numero:26,manzanas:7},
+    {numero:27,manzanas:7},
+    {numero:28,manzanas:6},
+    {numero:29,manzanas:5},
+    {numero:30,manzanas:8},
+    {numero:31,manzanas:8},
+    {numero:32,manzanas:6}
 ];
 
 const grid=document.getElementById("territoriosGrid");
@@ -120,7 +112,8 @@ function renderTarjetas(f=""){
 }
 renderTarjetas();
 
-document.getElementById("searchInput").addEventListener("input",e=>renderTarjetas(e.target.value));
+document.getElementById("searchInput")
+.addEventListener("input",e=>renderTarjetas(e.target.value));
 
 function abrirTerritorio(t){
     territorioSeleccionado=t;
@@ -133,13 +126,15 @@ function abrirTerritorio(t){
 
     manzanasSection.innerHTML=`<h2>Territorio ${t.numero}</h2>`;
 
-    t.manzanas.forEach(m=>{
+    for(let i=0;i<t.manzanas;i++){
+        const letra=String.fromCharCode(65+i);
         const d=document.createElement("div");
         d.className="manzana";
-        d.textContent=`Manzana ${m}`;
+        d.textContent=`Manzana ${letra}`;
+        d.dataset.manzana=letra;
         d.onclick=()=>d.classList.toggle("checked");
         manzanasSection.appendChild(d);
-    });
+    }
 
     window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -164,9 +159,9 @@ function guardarReporte(){
 
     const manzanasHechas=[],manzanasPendientes=[];
     manzanasDivs.forEach(div=>{
-        const num=div.textContent.replace("Manzana ","");
-        if(div.classList.contains("checked")) manzanasHechas.push(num);
-        else manzanasPendientes.push(num);
+        const letra=div.dataset.manzana;
+        if(div.classList.contains("checked")) manzanasHechas.push(letra);
+        else manzanasPendientes.push(letra);
     });
 
     const fecha=new Date().toLocaleDateString();
@@ -182,11 +177,10 @@ function guardarReporte(){
         observaciones
     };
 
-    const reportesGuardados=JSON.parse(localStorage.getItem("reportes")||"[]");
-    reportesGuardados.push(reporte);
-    localStorage.setItem("reportes",JSON.stringify(reportesGuardados));
+    const reportRef=push(ref(db,"reportes"));
+    set(reportRef,reporte);
 
-    alert("✅ Informe guardado correctamente.");
+    alert("✅ Informe enviado correctamente.");
 
     volverTerritorios();
     document.getElementById("nombreHermano").value="";
