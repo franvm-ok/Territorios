@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mensajes a Hermanos</title>
+
+<style>
+body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
+h1{text-align:center;color:#1a4b27;margin-bottom:15px}
+
+input, textarea{
+    width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;
+    font-size:16px;box-sizing:border-box;margin-bottom:12px;
+}
+
+textarea{resize:vertical;min-height:80px}
+
+.btn{
+    width:100%;padding:14px;border:none;border-radius:15px;
+    font-size:18px;font-weight:bold;cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.12)
+}
+.btn-enviar{background:#2d6a4f;color:white}
+.btn-enviar:hover{background:#1f4d37}
+
+.card{
+    background:white;padding:15px;margin-bottom:12px;border-radius:15px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1)
+}
+.card p{margin:4px 0}
+.remitente{font-weight:bold;color:#2d6a4f}
+.fecha{font-size:14px;color:#777;margin-top:6px}
+
+.btn-volver{
+    position:fixed;left:20px;bottom:20px;padding:14px 18px;border-radius:15px;
+    font-size:18px;font-weight:bold;border:none;background:white;color:#1a4b27;
+    cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.15)
+}
+.btn-volver:hover{background:#e8e8e8}
+</style>
+
+</head>
+<body>
+
+<h1>Mensajes a Hermanos</h1>
+
+<input type="text" id="nombre" placeholder="Tu nombre (opcional)">
+<textarea id="mensaje" placeholder="Escribe tu mensaje..."></textarea>
+
+<button class="btn btn-enviar" onclick="enviarMensaje()">Enviar Mensaje</button>
+
+<h2 style="margin-top:25px;color:#1a4b27;">Mensajes enviados</h2>
+<div id="listaMensajes"></div>
+
+<button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
+
+<!-- =========================== -->
+<!--  Firebase en tiempo real    -->
+<!-- =========================== -->
+<script type="module">
+import { db, ref, push, set, onValue } from "./firebase.js";
+
+const lista = document.getElementById("listaMensajes");
+
+// Enviar mensaje
+function enviarMensaje(){
+    const nombre = document.getElementById("nombre").value.trim() || "Anónimo";
+    const texto = document.getElementById("mensaje").value.trim();
+
+    if(!texto){
+        alert("Escribe un mensaje antes de enviar.");
+        return;
+    }
+
+    const fecha = new Date().toLocaleDateString();
+    const hora = new Date().toLocaleTimeString();
+
+    const nuevo = push(ref(db, "mensajes"));
+    set(nuevo, { nombre, texto, fecha, hora });
+
+    document.getElementById("mensaje").value = "";
+    alert("📨 Mensaje enviado");
+}
+
+// Mostrar mensajes en tiempo real
+onValue(ref(db, "mensajes"), snapshot => {
+    const data = snapshot.val();
+    lista.innerHTML = "";
+
+    if(!data){
+        lista.innerHTML = "<p style='color:#777'>No hay mensajes aún.</p>";
+        return;
+    }
+
+    const arr = Object.values(data).reverse(); // Lo más nuevo arriba
+
+    arr.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+            <p class="remitente">${m.nombre}</p>
+            <p>${m.texto}</p>
+            <p class="fecha">${m.fecha} - ${m.hora}</p>
+        `;
+
+        lista.appendChild(div);
+    });
+});
+</script>
+
+</body>
+</html>
