@@ -1,140 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Iniciar sesión</title>
-
 <style>
-    body {
-        margin: 0;
-        background: #f4f4f4;
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        padding: 20px;
-    }
-
-    .login-box {
-        background: white;
-        width: 100%;
-        max-width: 380px;
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        text-align: center;
-    }
-
-    h2 {
-        margin-bottom: 25px;
-        color: #1a4b27;
-        font-size: 26px;
-    }
-
-    input {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 15px;
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        font-size: 16px;
-    }
-
-    button {
-        width: 100%;
-        background: #1a4b27;
-        color: white;
-        padding: 14px;
-        font-size: 18px;
-        font-weight: bold;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background: #163d20;
-    }
-
-    .mensaje-error {
-        margin-top: 15px;
-        color: red;
-        font-weight: bold;
-    }
+  body{margin:0;font-family:Arial;background:#f4f4f4;color:#333}
+  .wrap{max-width:420px;margin:80px auto;padding:20px}
+  .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.08)}
+  h1{text-align:center;color:#1a4b27}
+  input{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box}
+  .row{display:flex;justify-content:space-between;gap:8px}
+  .btn{padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+  .btn-login{background:#1a4b27;color:#fff;width:100%}
+  .small{font-size:13px;color:#666;text-align:center;margin-top:8px}
+  .back{position:fixed;left:16px;bottom:18px;background:#1a4b27;color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
 </style>
 </head>
 <body>
-
-<div class="login-box">
-    <h2>Inicio de sesión</h2>
-
-    <input id="user" type="text" placeholder="Usuario">
-    <input id="pass" type="password" placeholder="Contraseña">
-
-    <button onclick="login()">Ingresar</button>
-
-    <div id="error" class="mensaje-error"></div>
+<div class="wrap">
+  <div class="card">
+    <h1>Iniciar sesión</h1>
+    <input id="user" placeholder="Usuario (admin / conductor / invitado)"/>
+    <input id="pass" placeholder="Contraseña" type="password"/>
+    <button class="btn btn-login" id="loginBtn">Entrar</button>
+    <div class="small">Admin = admin / Contraseña admin = 1234. Conductor usuario = conductor / contraseña por defecto = Brasil643 (puede cambiarse más adelante)</div>
+  </div>
 </div>
 
-<!-- FIREBASE -->
-<script type="module">
-    import { db, ref, onValue } from "./firebase.js";
+<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
-    const errorBox = document.getElementById("error");
-
-    function login() {
-        const usuario = document.getElementById("user").value.trim();
-        const clave = document.getElementById("pass").value.trim();
-
-        if (!usuario || !clave) {
-            errorBox.textContent = "Complete ambos campos.";
-            return;
-        }
-
-        // ADMIN FIJO
-        if (usuario === "admin" && clave === "1234") {
-            localStorage.setItem("rol", "admin");
-            location.href = "admin.html";
-            return;
-        }
-
-        // INVITADO (sin contraseña)
-        if (usuario === "invitado") {
-            localStorage.setItem("rol", "invitado");
-            location.href = "invitado.html";
-            return;
-        }
-
-        // CONDUCTORES DESDE FIREBASE
-        const conductoresRef = ref(db, "usuarios/conductores");
-
-        onValue(conductoresRef, (snapshot) => {
-            if (!snapshot.exists()) {
-                errorBox.textContent = "No hay usuarios registrados.";
-                return;
-            }
-
-            let validado = false;
-
-            snapshot.forEach((child) => {
-                const data = child.val();
-
-                if (data.usuario === usuario && data.clave === clave) {
-                    validado = true;
-                    localStorage.setItem("rol", "conductor");
-                    localStorage.setItem("usuario", usuario);
-                    location.href = "conductor.html";
-                }
-            });
-
-            if (!validado) {
-                errorBox.textContent = "Usuario o contraseña incorrectos.";
-            }
-        });
+<script>
+  // simple auth emulada con localStorage (sin Firebase Auth por simplicidad ahora)
+  document.getElementById('loginBtn').addEventListener('click', ()=>{
+    const u = document.getElementById('user').value.trim();
+    const p = document.getElementById('pass').value.trim();
+    if(u === 'admin' && p === '1234'){
+      localStorage.setItem('rol','admin');
+      alert('Ingresó como admin');
+      location.href='index.html';
+      return;
     }
+    if(u === 'conductor' && p === 'Brasil643'){
+      localStorage.setItem('rol','conductor');
+      alert('Ingresó como conductor');
+      location.href='index.html';
+      return;
+    }
+    if(u === 'invitado'){
+      localStorage.setItem('rol','invitado');
+      alert('Ingresó como invitado');
+      location.href='index.html';
+      return;
+    }
+    alert('Usuario o contraseña incorrectos.');
+  });
 </script>
-
 </body>
 </html>
