@@ -4,44 +4,152 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informar Territorio</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f4f4;
+    color: #333;
+}
+
+/* HEADER */
+header {
+    background: #1a4b27;
+    padding: 20px;
+    text-align: center;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* CONTENEDOR */
+.container {
+    padding: 20px;
+}
+
+/* TARJETAS */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 22px 10px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+/* MANZANAS */
+.manzana {
+    background: white;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.manzana.checked {
+    background: #c8f0d4;
+    color: #145825;
+}
+
+/* BOTONES */
+button {
+    background: #1a4b27;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #145825;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+}
+</style>
 </head>
+
 <body>
 
-<!-- BOTÓN INFORMAR -->
-<button id="btnInformarTerritorio">Informar territorio</button>
+<header>Informar Territorio</header>
+
+<div class="container">
 
 <!-- PANTALLA TERRITORIOS -->
-<div id="pantallaTerritorios" style="display:none;">
-  <h2>Territorios</h2>
-  <div id="tarjetas"></div>
+<div id="pantallaTerritorios">
+    <h3>Seleccione un territorio</h3>
+    <div class="grid" id="tarjetas"></div>
 </div>
 
 <!-- PANTALLA MANZANAS -->
 <div id="pantallaManzanas" style="display:none;">
-  <button id="backTerrBtn">⬅ Volver</button>
-  <div id="manzanasArea"></div>
-  <button id="irFormulario">Continuar</button>
+    <button id="volverTerr">⬅ Volver</button>
+    <div id="manzanasArea"></div>
+    <button id="irFormulario">Continuar</button>
 </div>
 
 <!-- PANTALLA FORMULARIO -->
 <div id="pantallaFormulario" style="display:none;">
-  <button id="backFormBtn">⬅ Volver</button>
-  <input id="conductor" placeholder="Conductor">
-  <textarea id="observaciones" placeholder="Observaciones"></textarea>
-  <button id="sendBtn">Enviar informe</button>
+    <button id="volverManz">⬅ Volver</button>
+    <input id="conductor" placeholder="Nombre del conductor">
+    <textarea id="observaciones" placeholder="Observaciones (opcional)"></textarea>
+    <button id="enviar">Enviar informe</button>
 </div>
 
-<hr>
+</div>
 
-<h3>Reportes enviados</h3>
-<div id="reportesList"></div>
 
 <!-- ========================= -->
 <!-- SCRIPT FUNCIONAL COMPLETO -->
 <!-- ========================= -->
 <script type="module">
-import { db, ref, push, set, onValue } from "./firebase.js";
 
+/* ✅ IMPORTS FIREBASE CORRECTOS */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+/* 🔴 TU CONFIG FIREBASE ACÁ */
+const firebaseConfig = {
+    apiKey: "PEGA_ACA_TU_API_KEY",
+    authDomain: "PEGA_ACA_TU_AUTHDOMAIN",
+    databaseURL: "PEGA_ACA_TU_DATABASEURL",
+    projectId: "PEGA_ACA_TU_PROJECTID",
+    storageBucket: "PEGA_ACA_TU_STORAGEBUCKET",
+    messagingSenderId: "PEGA_ACA_TU_MESSAGINGSENDERID",
+    appId: "PEGA_ACA_TU_APPID"
+};
+
+/* ✅ INICIAR FIREBASE */
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ================= TERRITORIOS ================= */
 const territorios = [
   {numero:1,manzanas:4},{numero:2,manzanas:4},{numero:3,manzanas:4},{numero:4,manzanas:5},
   {numero:5,manzanas:8},{numero:6,manzanas:6},{numero:7,manzanas:6},{numero:8,manzanas:7},
@@ -53,150 +161,126 @@ const territorios = [
   {numero:29,manzanas:5},{numero:30,manzanas:8},{numero:31,manzanas:8},{numero:32,manzanas:6}
 ];
 
+/* ================= ELEMENTOS ================= */
 const pantallaTerritorios = document.getElementById("pantallaTerritorios");
-const pantallaManzanas = document.getElementById("pantallaManzanas");
+const pantallaManzanas   = document.getElementById("pantallaManzanas");
 const pantallaFormulario = document.getElementById("pantallaFormulario");
 
-const tarjetas = document.getElementById("tarjetas");
-const manzanasArea = document.getElementById("manzanasArea");
-const conductorEl = document.getElementById("conductor");
-const obsEl = document.getElementById("observaciones");
-const reportesList = document.getElementById("reportesList");
+const tarjetasEl   = document.getElementById("tarjetas");
+const areaManzanas = document.getElementById("manzanasArea");
+const conductorEl  = document.getElementById("conductor");
+const obsEl        = document.getElementById("observaciones");
 
-const btnInformar = document.getElementById("btnInformarTerritorio");
-const backTerrBtn = document.getElementById("backTerrBtn");
-const backFormBtn = document.getElementById("backFormBtn");
+const volverTerr   = document.getElementById("volverTerr");
+const volverManz   = document.getElementById("volverManz");
 const irFormulario = document.getElementById("irFormulario");
-const sendBtn = document.getElementById("sendBtn");
+const enviarBtn    = document.getElementById("enviar");
 
-let territorioSeleccionado = null;
+let territorioActual = null;
 
-function ocultarTodo(){
-  pantallaTerritorios.style.display = "none";
-  pantallaManzanas.style.display = "none";
-  pantallaFormulario.style.display = "none";
+/* ================= FUNCIONES ================= */
+function ocultarTodo() {
+    pantallaTerritorios.style.display = "none";
+    pantallaManzanas.style.display = "none";
+    pantallaFormulario.style.display = "none";
 }
 
-btnInformar.onclick = ()=>{
-  ocultarTodo();
-  pantallaTerritorios.style.display = "block";
-  renderTarjetas();
-};
-
-function renderTarjetas(){
-  tarjetas.innerHTML = "";
-  territorios.forEach(t=>{
-    const d = document.createElement("div");
-    d.className = "card";
-    d.textContent = `Territorio ${t.numero}`;
-    d.onclick = ()=>abrirManzanas(t);
-    tarjetas.appendChild(d);
-  });
+function mostrarTerritorios() {
+    ocultarTodo();
+    pantallaTerritorios.style.display = "block";
 }
 
-function abrirManzanas(t){
-  territorioSeleccionado = t;
-  ocultarTodo();
-  pantallaManzanas.style.display = "block";
-  manzanasArea.innerHTML = `<h3>Territorio ${t.numero}</h3>`;
+function mostrarManzanas(t) {
+    territorioActual = t;
+    ocultarTodo();
+    pantallaManzanas.style.display = "block";
 
-  for(let i=0;i<t.manzanas;i++){
-    const letra = String.fromCharCode(65+i);
-    const m = document.createElement("div");
-    m.className = "manzana";
-    m.innerHTML = `
-      <span>Manzana ${letra}</span>
-      <span class="tick" data-letra="${letra}">☐</span>
-    `;
-    m.onclick = ()=>{
-      m.classList.toggle("checked");
-      m.querySelector(".tick").textContent = m.classList.contains("checked") ? "✓" : "☐";
-    };
-    manzanasArea.appendChild(m);
-  }
+    areaManzanas.innerHTML = `<h3>Territorio ${t.numero}</h3>`;
+
+    for (let i = 0; i < t.manzanas; i++) {
+        const letra = String.fromCharCode(65 + i);
+        const div = document.createElement("div");
+        div.className = "manzana";
+        div.innerHTML = `Manzana ${letra} <span>${"☐"}</span>`;
+
+        div.addEventListener("click", () => {
+            div.classList.toggle("checked");
+            div.querySelector("span").textContent = div.classList.contains("checked") ? "✓" : "☐";
+        });
+
+        areaManzanas.appendChild(div);
+    }
 }
 
-backTerrBtn.onclick = ()=>{
-  ocultarTodo();
-  pantallaTerritorios.style.display = "block";
+function renderTarjetas() {
+    tarjetasEl.innerHTML = "";
+    territorios.forEach(t => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.textContent = `Territorio ${t.numero}`;
+        card.onclick = () => mostrarManzanas(t);
+        tarjetasEl.appendChild(card);
+    });
+}
+
+/* ================= EVENTOS ================= */
+volverTerr.onclick = mostrarTerritorios;
+
+volverManz.onclick = () => {
+    ocultarTodo();
+    pantallaManzanas.style.display = "block";
 };
 
-backFormBtn.onclick = ()=>{
-  ocultarTodo();
-  pantallaManzanas.style.display = "block";
+irFormulario.onclick = () => {
+    ocultarTodo();
+    pantallaFormulario.style.display = "block";
 };
 
-irFormulario.onclick = ()=>{
-  ocultarTodo();
-  pantallaFormulario.style.display = "block";
-};
+/* ✅ ENVIAR INFORME CORREGIDO */
+enviarBtn.onclick = async () => {
 
-sendBtn.onclick = async ()=>{
-  const conductor = conductorEl.value.trim();
-  if(!conductor) return alert("Ingrese conductor");
+    const conductor = conductorEl.value.trim();
+    if (!conductor) {
+        alert("Debe ingresar el conductor");
+        return;
+    }
 
-  const hechas = [];
-  const pendientes = [];
+    const hechas = [];
+    const pendientes = [];
 
-  document.querySelectorAll(".manzana").forEach(m=>{
-    const letra = m.querySelector(".tick").dataset.letra;
-    if(m.classList.contains("checked")) hechas.push(letra);
-    else pendientes.push(letra);
-  });
-
-  const ahora = new Date();
-
-  const reporte = {
-    territorio: territorioSeleccionado.numero,
-    conductor,
-    observaciones: obsEl.value.trim()||"",
-    hechas,
-    pendientes,
-    fecha: ahora.toLocaleDateString(),
-    hora: ahora.toLocaleTimeString(),
-    ts: ahora.getTime()
-  };
-
-  try{
-    const rRef = push(ref(db,"reportes"));
-    await set(rRef,reporte);
-
-    await set(ref(db,`pendientes/territorio_${territorioSeleccionado.numero}`),{
-      territorio: territorioSeleccionado.numero,
-      pendientes,
-      conductor,
-      ts: ahora.getTime()
+    document.querySelectorAll(".manzana").forEach(el => {
+        const letra = el.textContent.replace("Manzana","").trim().charAt(0);
+        if (el.classList.contains("checked")) hechas.push(letra);
+        else pendientes.push(letra);
     });
 
-    alert("✅ Informe guardado");
-    location.reload();
-  }catch(e){
-    console.error(e);
-    alert("Error al guardar");
-  }
+    const ahora = new Date();
+
+    const reporte = {
+        territorio: territorioActual.numero,
+        conductor,
+        observaciones: obsEl.value.trim(),
+        hechas,
+        pendientes,
+        fecha: ahora.toLocaleDateString(),
+        hora: ahora.toLocaleTimeString(),
+        ts: ahora.getTime()
+    };
+
+    try {
+        const refReporte = push(ref(db, "reportes"));
+        await set(refReporte, reporte);
+        alert("✅ Informe guardado correctamente");
+        location.href = "index.html";
+    } catch (err) {
+        console.error(err);
+        alert("❌ Error al enviar el informe");
+    }
 };
 
-onValue(ref(db,"reportes"), snap=>{
-  reportesList.innerHTML = "";
-  const data = snap.val();
-  if(!data){
-    reportesList.innerHTML = "<p>No hay reportes</p>";
-    return;
-  }
-  Object.values(data).sort((a,b)=>b.ts-a.ts).forEach(r=>{
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <strong>Territorio ${r.territorio}</strong><br>
-      ${r.fecha} ${r.hora}<br>
-      <b>${r.conductor}</b><br>
-      Hechas: <span style="color:green">${r.hechas.join(", ") || "-"}</span><br>
-      Pendientes: <span style="color:red">${r.pendientes.join(", ") || "-"}</span><br>
-      Obs: ${r.observaciones || "-"}
-    `;
-    reportesList.appendChild(card);
-  });
-});
+/* INICIAR */
+renderTarjetas();
+
 </script>
 
 </body>
