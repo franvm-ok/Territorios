@@ -1,40 +1,43 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Próximas Salidas</title>
 <style>
-body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
-h1{text-align:center;color:#1a4b27;margin-bottom:20px}
-.card{background:white;padding:18px;border-radius:15px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
-.card h2{margin:0 0 8px;color:#2d6a4f}
-.card p{margin:4px 0}
-.pendientes{color:#c1121f;font-weight:bold}
-.conductor{color:#444;font-weight:bold}
-.btn-volver{position:fixed;left:20px;bottom:20px;padding:14px 18px;border-radius:15px;font-size:18px;font-weight:bold;border:none;box-shadow:0 4px 10px rgba(0,0,0,0.08);background:white;color:#1a4b27;cursor:pointer}
-.btn-volver:hover{background:#e8e8e8}
+  :root{--verde:#1a4b27;--bg:#f4f4f4}
+  body{margin:0;font-family:Arial;background:var(--bg);color:#222}
+  header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:20px;font-weight:700}
+  .container{padding:18px;max-width:980px;margin:0 auto}
+  .card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+  .pend{color:#c1121f;font-weight:700}
+  .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
-<h1>Próximas Salidas</h1>
-<div id="contenedorPendientes"></div>
-<button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
-<script>
-const cont=document.getElementById("contenedorPendientes");
-const reportes=JSON.parse(localStorage.getItem("reportes")||"[]");
-const pendientes=reportes.filter(r=>r.pendientes.length>0);
+<header>Próximas Salidas</header>
+<div class="container">
+  <div id="listaPendientes"></div>
+</div>
+<button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
 
-if(pendientes.length===0){ cont.innerHTML="<p style='text-align:center;color:#555'>No hay manzanas pendientes.</p>"; }
-else{
-pendientes.slice().reverse().forEach(r=>{
-  const div=document.createElement("div"); div.className="card";
-  div.innerHTML=`<h2>Territorio ${r.territorio}</h2>
-  <p><strong>Conductor:</strong> <span class="conductor">${r.nombre}</span></p>
-  <p><strong>Manzanas pendientes:</strong> <span class="pendientes">${r.pendientes.join(", ")}</span></p>`;
-  cont.appendChild(div);
+<script type="module">
+import { db, ref, onValue } from "./firebase.js";
+const lista = document.getElementById('listaPendientes');
+
+onValue(ref(db, 'pendientes'), snap=>{
+  lista.innerHTML = '';
+  const val = snap.val();
+  if(!val){ lista.innerHTML = '<p style="color:#666">No hay pendientes.</p>'; return; }
+  const arr = Object.values(val).sort((a,b)=>a.territorio - b.territorio);
+  arr.forEach(p=>{
+    const d = document.createElement('div'); d.className='card';
+    d.innerHTML = `<div><strong>Territorio ${p.territorio}</strong></div>
+                   <div>Pendientes: <span class="pend">${(p.pendientes||[]).join(', ')||'-'}</span></div>
+                   <div>Último conductor: ${p.conductor||'-'}</div>`;
+    lista.appendChild(d);
+  });
 });
-}
 </script>
 </body>
-</html> 
+</html>
