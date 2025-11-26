@@ -3,83 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reportes Generados</title>
+<title>Reportes</title>
 
 <style>
-body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
-h1{text-align:center;color:#1a4b27;margin-bottom:20px}
-.card{background:white;padding:18px;margin-bottom:15px;border-radius:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
-.card h2{margin:0 0 8px;color:#2d6a4f}
-.card p{margin:4px 0}
-.hechas{color:#2d6a4f;font-weight:bold}
-.pendientes{color:#c1121f;font-weight:bold}
-.btn-volver{
-    position:fixed;left:20px;bottom:20px;
-    padding:14px 18px;border-radius:15px;font-size:18px;
-    font-weight:bold;border:none;
-    background:white;color:#1a4b27;
-    cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.15)
-}
-.btn-volver:hover{background:#e8e8e8}
+    body {
+        margin: 0;
+        background: #f4f4f4;
+        font-family: Arial;
+    }
+
+    header {
+        background: #1a237e;
+        color: white;
+        text-align: center;
+        padding: 15px;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    .back-btn {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: #1a237e;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+    }
 </style>
 
 </head>
 <body>
 
-<h1>Reportes Generados</h1>
-<div id="contenedorReportes"></div>
+<header>Reportes</header>
 
-<button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
+<div class="container">
+    <p>Próximamente podrás ver todos los reportes de los hermanos.</p>
+</div>
 
-<!-- =========================== -->
-<!-- Firebase real-time listener -->
-<!-- =========================== -->
-<script type="module">
-import { db, ref, onValue } from "./firebase.js";
-
-const cont = document.getElementById("contenedorReportes");
-
-function renderReporteLista(data) {
-    cont.innerHTML = "";
-
-    if (!data) {
-        cont.innerHTML = "<p style='text-align:center;color:#555'>No hay reportes aún.</p>";
-        return;
-    }
-
-    // Convertir objeto → array
-    const reportes = Object.values(data);
-
-    // Últimos arriba
-    reportes.reverse().forEach(r=>{
-        const card = document.createElement("div");
-        card.className = "card";
-
-        card.innerHTML = `
-            <h2>Territorio ${r.territorio}</h2>
-            <p><strong>Fecha:</strong> ${r.fecha}</p>
-            <p><strong>Hora:</strong> ${r.hora || "-"}</p>
-            <p><strong>Conductor:</strong> ${r.conductor}</p>
-
-            <p><strong>Manzanas hechas:</strong> 
-                <span class="hechas">${(r.manzanasHechas || []).join(", ") || "-"}</span>
-            </p>
-
-            <p><strong>Manzanas pendientes:</strong> 
-                <span class="pendientes">${(r.manzanasPendientes || []).join(", ") || "-"}</span>
-            </p>
-
-            <p><strong>Observaciones:</strong> ${r.observaciones || "-"}</p>
-        `;
-        cont.appendChild(card);
-    });
-}
-
-// Escuchar en tiempo real
-onValue(ref(db, "reportes"), snapshot => {
-    renderReporteLista(snapshot.val());
-});
-</script>
+<a href="index.html" class="back-btn">Volver</a>
 
 </body>
 </html>
