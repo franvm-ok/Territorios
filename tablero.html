@@ -20,48 +20,41 @@
         text-align: center;
         font-size: 22px;
         font-weight: bold;
+        position: relative;
     }
 
-    .container {
-        padding: 20px;
-    }
-
-    .back-btn {
-        background: #7f8c8d;
-        padding: 15px;
-        border-radius: 12px;
-        color: white;
-        border: none;
-        width: 100%;
-        font-size: 18px;
-        margin-bottom: 20px;
-        cursor: pointer;
-    }
-
-    .file-label {
+    .add-btn {
+        position: absolute;
+        right: 15px;
+        top: 13px;
         background: #27ae60;
         color: white;
-        padding: 15px;
+        padding: 10px 14px;
         border-radius: 10px;
-        display: inline-block;
         cursor: pointer;
-        font-size: 16px;
-        float: right;
-        margin-top: -10px;
+        font-size: 14px;
     }
 
     input[type="file"] {
         display: none;
     }
 
-    .small-input {
-        width: 100%;
-        padding: 12px;
-        border-radius: 10px;
-        border: 1px solid #ccc;
-        margin-top: 10px;
-        margin-bottom: 20px;
-        font-size: 16px;
+    .back-small {
+        position: fixed;
+        bottom: 15px;
+        left: 15px;
+        background: #7f8c8d;
+        color: white;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .container {
+        padding: 20px;
+        margin-bottom: 60px;
     }
 
     .item {
@@ -69,14 +62,21 @@
         padding: 15px;
         border-radius: 12px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
 
-    .item a {
-        font-size: 17px;
-        color: #1a4b27;
-        font-weight: bold;
-        text-decoration: none;
+    .preview-img {
+        width: 100%;
+        border-radius: 10px;
+        margin-top: 10px;
+    }
+
+    .pdf-frame {
+        width: 100%;
+        height: 350px;
+        border: none;
+        margin-top: 10px;
+        border-radius: 10px;
     }
 
     .versiculo {
@@ -87,78 +87,94 @@
         font-style: italic;
     }
 </style>
-
 </head>
+
 <body>
 
-<header>Tablero de Anuncios</header>
+<header>
+    Tablero de Anuncios
+    <label class="add-btn">
+        📎 Agregar archivo
+        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.webp">
+    </label>
+</header>
+
+<button class="back-small" onclick="location.href='index.html'">⬅ Volver</button>
 
 <div class="container">
-
-    <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
-
-    <label class="file-label">
-        📎 Agregar archivo
-        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.jpeg,.webp">
-    </label>
-
-    <input id="descripcion" class="small-input" type="text" placeholder="Descripción (opcional)">
-
     <div id="listaArchivos"></div>
 
-    <p class="versiculo">"Por consiguiente, tengo el placer de decirles: sigan animándose unos a otros y edificándose unos a otros". — 1 Tes. 5:11</p>
-
+    <p class="versiculo">"Sigan animándose unos a otros y edificándose unos a otros". — 1 Tes. 5:11</p>
 </div>
 
 <script>
-// Cargar archivos guardados al abrir la página
 document.addEventListener("DOMContentLoaded", mostrar);
 
-// Evento para seleccionar archivo
-document.getElementById("fileInput").addEventListener("change", function() {
+// Cuando el hermano elige un archivo
+document.getElementById("fileInput").addEventListener("change", function () {
     const archivo = this.files[0];
     if (!archivo) return;
 
-    const reader = new FileReader();
-    const descripcion = document.getElementById("descripcion").value || "Sin descripción";
+    // Pregunta si desea descripción
+    const deseaDescripcion = confirm("¿Desea agregar una descripción?");
 
-    reader.onload = function(e) {
-        const datos = {
+    let descripcion = "Sin descripción";
+
+    if (deseaDescripcion) {
+        descripcion = prompt("Ingrese la descripción:");
+        if (!descripcion) descripcion = "Sin descripción";
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        const dataURL = e.target.result;
+
+        const item = {
             nombre: archivo.name,
+            tipo: archivo.type,
             descripcion: descripcion,
-            url: e.target.result
+            contenido: dataURL
         };
 
-        // Guardar en localStorage
         const lista = JSON.parse(localStorage.getItem("anuncios") || "[]");
-        lista.push(datos);
+        lista.push(item);
         localStorage.setItem("anuncios", JSON.stringify(lista));
 
-        document.getElementById("descripcion").value = "";
         mostrar();
     };
 
     reader.readAsDataURL(archivo);
 });
 
-// Mostrar archivos
+// Mostrar archivos con vista previa real
 function mostrar() {
-    const contenedor = document.getElementById("listaArchivos");
-    contenedor.innerHTML = "";
+    const cont = document.getElementById("listaArchivos");
+    cont.innerHTML = "";
 
     const lista = JSON.parse(localStorage.getItem("anuncios") || "[]");
 
     lista.forEach(a => {
-        const bloque = document.createElement("div");
-        bloque.className = "item";
+        const div = document.createElement("div");
+        div.className = "item";
 
-        bloque.innerHTML = `
+        let vista = "";
+
+        if (a.tipo.includes("pdf")) {
+            vista = `<iframe class="pdf-frame" src="${a.contenido}"></iframe>`;
+        } else if (a.tipo.includes("image")) {
+            vista = `<img class="preview-img" src="${a.contenido}">`;
+        } else {
+            vista = `<p>(Archivo no compatible para vista previa)</p>`;
+        }
+
+        div.innerHTML = `
             <p><strong>${a.nombre}</strong></p>
             <p>${a.descripcion}</p>
-            <a href="${a.url}" target="_blank">📄 Abrir archivo</a>
+            ${vista}
         `;
 
-        contenedor.appendChild(bloque);
+        cont.appendChild(div);
     });
 }
 </script>
