@@ -80,14 +80,30 @@
     .btn-volver:hover {
         background: #163e20;
     }
+
+    footer {
+        text-align: center;
+        padding: 10px;
+        font-size: 14px;
+        margin-bottom: 70px;
+        color: #555;
+    }
 </style>
 </head>
 <body>
 
 <header>
     Tablero de Anuncios
-    <button class="btn-add" onclick="subirArchivo()">Agregar archivo</button>
+    <button class="btn-add" onclick="abrirSelector()">Agregar archivo</button>
 </header>
+
+<!-- Input oculto para que funcione en celulares -->
+<input
+    type="file"
+    id="archivoInput"
+    accept=".pdf, .jpg, .jpeg, .png, .gif"
+    style="display:none"
+/>
 
 <div class="container">
     <div id="listaAnuncios"></div>
@@ -95,48 +111,52 @@
 
 <button class="btn-volver" onclick="location.href='index.html'">← Volver</button>
 
+<footer>
+    “Santifícalos por medio de la verdad; tu palabra es la verdad.” — Juan 17:17
+</footer>
+
 <script type="module">
 import {
     db, ref, push, set, onValue
 } from "./firebase.js";
 
-// === SUBIR ARCHIVO ===
-function subirArchivo() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".pdf, .jpg, .jpeg, .png, .gif";
 
-    input.onchange = async () => {
-        const file = input.files[0];
-        if (!file) return;
+// === ACTIVAR INPUT OCULTO ===
+function abrirSelector() {
+    document.getElementById("archivoInput").click();
+}
 
-        let descripcion = "";
 
-        const agregarDesc = confirm("¿Desea agregar una pequeña descripción?");
-        if (agregarDesc) {
-            descripcion = prompt("Ingrese la descripción (opcional):") || "";
-        }
+// === MANEJAR ARCHIVO SELECCIONADO ===
+document.getElementById("archivoInput").addEventListener("change", async function () {
+    const file = this.files[0];
+    if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            const archivoBase64 = e.target.result;
+    let descripcion = "";
+    const agregar = confirm("¿Desea agregar una descripción?");
+    if (agregar) {
+        descripcion = prompt("Ingrese la descripción:") || "";
+    }
 
-            await push(ref(db, "anuncios"), {
-                nombre: file.name,
-                tipo: file.type,
-                descripcion: descripcion,
-                data: archivoBase64,
-                fecha: new Date().toISOString()
-            });
+    const reader = new FileReader();
 
-            alert("Archivo subido correctamente.");
-        };
+    reader.onload = async function (e) {
+        const base64 = e.target.result;
 
-        reader.readAsDataURL(file);
+        await push(ref(db, "anuncios"), {
+            nombre: file.name,
+            tipo: file.type,
+            descripcion: descripcion,
+            data: base64,
+            fecha: new Date().toISOString()
+        });
+
+        alert("Archivo subido correctamente.");
     };
 
-    input.click();
-}
+    reader.readAsDataURL(file);
+});
+
 
 // === MOSTRAR ANUNCIOS ===
 const lista = document.getElementById("listaAnuncios");
@@ -146,15 +166,13 @@ onValue(ref(db, "anuncios"), snapshot => {
     const datos = snapshot.val();
     if (!datos) return;
 
-    const claves = Object.keys(datos).reverse(); // lo más nuevo arriba
+    const keys = Object.keys(datos).reverse();
 
-    claves.forEach(id => {
+    keys.forEach(id => {
         const item = datos[id];
-
         const card = document.createElement("div");
         card.className = "card";
 
-        // Descripción
         if (item.descripcion) {
             const p = document.createElement("p");
             p.innerText = item.descripcion;
@@ -164,12 +182,11 @@ onValue(ref(db, "anuncios"), snapshot => {
             card.appendChild(p);
         }
 
-        // Mostrar archivo según tipo
         if (item.tipo.includes("pdf")) {
-            const iframe = document.createElement("iframe");
-            iframe.src = item.data;
-            iframe.className = "pdf-viewer";
-            card.appendChild(iframe);
+            const frame = document.createElement("iframe");
+            frame.src = item.data;
+            frame.className = "pdf-viewer";
+            card.appendChild(frame);
 
         } else if (item.tipo.includes("image")) {
             const img = document.createElement("img");
