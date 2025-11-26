@@ -1,191 +1,109 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Informar Territorio</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Informar</title>
 
 <style>
-body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
-h1{color:#1a4b27;text-align:center;margin-bottom:20px}
-input{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box;font-size:16px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
-.card{background:white;padding:18px;border-radius:15px;text-align:center;font-size:18px;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.1);cursor:pointer;transition:.2s}
-.card:hover{transform:scale(1.05)}
-.manzanas-section{display:none;margin-top:20px}
-.manzana{background:white;padding:12px;margin-bottom:10px;border-radius:10px;border:1px solid #ddd;cursor:pointer;font-weight:bold;font-size:17px}
-.checked{background:#d8f3dc;border-color:#2d6a4f;color:#2d6a4f}
-textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box;font-size:16px;resize:vertical;min-height:60px}
-.btn{padding:14px 18px;border-radius:15px;font-size:18px;font-weight:bold;cursor:pointer;border:none;box-shadow:0 4px 10px rgba(0,0,0,0.08);transition:.15s}
-.enviar{background:#2d6a4f;color:white;float:right;margin-left:5px}
-.enviar:hover{background:#1f4d37}
-.volver{background:white;color:#1a4b27;float:left;margin-right:5px}
-.volver:hover{background:#e8e8e8}
-.clearfix::after{content:"";display:table;clear:both}
-.fab-back{
-    position:fixed;bottom:20px;left:20px;width:55px;height:55px;background:white;color:#1a4b27;
-    border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:28px;
-    font-weight:bold;cursor:pointer;z-index:9999;box-shadow:0 4px 10px rgba(0,0,0,0.25);
-}
-.fab-back:hover{background:#e8e8e8}
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+    }
+
+    header {
+        background: #1a237e;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    .territorio-card {
+        background: white;
+        padding: 15px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        font-size: 18px;
+    }
+
+    .back-btn {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: #1a237e;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 16px;
+    }
 </style>
+
 </head>
 <body>
 
-<h1>Informar Territorio</h1>
+<header>Informar territorio</header>
 
-<input type="text" id="searchInput" placeholder="Buscar territorio por número…">
+<div class="container" id="listaTerritorios"></div>
 
-<div id="territoriosGrid" class="grid"></div>
+<a href="index.html" class="back-btn">Volver</a>
 
-<div id="manzanasSection" class="manzanas-section"></div>
-
-<div id="formSection" class="manzanas-section">
-    <input type="text" id="nombreHermano" placeholder="Nombre del hermano">
-    <textarea id="observaciones" placeholder="Observaciones..."></textarea>
-
-    <div class="clearfix">
-        <button class="btn volver" onclick="volverTerritorios()">⬅️ Volver</button>
-        <button class="btn enviar" onclick="guardarReporte()">✅ Enviar Informe</button>
-    </div>
-</div>
-
-<div class="fab-back" onclick="history.back()">←</div>
-
-<!-- =========================== -->
-<!-- firebase.js - IMPORTACIÓN   -->
-<!-- =========================== -->
-<script type="module">
-import { db, ref, push, set } from "./firebase.js";
-
-const territorios=[
-    {numero:1,manzanas:4},
-    {numero:2,manzanas:4},
-    {numero:3,manzanas:4},
-    {numero:4,manzanas:5},
-    {numero:5,manzanas:8},
-    {numero:6,manzanas:6},
-    {numero:7,manzanas:6},
-    {numero:8,manzanas:7},
-    {numero:9,manzanas:9},
-    {numero:10,manzanas:9},
-    {numero:11,manzanas:5},
-    {numero:12,manzanas:6},
-    {numero:13,manzanas:9},
-    {numero:14,manzanas:6},
-    {numero:15,manzanas:5},
-    {numero:16,manzanas:7},
-    {numero:17,manzanas:7},
-    {numero:18,manzanas:6},
-    {numero:19,manzanas:6},
-    {numero:20,manzanas:7},
-    {numero:21,manzanas:8},
-    {numero:22,manzanas:6},
-    {numero:23,manzanas:6},
-    {numero:24,manzanas:5},
-    {numero:25,manzanas:6},
-    {numero:26,manzanas:7},
-    {numero:27,manzanas:7},
-    {numero:28,manzanas:6},
-    {numero:29,manzanas:5},
-    {numero:30,manzanas:8},
-    {numero:31,manzanas:8},
-    {numero:32,manzanas:6}
+<script>
+const territorios = [
+    { id: 1, manzanas: 4 },
+    { id: 2, manzanas: 4 },
+    { id: 3, manzanas: 6 },
+    { id: 4, manzanas: 5 },
+    { id: 5, manzanas: 7 },
+    { id: 6, manzanas: 4 },
+    { id: 7, manzanas: 4 },
+    { id: 8, manzanas: 6 },
+    { id: 9, manzanas: 5 },
+    { id: 10, manzanas: 6 },
+    { id: 11, manzanas: 4 },
+    { id: 12, manzanas: 4 },
+    { id: 13, manzanas: 4 },
+    { id: 14, manzanas: 5 },
+    { id: 15, manzanas: 6 },
+    { id: 16, manzanas: 4 },
+    { id: 17, manzanas: 4 },
+    { id: 18, manzanas: 8 },
+    { id: 19, manzanas: 4 },
+    { id: 20, manzanas: 4 },
+    { id: 21, manzanas: 7 },
+    { id: 22, manzanas: 4 },
+    { id: 23, manzanas: 4 },
+    { id: 24, manzanas: 5 },
+    { id: 25, manzanas: 7 },
+    { id: 26, manzanas: 4 },
+    { id: 27, manzanas: 4 },
+    { id: 28, manzanas: 7 },
+    { id: 29, manzanas: 5 },
+    { id: 30, manzanas: 6 },
+    { id: 31, manzanas: 4 },
+    { id: 32, manzanas: 6 }
 ];
 
-const grid=document.getElementById("territoriosGrid");
-const manzanasSection=document.getElementById("manzanasSection");
-const formSection=document.getElementById("formSection");
-let territorioSeleccionado=null;
-
-function renderTarjetas(f=""){
-    grid.innerHTML="";
-    territorios
-      .filter(t=>t.numero.toString().includes(f))
-      .forEach(t=>{
-          const c=document.createElement("div");
-          c.className="card";
-          c.textContent=`Territorio ${t.numero}`;
-          c.onclick=()=>abrirTerritorio(t);
-          grid.appendChild(c);
-      });
-}
-renderTarjetas();
-
-document.getElementById("searchInput")
-.addEventListener("input",e=>renderTarjetas(e.target.value));
-
-function abrirTerritorio(t){
-    territorioSeleccionado=t;
-
-    grid.style.display="none";
-    document.getElementById("searchInput").style.display="none";
-
-    manzanasSection.style.display="block";
-    formSection.style.display="block";
-
-    manzanasSection.innerHTML=`<h2>Territorio ${t.numero}</h2>`;
-
-    for(let i=0;i<t.manzanas;i++){
-        const letra=String.fromCharCode(65+i);
-        const d=document.createElement("div");
-        d.className="manzana";
-        d.textContent=`Manzana ${letra}`;
-        d.dataset.manzana=letra;
-        d.onclick=()=>d.classList.toggle("checked");
-        manzanasSection.appendChild(d);
-    }
-
-    window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function volverTerritorios(){
-    manzanasSection.style.display="none";
-    formSection.style.display="none";
-
-    grid.style.display="grid";
-    document.getElementById("searchInput").style.display="block";
-
-    renderTarjetas();
-}
-
-function guardarReporte(){
-    const conductor=document.getElementById("nombreHermano").value.trim();
-    const observaciones=document.getElementById("observaciones").value.trim();
-
-    if(!conductor){alert("Por favor ingrese su nombre.");return;}
-
-    const manzanasDivs=manzanasSection.querySelectorAll(".manzana");
-
-    const manzanasHechas=[],manzanasPendientes=[];
-    manzanasDivs.forEach(div=>{
-        const letra=div.dataset.manzana;
-        if(div.classList.contains("checked")) manzanasHechas.push(letra);
-        else manzanasPendientes.push(letra);
+function cargarLista() {
+    const cont = document.getElementById("listaTerritorios");
+    territorios.forEach(t => {
+        const div = document.createElement("div");
+        div.className = "territorio-card";
+        div.innerHTML = `Territorio ${t.id} — ${t.mz || t.manzanas} manzanas`;
+        cont.appendChild(div);
     });
-
-    const fecha=new Date().toLocaleDateString();
-    const hora=new Date().toLocaleTimeString();
-
-    const reporte={
-        territorio:territorioSeleccionado.numero,
-        fecha,
-        hora,
-        conductor,
-        manzanasHechas,
-        manzanasPendientes,
-        observaciones
-    };
-
-    const reportRef=push(ref(db,"reportes"));
-    set(reportRef,reporte);
-
-    alert("✅ Informe enviado correctamente.");
-
-    volverTerritorios();
-    document.getElementById("nombreHermano").value="";
-    document.getElementById("observaciones").value="";
 }
+
+cargarLista();
 </script>
+
 </body>
 </html>
