@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tablero de Anuncios</title>
 
 <style>
@@ -14,11 +14,11 @@
     }
 
     header {
-        background: #2c3e50;
+        background: #1a4b27;
         color: white;
         padding: 15px;
         text-align: center;
-        font-size: 20px;
+        font-size: 22px;
         font-weight: bold;
     }
 
@@ -26,136 +26,139 @@
         padding: 20px;
     }
 
-    .button {
-        display: block;
-        width: 100%;
-        padding: 18px;
-        margin: 15px 0;
-        font-size: 18px;
+    .back-btn {
+        background: #7f8c8d;
+        padding: 15px;
         border-radius: 12px;
-        border: none;
-        background: #3498db;
         color: white;
+        border: none;
+        width: 100%;
+        font-size: 18px;
+        margin-bottom: 20px;
         cursor: pointer;
     }
-
-    .button:hover { background: #2980b9; }
-
-    .back-btn { background: #7f8c8d; }
 
     .file-label {
-        display: block;
         background: #27ae60;
-        padding: 15px;
         color: white;
-        text-align: center;
+        padding: 15px;
         border-radius: 10px;
+        display: inline-block;
         cursor: pointer;
-        margin-bottom: 10px;
+        font-size: 16px;
+        float: right;
+        margin-top: -10px;
     }
 
-    input[type="file"] { display: none; }
+    input[type="file"] {
+        display: none;
+    }
 
     .small-input {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
+        border-radius: 10px;
         border: 1px solid #ccc;
-        border-radius: 8px;
-        margin-bottom: 10px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        font-size: 16px;
     }
 
-    .announcement-item {
+    .item {
         background: white;
         padding: 15px;
         border-radius: 12px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        margin-top: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        margin-bottom: 15px;
     }
 
-    .announcement-item a {
-        font-size: 18px;
-        color: #2980b9;
-        text-decoration: none;
+    .item a {
+        font-size: 17px;
+        color: #1a4b27;
         font-weight: bold;
+        text-decoration: none;
+    }
+
+    .versiculo {
+        margin-top: 25px;
+        font-size: 14px;
+        text-align: center;
+        color: #555;
+        font-style: italic;
     }
 </style>
-</head>
 
+</head>
 <body>
 
 <header>Tablero de Anuncios</header>
 
 <div class="container">
 
-    <button class="button back-btn" onclick="window.location.href='index.html'">⬅ Volver</button>
+    <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
 
-    <h3>Juan 13:34 — “Ámense unos a otros”.</h3>
-
-    <!-- BOTÓN PARA SUBIR ARCHIVO -->
     <label class="file-label">
         📎 Agregar archivo
-        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" />
+        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.jpeg,.webp">
     </label>
 
-    <!-- DESCRIPCIÓN OPCIONAL -->
-    <input type="text" id="descripcion" class="small-input" placeholder="Descripción (opcional)">
+    <input id="descripcion" class="small-input" type="text" placeholder="Descripción (opcional)">
 
-    <!-- DONDE SE MOSTRARÁN LOS ARCHIVOS -->
     <div id="listaArchivos"></div>
+
+    <p class="versiculo">"Por consiguiente, tengo el placer de decirles: sigan animándose unos a otros y edificándose unos a otros". — 1 Tes. 5:11</p>
 
 </div>
 
 <script>
-// Al cargar, mostrar archivos guardados
-document.addEventListener("DOMContentLoaded", () => {
-    mostrarArchivos();
-});
+// Cargar archivos guardados al abrir la página
+document.addEventListener("DOMContentLoaded", mostrar);
 
-// Evento: subir archivo
-document.getElementById("fileInput").addEventListener("change", function () {
+// Evento para seleccionar archivo
+document.getElementById("fileInput").addEventListener("change", function() {
     const archivo = this.files[0];
     if (!archivo) return;
 
-    const descripcion = document.getElementById("descripcion").value.trim();
+    const reader = new FileReader();
+    const descripcion = document.getElementById("descripcion").value || "Sin descripción";
 
-    const lector = new FileReader();
-    lector.onload = function (e) {
-
-        const nuevoArchivo = {
+    reader.onload = function(e) {
+        const datos = {
             nombre: archivo.name,
-            descripcion: descripcion || "Sin descripción",
+            descripcion: descripcion,
             url: e.target.result
         };
 
-        const lista = JSON.parse(localStorage.getItem("archivosAnuncios") || "[]");
-        lista.push(nuevoArchivo);
-        localStorage.setItem("archivosAnuncios", JSON.stringify(lista));
+        // Guardar en localStorage
+        const lista = JSON.parse(localStorage.getItem("anuncios") || "[]");
+        lista.push(datos);
+        localStorage.setItem("anuncios", JSON.stringify(lista));
 
         document.getElementById("descripcion").value = "";
-        mostrarArchivos();
+        mostrar();
     };
 
-    lector.readAsDataURL(archivo);
+    reader.readAsDataURL(archivo);
 });
 
-// Mostrar archivos cargados
-function mostrarArchivos() {
+// Mostrar archivos
+function mostrar() {
     const contenedor = document.getElementById("listaArchivos");
     contenedor.innerHTML = "";
 
-    const lista = JSON.parse(localStorage.getItem("archivosAnuncios") || "[]");
+    const lista = JSON.parse(localStorage.getItem("anuncios") || "[]");
 
-    lista.forEach((item) => {
-        const div = document.createElement("div");
-        div.className = "announcement-item";
+    lista.forEach(a => {
+        const bloque = document.createElement("div");
+        bloque.className = "item";
 
-        div.innerHTML = `
-            <p><strong>${item.nombre}</strong></p>
-            <p>${item.descripcion}</p>
-            <a href="${item.url}" target="_blank">📄 Abrir archivo</a>
+        bloque.innerHTML = `
+            <p><strong>${a.nombre}</strong></p>
+            <p>${a.descripcion}</p>
+            <a href="${a.url}" target="_blank">📄 Abrir archivo</a>
         `;
 
-        contenedor.appendChild(div);
+        contenedor.appendChild(bloque);
     });
 }
 </script>
