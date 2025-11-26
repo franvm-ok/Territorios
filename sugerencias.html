@@ -1,104 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Sugerencias</title>
-
 <style>
-body{margin:0;padding:20px;font-family:Arial;background:#f4f4f4;color:#333}
-h1{text-align:center;color:#1a4b27;margin-bottom:20px}
-textarea{
-    width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;
-    font-size:16px;resize:vertical;min-height:80px;margin-bottom:15px
-}
-.btn{
-    width:100%;padding:14px;border:none;border-radius:15px;
-    font-size:18px;font-weight:bold;margin-top:5px;cursor:pointer;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1)
-}
-.btn-enviar{background:#2d6a4f;color:white}
-.btn-enviar:hover{background:#1f4d37}
-
-.card{
-    background:white;padding:15px;margin-bottom:15px;border-radius:15px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1)
-}
-.card p{margin:5px 0}
-.fecha{color:#888;font-size:14px}
-
-.btn-volver{
-    position:fixed;left:20px;bottom:20px;
-    padding:14px 18px;border-radius:15px;font-size:18px;
-    font-weight:bold;border:none;background:white;color:#1a4b27;
-    cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.15)
-}
-.btn-volver:hover{background:#e8e8e8}
+  :root{--verde:#1a4b27;--bg:#f4f4f4}
+  body{margin:0;font-family:Arial;background:var(--bg);color:#222}
+  header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:20px;font-weight:700}
+  .container{padding:18px;max-width:980px;margin:0 auto}
+  textarea{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;min-height:120px}
+  .btn{padding:10px 14px;border-radius:8px;border:none;background:var(--verde);color:#fff;font-weight:700;cursor:pointer;margin-top:10px}
+  .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
 </style>
-
 </head>
 <body>
+<header>Sugerencias</header>
+<div class="container">
+  <textarea id="sugText" placeholder="Escriba su sugerencia..."></textarea>
+  <button id="sendSug" class="btn">Enviar sugerencia</button>
+  <div id="msg" style="margin-top:12px;color:#666"></div>
+</div>
+<button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
 
-<h1>Sugerencias</h1>
-
-<textarea id="textoSugerencia" placeholder="Escribe tu sugerencia aquí..."></textarea>
-
-<button class="btn btn-enviar" onclick="enviarSugerencia()">Enviar Sugerencia</button>
-
-<h2 style="margin-top:25px;color:#1a4b27;">Sugerencias enviadas</h2>
-<div id="listaSugerencias"></div>
-
-<button class="btn-volver" onclick="location.href='index.html'">⬅️ Volver</button>
-
-<!-- =========================== -->
-<!-- Firebase en tiempo real     -->
-<!-- =========================== -->
 <script type="module">
-import { db, ref, push, set, onValue } from "./firebase.js";
+import { db, ref, push, set } from "./firebase.js";
+const txt = document.getElementById('sugText');
+const btn = document.getElementById('sendSug');
+const msg = document.getElementById('msg');
 
-const lista = document.getElementById("listaSugerencias");
-const input = document.getElementById("textoSugerencia");
-
-// Enviar sugerencia
-function enviarSugerencia(){
-    const texto = input.value.trim();
-    if(!texto){ alert("Escribe una sugerencia antes de enviar."); return; }
-
-    const fecha = new Date().toLocaleDateString();
-    const hora = new Date().toLocaleTimeString();
-
-    const nuevaRef = push(ref(db, "sugerencias"));
-    set(nuevaRef, { texto, fecha, hora });
-
-    input.value = "";
-    alert("✅ Sugerencia enviada");
-}
-
-// Mostrar lista en tiempo real
-onValue(ref(db, "sugerencias"), snapshot => {
-    const data = snapshot.val();
-    lista.innerHTML = "";
-
-    if(!data){
-        lista.innerHTML = "<p style='color:#777'>Aún no hay sugerencias.</p>";
-        return;
-    }
-
-    const arr = Object.values(data).reverse(); // últimas arriba
-
-    arr.forEach(s => {
-        const div = document.createElement("div");
-        div.className = "card";
-
-        div.innerHTML = `
-            <p>${s.texto}</p>
-            <p class="fecha">${s.fecha} - ${s.hora}</p>
-        `;
-
-        lista.appendChild(div);
-    });
+btn.addEventListener('click', async ()=>{
+  const v = txt.value.trim();
+  if(!v){ msg.textContent = 'Escriba una sugerencia.'; return; }
+  try{
+    const p = push(ref(db, 'sugerencias'));
+    await set(p, { text: v, ts: Date.now() });
+    txt.value = '';
+    msg.textContent = 'Sugerencia enviada. Gracias.';
+  }catch(e){
+    console.error(e); msg.textContent = 'Error enviando. Mirá consola.';
+  }
 });
 </script>
-
 </body>
 </html>
