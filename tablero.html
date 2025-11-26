@@ -15,9 +15,9 @@
 
     header {
         background: #1a4b27;
-        color: white;
-        padding: 15px;
+        padding: 20px;
         text-align: center;
+        color: white;
         font-size: 22px;
         font-weight: bold;
         position: relative;
@@ -25,66 +25,77 @@
 
     .add-btn {
         position: absolute;
-        right: 15px;
-        top: 13px;
-        background: #27ae60;
+        right: 20px;
+        bottom: -15px;
+        background: #2e7d32;
         color: white;
-        padding: 10px 14px;
+        padding: 10px 16px;
         border-radius: 10px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    input[type="file"] {
-        display: none;
-    }
-
-    .back-small {
-        position: fixed;
-        bottom: 15px;
-        left: 15px;
-        background: #7f8c8d;
-        color: white;
-        padding: 10px 14px;
-        border-radius: 8px;
         font-size: 15px;
         border: none;
         cursor: pointer;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    }
+
+    .add-btn:hover {
+        background: #256628;
     }
 
     .container {
-        padding: 20px;
-        margin-bottom: 60px;
+        margin-top: 40px;
+        padding: 15px;
     }
 
-    .item {
+    .card {
         background: white;
         padding: 15px;
         border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        margin-bottom: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     }
 
     .preview-img {
         width: 100%;
-        border-radius: 10px;
+        border-radius: 8px;
         margin-top: 10px;
     }
 
-    .pdf-frame {
-        width: 100%;
-        height: 350px;
+    .file-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-small {
+        background: #1a4b27;
+        color: white;
+        padding: 6px 10px;
+        border-radius: 8px;
         border: none;
-        margin-top: 10px;
-        border-radius: 10px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-left: 5px;
     }
 
-    .versiculo {
-        margin-top: 25px;
-        font-size: 14px;
-        text-align: center;
-        color: #555;
-        font-style: italic;
+    .btn-small:hover {
+        background: #14541f;
+    }
+
+    .back-btn {
+        background: #ccc;
+        color: #333;
+        padding: 10px 15px;
+        border-radius: 10px;
+        border: none;
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .back-btn:hover {
+        background: #b8b8b8;
     }
 </style>
 </head>
@@ -93,90 +104,101 @@
 
 <header>
     Tablero de Anuncios
-    <label class="add-btn">
-        📎 Agregar archivo
-        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.webp">
-    </label>
+    <button class="add-btn" onclick="document.getElementById('fileInput').click()">Agregar archivo</button>
 </header>
 
-<button class="back-small" onclick="location.href='index.html'">⬅ Volver</button>
-
 <div class="container">
-    <div id="listaArchivos"></div>
 
-    <p class="versiculo">"Sigan animándose unos a otros y edificándose unos a otros". — 1 Tes. 5:11</p>
+    <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(event)">
+
+    <div id="anuncios"></div>
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", mostrar);
+<button class="back-btn" onclick="location.href='index.html'">Volver</button>
 
-// Cuando el hermano elige un archivo
-document.getElementById("fileInput").addEventListener("change", function () {
-    const archivo = this.files[0];
-    if (!archivo) return;
+<script type="module">
+import { db, ref, set, push, onValue } from "./firebase.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
 
-    // Pregunta si desea descripción
-    const deseaDescripcion = confirm("¿Desea agregar una descripción?");
+const storage = getStorage();
 
-    let descripcion = "Sin descripción";
+// 🟩 Cuando suben un archivo
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    if (deseaDescripcion) {
-        descripcion = prompt("Ingrese la descripción:");
-        if (!descripcion) descripcion = "Sin descripción";
+    const wantsDescription = confirm("¿Desea agregar una descripción?");
+
+    let description = "";
+
+    if (wantsDescription) {
+        description = prompt("Ingrese la descripción:");
+        if (!description) description = "";
     }
 
-    const reader = new FileReader();
+    uploadFile(file, description);
+}
 
-    reader.onload = function (e) {
-        const dataURL = e.target.result;
+// 🟩 Subir archivo a Firebase
+async function uploadFile(file, description) {
 
-        const item = {
-            nombre: archivo.name,
-            tipo: archivo.type,
-            descripcion: descripcion,
-            contenido: dataURL
-        };
+    const fileId = Date.now();
+    const storageRef = sRef(storage, "anuncios/" + fileId + "_" + file.name);
 
-        const lista = JSON.parse(localStorage.getItem("anuncios") || "[]");
-        lista.push(item);
-        localStorage.setItem("anuncios", JSON.stringify(lista));
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
 
-        mostrar();
-    };
+    const anuncioRef = push(ref(db, "anuncios"));
+    await set(anuncioRef, {
+        url: url,
+        name: file.name,
+        type: file.type,
+        description: description,
+        timestamp: fileId
+    });
 
-    reader.readAsDataURL(archivo);
-});
+    alert("Archivo subido correctamente");
+}
 
-// Mostrar archivos con vista previa real
-function mostrar() {
-    const cont = document.getElementById("listaArchivos");
+// 🟩 Mostrar anuncios en pantalla
+onValue(ref(db, "anuncios"), (snapshot) => {
+    const cont = document.getElementById("anuncios");
     cont.innerHTML = "";
 
-    const lista = JSON.parse(localStorage.getItem("anuncios") || "[]");
+    snapshot.forEach(item => {
+        const data = item.val();
 
-    lista.forEach(a => {
-        const div = document.createElement("div");
-        div.className = "item";
+        let preview = "";
 
-        let vista = "";
-
-        if (a.tipo.includes("pdf")) {
-            vista = `<iframe class="pdf-frame" src="${a.contenido}"></iframe>`;
-        } else if (a.tipo.includes("image")) {
-            vista = `<img class="preview-img" src="${a.contenido}">`;
-        } else {
-            vista = `<p>(Archivo no compatible para vista previa)</p>`;
+        // Si es imagen → mostrar miniatura
+        if (data.type.startsWith("image/")) {
+            preview = `<img src="${data.url}" class="preview-img">`;
         }
 
-        div.innerHTML = `
-            <p><strong>${a.nombre}</strong></p>
-            <p>${a.descripcion}</p>
-            ${vista}
-        `;
+        // Si es PDF → marco de vista previa
+        if (data.type === "application/pdf") {
+            preview = `
+                <iframe src="${data.url}" style="width:100%;height:300px;border-radius:10px;"></iframe>
+            `;
+        }
 
-        cont.appendChild(div);
+        cont.innerHTML += `
+            <div class="card">
+                <div class="file-row">
+                    <strong>${data.name}</strong>
+                    <div>
+                        <button class="btn-small" onclick="window.open('${data.url}','_blank')">Vista previa</button>
+                        <a href="${data.url}" download class="btn-small">⬇️ Descargar</a>
+                    </div>
+                </div>
+
+                ${data.description ? `<p>${data.description}</p>` : ""}
+
+                ${preview}
+            </div>
+        `;
     });
-}
+});
 </script>
 
 </body>
