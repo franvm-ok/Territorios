@@ -1,57 +1,198 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Tablero de Anuncios</title>
+
 <style>
-body { font-family:"Segoe UI",sans-serif; margin:0; padding:15px; background:#f4f4f4; color:#333; }
-h1 { text-align:center; color:#1a4b27; margin-bottom:20px; }
-.btn { display:block; width:100%; padding:18px; border-radius:12px; text-align:center; font-size:18px; font-weight:bold; cursor:pointer; border:none; margin-bottom:15px; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
-.subir { background:#2d6a4f; color:white; }
-.subir:hover { background:#1f4d37; }
-.volver { background:#cccccc; color:#333; float:left; width:auto; padding:12px 20px; margin-top:20px; }
-.volver:hover { background:#aaaaaa; }
-#pdfContainer { margin-top:20px; text-align:center; }
-iframe { width:100%; height:600px; border:1px solid #ccc; border-radius:12px; }
-input[type="file"] { display:none; }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f4f4f4;
+        color: #333;
+    }
+
+    header {
+        background: #1a4b27;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .btn-add {
+        background: white;
+        color: #1a4b27;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-add:hover {
+        background: #e8e8e8;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .pdf-viewer {
+        width: 100%;
+        height: 350px;
+        border-radius: 10px;
+        border: none;
+    }
+
+    .image-view {
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    .btn-volver {
+        background: #1a4b27;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+    }
+
+    .btn-volver:hover {
+        background: #163e20;
+    }
 </style>
 </head>
 <body>
 
-<h1>Tablero de Anuncios</h1>
+<header>
+    Tablero de Anuncios
+    <button class="btn-add" onclick="subirArchivo()">Agregar archivo</button>
+</header>
 
-<label class="btn subir" for="pdfInput">📄 Subir anuncio</label>
-<input type="file" id="pdfInput" accept="application/pdf">
+<div class="container">
+    <div id="listaAnuncios"></div>
+</div>
 
-<div id="pdfContainer"></div>
+<button class="btn-volver" onclick="location.href='index.html'">← Volver</button>
 
-<button class="btn volver" onclick="history.back()">⬅️ Volver</button>
+<script type="module">
+import {
+    db, ref, push, set, onValue
+} from "./firebase.js";
 
-<script>
-const pdfInput = document.getElementById("pdfInput");
-const pdfContainer = document.getElementById("pdfContainer");
+// === SUBIR ARCHIVO ===
+function subirArchivo() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf, .jpg, .jpeg, .png, .gif";
 
-pdfInput.addEventListener("change", function() {
-    const file = this.files[0];
-    if(file && file.type === "application/pdf") {
-        const fileURL = URL.createObjectURL(file);
-        pdfContainer.innerHTML = `<iframe src="${fileURL}"></iframe>`;
-        // Guardar en localStorage para futuras referencias (opcional)
-        const anuncios = JSON.parse(localStorage.getItem("anuncios")) || [];
-        anuncios.push({nombre:file.name, url:fileURL, fecha: new Date().toLocaleDateString()});
-        localStorage.setItem("anuncios", JSON.stringify(anuncios));
-    } else {
-        alert("Por favor selecciona un archivo PDF.");
-    }
-});
+    input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
 
-// Mostrar PDFs previamente subidos
-window.addEventListener("load", function() {
-    const anuncios = JSON.parse(localStorage.getItem("anuncios")) || [];
-    if(anuncios.length > 0) {
-        pdfContainer.innerHTML = anuncios.map(a => `<iframe src="${a.url}"></iframe>`).join("<br><br>");
-    }
+        let descripcion = "";
+
+        const agregarDesc = confirm("¿Desea agregar una pequeña descripción?");
+        if (agregarDesc) {
+            descripcion = prompt("Ingrese la descripción (opcional):") || "";
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const archivoBase64 = e.target.result;
+
+            await push(ref(db, "anuncios"), {
+                nombre: file.name,
+                tipo: file.type,
+                descripcion: descripcion,
+                data: archivoBase64,
+                fecha: new Date().toISOString()
+            });
+
+            alert("Archivo subido correctamente.");
+        };
+
+        reader.readAsDataURL(file);
+    };
+
+    input.click();
+}
+
+// === MOSTRAR ANUNCIOS ===
+const lista = document.getElementById("listaAnuncios");
+
+onValue(ref(db, "anuncios"), snapshot => {
+    lista.innerHTML = "";
+    const datos = snapshot.val();
+    if (!datos) return;
+
+    const claves = Object.keys(datos).reverse(); // lo más nuevo arriba
+
+    claves.forEach(id => {
+        const item = datos[id];
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        // Descripción
+        if (item.descripcion) {
+            const p = document.createElement("p");
+            p.innerText = item.descripcion;
+            p.style.fontSize = "18px";
+            p.style.fontWeight = "bold";
+            p.style.marginBottom = "10px";
+            card.appendChild(p);
+        }
+
+        // Mostrar archivo según tipo
+        if (item.tipo.includes("pdf")) {
+            const iframe = document.createElement("iframe");
+            iframe.src = item.data;
+            iframe.className = "pdf-viewer";
+            card.appendChild(iframe);
+
+        } else if (item.tipo.includes("image")) {
+            const img = document.createElement("img");
+            img.src = item.data;
+            img.className = "image-view";
+            card.appendChild(img);
+
+        } else {
+            const btn = document.createElement("button");
+            btn.innerText = "Abrir archivo";
+            btn.onclick = () => window.open(item.data, "_blank");
+            btn.style.padding = "10px 15px";
+            btn.style.borderRadius = "10px";
+            btn.style.border = "none";
+            btn.style.background = "#1a4b27";
+            btn.style.color = "white";
+            btn.style.fontSize = "16px";
+            btn.style.cursor = "pointer";
+            card.appendChild(btn);
+        }
+
+        lista.appendChild(card);
+    });
 });
 </script>
 
