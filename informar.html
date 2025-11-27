@@ -24,20 +24,17 @@
 
 <div class="container">
 
-  <!-- PANTALLA TERRITORIOS -->
   <div id="pantallaTerritorios">
     <h3>Seleccione un territorio</h3>
     <div class="grid" id="tarjetas"></div>
   </div>
 
-  <!-- PANTALLA MANZANAS -->
   <div id="pantallaManzanas" style="display:none;">
     <button id="volverTerr" class="small-btn">⬅ Volver</button>
     <div id="manzanasArea"></div>
     <button id="irFormulario">Continuar</button>
   </div>
 
-  <!-- PANTALLA FORMULARIO -->
   <div id="pantallaFormulario" style="display:none;">
     <button id="volverManz" class="small-btn">⬅ Volver</button>
     <input id="conductor" placeholder="Conductor" autocomplete="off">
@@ -47,15 +44,9 @@
 
 </div>
 
-<!-- ======= SCRIPT PRINCIPAL (usa tu firebase.js exportado) ======= -->
 <script type="module">
-/*
-  Este módulo importa db, ref, push y set desde tu firebase.js (el que me pasaste).
-  Asegurate de tener firebase.js en la misma carpeta y que exporte: db, ref, push, set, onValue si luego lo usás.
-*/
 import { db, ref, push, set } from "./firebase.js";
 
-/* ======= TERRITORIOS ======= */
 const territorios = [
   {numero:1,manzanas:4},{numero:2,manzanas:4},{numero:3,manzanas:4},{numero:4,manzanas:5},
   {numero:5,manzanas:8},{numero:6,manzanas:6},{numero:7,manzanas:6},{numero:8,manzanas:7},
@@ -67,38 +58,36 @@ const territorios = [
   {numero:29,manzanas:5},{numero:30,manzanas:8},{numero:31,manzanas:8},{numero:32,manzanas:6}
 ];
 
-/* ======= ELEMENTOS ======= */
-const pantallaTerritorios = document.getElementById("pantallaTerritorios");
-const pantallaManzanas   = document.getElementById("pantallaManzanas");
-const pantallaFormulario = document.getElementById("pantallaFormulario");
-
-const tarjetasEl   = document.getElementById("tarjetas");
+// elementos
+const pt = document.getElementById("pantallaTerritorios");
+const pm = document.getElementById("pantallaManzanas");
+const pf = document.getElementById("pantallaFormulario");
+const tarjetasEl = document.getElementById("tarjetas");
 const manzanasArea = document.getElementById("manzanasArea");
-
 const volverTerr = document.getElementById("volverTerr");
 const volverManz = document.getElementById("volverManz");
 const irFormulario = document.getElementById("irFormulario");
 const enviarBtn = document.getElementById("enviar");
-
 const conductorEl = document.getElementById("conductor");
 const obsEl = document.getElementById("observaciones");
 
 let territorioActual = null;
 
-/* ======= FUNCIONES UI ======= */
+// ocultar pantallas
 function ocultarTodo(){
-  pantallaTerritorios.style.display = "none";
-  pantallaManzanas.style.display = "none";
-  pantallaFormulario.style.display = "none";
+  pt.style.display="none";
+  pm.style.display="none";
+  pf.style.display="none";
 }
 
+// render tarjetas
 function renderTarjetas(){
-  tarjetasEl.innerHTML = "";
+  tarjetasEl.innerHTML="";
   territorios.forEach(t=>{
-    const d = document.createElement("div");
-    d.className = "card";
-    d.textContent = `Territorio ${t.numero}`;
-    d.addEventListener("click", ()=> mostrarManzanas(t));
+    const d=document.createElement("div");
+    d.className="card";
+    d.textContent="Territorio "+t.numero;
+    d.onclick=()=>mostrarManzanas(t);
     tarjetasEl.appendChild(d);
   });
 }
@@ -106,98 +95,85 @@ function renderTarjetas(){
 function mostrarManzanas(t){
   territorioActual = t;
   ocultarTodo();
-  pantallaManzanas.style.display = "block";
-  manzanasArea.innerHTML = `<h3>Territorio ${t.numero}</h3>`;
+  pm.style.display="block";
+  manzanasArea.innerHTML=`<h3>Territorio ${t.numero}</h3>`;
   for(let i=0;i<t.manzanas;i++){
-    const letra = String.fromCharCode(65 + i);
-    const el = document.createElement("div");
-    el.className = "manzana";
-    el.innerHTML = `Manzana ${letra} <span>☐</span>`;
-    el.addEventListener("click", ()=>{
-      el.classList.toggle("checked");
-      el.querySelector("span").textContent = el.classList.contains("checked") ? "✓" : "☐";
-    });
-    manzanasArea.appendChild(el);
+    const letra=String.fromCharCode(65+i);
+    const d=document.createElement("div");
+    d.className="manzana";
+    d.innerHTML=`Manzana ${letra} <span>☐</span>`;
+    d.onclick=()=>{
+      d.classList.toggle("checked");
+      d.querySelector("span").textContent=d.classList.contains("checked")?"✓":"☐";
+    };
+    manzanasArea.appendChild(d);
   }
 }
 
-/* ======= EVENTOS BOTONES ======= */
-volverTerr.addEventListener("click", ()=>{
+// navegación
+volverTerr.onclick=()=>{ocultarTodo(); pt.style.display="block";};
+volverManz.onclick=()=>{ocultarTodo(); pm.style.display="block";};
+irFormulario.onclick=()=>{
+  if(!territorioActual){
+    alert("Debe elegir un territorio.");
+    return;
+  }
   ocultarTodo();
-  pantallaTerritorios.style.display = "block";
-});
+  pf.style.display="block";
+};
 
-volverManz.addEventListener("click", ()=>{
-  ocultarTodo();
-  pantallaManzanas.style.display = "block";
-});
-
-irFormulario.addEventListener("click", ()=>{
-  ocultarTodo();
-  pantallaFormulario.style.display = "block";
-});
-
-/* ======= FUNCION ENVIAR REPORTE ======= */
-enviarBtn.addEventListener("click", async ()=>{
-  const conductor = conductorEl.value.trim();
-  if(!conductor){
-    alert("Ingrese el nombre del conductor.");
+// envío
+enviarBtn.onclick=async ()=>{
+  if(!territorioActual){
+    alert("Error interno: no hay territorio seleccionado.");
+    ocultarTodo(); pt.style.display="block";
     return;
   }
 
-  // recolectar manzanas hechas y pendientes (basado solo en la vista actual)
-  const hechas = [];
-  const pendientes = [];
+  const conductor=conductorEl.value.trim();
+  if(!conductor){
+    alert("Ingrese el conductor.");
+    return;
+  }
 
-  document.querySelectorAll(".manzana").forEach(node=>{
-    const text = node.textContent || "";
-    // extrae primera letra tras "Manzana "
-    const letraMatch = text.match(/Manzana\s*([A-Z])/i);
-    const letra = letraMatch ? letraMatch[1] : null;
-    if(!letra) return;
-    if(node.classList.contains("checked")) hechas.push(letra);
+  const hechas=[], pendientes=[];
+  document.querySelectorAll(".manzana").forEach(m=>{
+    const letra=m.innerText.replace("Manzana","").trim().charAt(0);
+    if(m.classList.contains("checked")) hechas.push(letra);
     else pendientes.push(letra);
   });
 
-  const ahora = new Date();
-  const reporte = {
-    territorio: territorioActual ? territorioActual.numero : null,
+  const ahora=new Date();
+  const reporte={
+    territorio:territorioActual.numero,
     conductor,
-    observaciones: obsEl.value.trim() || "",
+    observaciones:obsEl.value.trim(),
     hechas,
     pendientes,
-    fecha: ahora.toLocaleDateString(),
-    hora: ahora.toLocaleTimeString(),
-    ts: ahora.getTime()
+    fecha:ahora.toLocaleDateString(),
+    hora:ahora.toLocaleTimeString(),
+    ts:ahora.getTime()
   };
 
-  try {
-    // guarda en /reportes
-    const rRef = push(ref(db, "reportes"));
-    await set(rRef, reporte);
-
-    // guarda resumen de pendientes por territorio
-    await set(ref(db, `pendientes/territorio_${reporte.territorio}`), {
-      territorio: reporte.territorio,
+  try{
+    await set(push(ref(db,"reportes")),reporte);
+    await set(ref(db,`pendientes/territorio_${reporte.territorio}`),{
+      territorio:reporte.territorio,
       pendientes,
       conductor,
-      ts: ahora.getTime()
+      ts:reporte.ts
     });
 
-    // Si llegó hasta acá, todo ok: redirigir a la pantalla de reportes
-    // (esa pantalla la tenés en index como reportes.html)
-    window.location.href = "reportes.html";
+    // ✅ redirección final
+    window.location.href="reportes.html";
 
-  } catch (err) {
-    // sólo mostrar error en caso real — esto no debe aparecer si Firebase funciona
-    console.error("Error guardando reporte:", err);
-    alert("Ocurrió un error al enviar el informe. Reintente por favor.");
+  }catch(err){
+    console.error(err);
+    alert("Firebase bloquea el guardado. Revisar reglas de la base de datos.");
   }
-});
+};
 
-/* ======= INICIALIZAR ======= */
 renderTarjetas();
-
 </script>
 </body>
 </html>
