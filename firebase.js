@@ -2,18 +2,31 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 
-/* Realtime Database */
+/* =============================
+   REALTIME DATABASE
+   ============================= */
 import { 
-  getDatabase, ref, set, push, update, onValue 
+  getDatabase,
+  ref as dbRef,
+  set,
+  push,
+  update,
+  onValue 
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-/* Storage (si luego lo usás) */
+/* =============================
+   STORAGE
+   ============================= */
 import { 
-  getStorage, ref as sRef, uploadBytes, getDownloadURL, listAll 
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  listAll 
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
 
 /* =============================
-   CONFIGURACIÓN DE TU PROYECTO
+   CONFIGURACIÓN
    ============================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
@@ -26,7 +39,7 @@ const firebaseConfig = {
 };
 
 /* =============================
-   INICIALIZAR FIREBASE
+   INICIALIZAR
    ============================= */
 const app = initializeApp(firebaseConfig);
 
@@ -39,5 +52,16 @@ const storage = getStorage(app);
 /* =============================
    EXPORTAR
    ============================= */
-export { db, ref, set, push, update, onValue };
-export { storage, sRef, uploadBytes, getDownloadURL, listAll };
+export { 
+  db, 
+  dbRef as ref,
+  set, 
+  push, 
+  update, 
+  onValue,
+  storage,
+  storageRef as sRef,
+  uploadBytes,
+  getDownloadURL,
+  listAll
+};
