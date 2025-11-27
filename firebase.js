@@ -1,38 +1,43 @@
-// firebase.js (para toda la app)
+// firebase.js (VERSIÓN ESTABLE PARA GITHUB PAGES)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+
+/* Realtime Database */
 import { 
-    getDatabase, ref, set, push, update, onValue 
+  getDatabase, ref, set, push, update, onValue 
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+
+/* Storage (si luego lo usás) */
 import { 
-    getStorage, ref as sRef, uploadBytes, getDownloadURL, listAll 
+  getStorage, ref as sRef, uploadBytes, getDownloadURL, listAll 
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
 
-// -----------------------------
-// Configuración de tu proyecto
-// -----------------------------
+/* =============================
+   CONFIGURACIÓN DE TU PROYECTO
+   ============================= */
 const firebaseConfig = {
-    apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
-    authDomain: "territorio-3c28d.firebaseapp.com",
-    databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com",
-    projectId: "territorio-3c28d",
-    storageBucket: "territorio-3c28d.appspot.com",
-    messagingSenderId: "170925082008",
-    appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed",
-    measurementId: "G-ZL63C8VN36"
+  apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
+  authDomain: "territorio-3c28d.firebaseapp.com",
+  databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com",
+  projectId: "territorio-3c28d",
+  storageBucket: "territorio-3c28d.appspot.com",
+  messagingSenderId: "170925082008",
+  appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed"
 };
 
-// -----------------------------
-// Inicializar Firebase
-// -----------------------------
+/* =============================
+   INICIALIZAR FIREBASE
+   ============================= */
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+/* =============================
+   SERVICIOS
+   ============================= */
 const db = getDatabase(app);
 const storage = getStorage(app);
 
-// -----------------------------
-// Exportar referencias y funciones útiles
-// -----------------------------
+/* =============================
+   EXPORTAR
+   ============================= */
 export { db, ref, set, push, update, onValue };
 export { storage, sRef, uploadBytes, getDownloadURL, listAll };
