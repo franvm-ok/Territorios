@@ -3,46 +3,63 @@ import { db, ref, onValue } from "./firebase.js";
 
 const lista = document.getElementById("listaPendientes");
 
-// LEEMOS LOS REPORTES YA EXISTENTES
-const reportesRef = ref(db, "reportes");
+try {
 
-onValue(reportesRef, snap => {
-  lista.innerHTML = "";
-  const datos = snap.val();
+  const reportesRef = ref(db, "reportes");
 
-  if (!datos) {
-    lista.innerHTML = "<p style='color:#666'>No hay reportes cargados.</p>";
-    return;
-  }
+  onValue(reportesRef, (snap) => {
+    lista.innerHTML = "";
+    const datos = snap.val();
 
-  let encontrados = 0;
+    if (!datos) {
+      lista.innerHTML = "<p style='color:#666'>No hay reportes cargados.</p>";
+      return;
+    }
 
-  Object.values(datos).forEach(reporte => {
+    let hayPendientes = false;
 
-    // SOLO MOSTRAR LOS QUE TIENEN PENDIENTES
-    if (reporte.pendientes && reporte.pendientes.length > 0) {
+    Object.values(datos).forEach(reporte => {
 
-      encontrados++;
+      if (reporte.pendientes && reporte.pendientes.length > 0) {
 
-      const card = document.createElement("div");
-      card.className = "card";
+        hayPendientes = true;
 
-      card.innerHTML = `
-        <div><strong>Territorio ${reporte.territorio}</strong></div>
-        <div>Pendientes:
-          <span class="pend">${reporte.pendientes.join(", ")}</span>
-        </div>
-        <div>Conductor: ${reporte.conductor || "-"}</div>
-        <div>Fecha: ${reporte.fecha || "-"}</div>
-      `;
+        const card = document.createElement("div");
+        card.className = "card";
 
-      lista.appendChild(card);
+        card.innerHTML = `
+          <div><strong>Territorio ${reporte.territorio || "-"}</strong></div>
+          <div>Pendientes:
+            <span class="pend">${reporte.pendientes.join(", ")}</span>
+          </div>
+          <div>Conductor: ${reporte.conductor || "-"}</div>
+          <div>Fecha: ${reporte.fecha || "-"}</div>
+        `;
+
+        lista.appendChild(card);
+      }
+
+    });
+
+    if (!hayPendientes) {
+      lista.innerHTML = "<p style='color:#666'>No hay territorios pendientes.</p>";
     }
 
   });
 
-  if (encontrados === 0) {
-    lista.innerHTML = "<p style='color:#666'>No hay territorios pendientes.</p>";
-  }
-});
+} catch (e) {
+
+  lista.innerHTML = `
+    <div class="card">
+      <strong>Error de carga</strong><br>
+      No se pudo leer Firebase.<br><br>
+      Revisá:<br>
+      • archivo firebase.js<br>
+      • ruta correcta (./firebase.js)<br>
+      • consola del navegador
+    </div>
+  `;
+
+  console.error("Error en próximas salidas:", e);
+}
 </script>
