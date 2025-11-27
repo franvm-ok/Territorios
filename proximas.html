@@ -31,8 +31,38 @@
 import { db, ref, onValue } from "./firebase.js";
 
 const lista = document.getElementById("listaPendientes");
-
 const pendientesRef = ref(db, "pendientes");
+
+/* ======================
+   FUNCIONES DE FECHA
+====================== */
+
+function formatearFecha(timestamp) {
+  if (!timestamp) return "-";
+  const fecha = new Date(timestamp);
+  return fecha.toLocaleDateString("es-AR") + " " +
+         fecha.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+}
+
+function tiempoTranscurrido(timestamp) {
+  if (!timestamp) return "-";
+
+  const ahora = Date.now();
+  let diferencia = ahora - new Date(timestamp).getTime();
+
+  const minutos = Math.floor(diferencia / 60000);
+  const horas = Math.floor(minutos / 60);
+  const dias = Math.floor(horas / 24);
+
+  if (dias > 0) return `Hace ${dias} día${dias>1?"s":""}`;
+  if (horas > 0) return `Hace ${horas} hora${horas>1?"s":""}`;
+  if (minutos > 0) return `Hace ${minutos} min`;
+  return "Ahora";
+}
+
+/* ======================
+   LECTURA DE FIREBASE
+====================== */
 
 onValue(pendientesRef, snap => {
 
@@ -51,7 +81,12 @@ onValue(pendientesRef, snap => {
     const card = document.createElement("div");
     card.className = "card";
 
-    const listaPend = p.pendientes ? Object.values(p.pendientes).join(", ") : "-";
+    const listaPend = p.pendientes
+      ? Object.values(p.pendientes).join(", ")
+      : "-";
+
+    const fecha = formatearFecha(p.fecha);
+    const tiempo = tiempoTranscurrido(p.fecha);
 
     card.innerHTML = `
       <div><strong>Territorio ${p.territorio}</strong></div>
@@ -59,14 +94,15 @@ onValue(pendientesRef, snap => {
         <span class="pend">${listaPend}</span>
       </div>
       <div>Último conductor: ${p.conductor || "-"}</div>
+      <div><small>📅 Reportado: ${fecha}</small></div>
+      <div><small class="warn">⏱ ${tiempo}</small></div>
     `;
 
     lista.appendChild(card);
-
   });
-
 });
 
 </script>
+
 </body>
 </html>
