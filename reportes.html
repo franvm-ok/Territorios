@@ -32,35 +32,82 @@
 <script type="module">
 import { db, ref, onValue } from "./firebase.js";
 
-const cont = document.getElementById('contenedorReportes');
-const pendCont = document.getElementById('contenedorPendientes');
+const cont = document.getElementById("contenedorReportes");
+const pendCont = document.getElementById("contenedorPendientes");
 
-onValue(ref(db, 'reportes'), snap=>{
-  cont.innerHTML = '';
-  const val = snap.val();
-  if(!val){ cont.innerHTML = '<p style="color:#666">No hay reportes aún.</p>'; return; }
-  const arr = Object.values(val).sort((a,b)=>b.ts - a.ts);
+/* ==== REPORTES ==== */
+onValue(ref(db, "reportes"), snap=>{
+  cont.innerHTML = "";
+
+  if(!snap.exists()){
+    cont.innerHTML = '<p style="color:#666">No hay reportes aún.</p>';
+    return;
+  }
+
+  const arr = [];
+  snap.forEach(x=>{
+    const r = x.val() || {};
+    if(!r.territorio) return;   // descarta basura
+    arr.push(r);
+  });
+
+  if(arr.length === 0){
+    cont.innerHTML = '<p style="color:#666">No hay reportes válidos.</p>';
+    return;
+  }
+
+  arr.sort((a,b)=>(b.ts||0)-(a.ts||0));
+
   arr.forEach(r=>{
-    const d = document.createElement('div'); d.className='card';
-    d.innerHTML = `<h4 style="margin:0 0 8px">Territorio ${r.territorio} — ${r.fecha} ${r.hora}</h4>
-                   <div><strong>Conductor:</strong> ${r.conductor}</div>
-                   <div><strong>Manzanas hechas:</strong> <span class="hechas">${(r.hechas||[]).join(', ')||'-'}</span></div>
-                   <div><strong>Manzanas pendientes:</strong> <span class="pendientes">${(r.pendientes||[]).join(', ')||'-'}</span></div>
-                   <div><strong>Observaciones:</strong> ${r.observaciones||'-'}</div>`;
+    const hechas = Array.isArray(r.hechas) ? r.hechas.join(", ") : "-";
+    const pendientes = Array.isArray(r.pendientes) ? r.pendientes.join(", ") : "-";
+
+    const d = document.createElement("div");
+    d.className = "card";
+    d.innerHTML = `
+      <h4 style="margin:0 0 8px">Territorio ${r.territorio} — ${r.fecha||""} ${r.hora||""}</h4>
+      <div><strong>Conductor:</strong> ${r.conductor||"-"}</div>
+      <div><strong>Manzanas hechas:</strong> <span class="hechas">${hechas || "-"}</span></div>
+      <div><strong>Manzanas pendientes:</strong> <span class="pendientes">${pendientes || "-"}</span></div>
+      <div><strong>Observaciones:</strong> ${r.observaciones || "-"}</div>
+    `;
     cont.appendChild(d);
   });
 });
 
-onValue(ref(db, 'pendientes'), snap=>{
-  pendCont.innerHTML = '';
-  const val = snap.val();
-  if(!val){ pendCont.innerHTML = '<p style="color:#666">No hay pendientes.</p>'; return; }
-  const arr = Object.values(val).sort((a,b)=>a.territorio - b.territorio);
+/* ==== PENDIENTES ==== */
+onValue(ref(db, "pendientes"), snap=>{
+  pendCont.innerHTML = "";
+
+  if(!snap.exists()){
+    pendCont.innerHTML = '<p style="color:#666">No hay pendientes.</p>';
+    return;
+  }
+
+  const arr = [];
+  snap.forEach(x=>{
+    const p = x.val() || {};
+    if(!p.territorio) return;
+    arr.push(p);
+  });
+
+  if(arr.length === 0){
+    pendCont.innerHTML = '<p style="color:#666">No hay pendientes válidos.</p>';
+    return;
+  }
+
+  arr.sort((a,b)=>(a.territorio||99)-(b.territorio||99));
+
   arr.forEach(p=>{
-    const d = document.createElement('div'); d.className='card';
-    d.innerHTML = `<div><strong>Territorio ${p.territorio}</strong></div>
-                   <div>Pendientes: <span class="pendientes">${(p.pendientes||[]).join(', ')||'-'}</span></div>
-                   <div>Último conductor: ${p.conductor||'-'}</div>`;
+    const pendientes = Array.isArray(p.pendientes) ? p.pendientes.join(", ") : "-";
+
+    const d = document.createElement("div");
+    d.className = "card";
+    d.innerHTML = `
+      <div><strong>Territorio ${p.territorio}</strong></div>
+      <div>Pendientes: <span class="pendientes">${pendientes || "-"}</span></div>
+      <div>Último conductor: ${p.conductor||"-"}</div>
+    `;
     pendCont.appendChild(d);
   });
 });
