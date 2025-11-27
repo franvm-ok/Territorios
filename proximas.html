@@ -13,7 +13,6 @@
   .pend{color:#c1121f;font-weight:700}
   .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
   .warn{color:#c1121f;font-weight:bold}
-  .ok{color:green;font-weight:bold}
 </style>
 </head>
 
@@ -22,7 +21,6 @@
 <header>Próximas Salidas</header>
 
 <div class="container">
-  <div id="estado"></div>
   <div id="listaPendientes"></div>
 </div>
 
@@ -30,86 +28,45 @@
 
 <script type="module">
 
-const estado = document.getElementById("estado");
+import { db, ref, onValue } from "./firebase.js";
+
 const lista = document.getElementById("listaPendientes");
 
-estado.innerHTML = "<p>Cargando sistema...</p>";
+const pendientesRef = ref(db, "pendientes");
 
-async function iniciar() {
+onValue(pendientesRef, snap => {
 
-  try {
+  lista.innerHTML = "";
+  const datos = snap.val();
 
-    // CARGA MANUAL DE FIREBASE
-    const firebase = await import("./firebase.js");
-    const { db, ref, onValue } = firebase;
+  if (!datos) {
+    lista.innerHTML = "<p style='color:#666'>No hay pendientes.</p>";
+    return;
+  }
 
-    estado.innerHTML = "<p class='ok'>Firebase conectado ✅</p>";
+  const items = Object.values(datos).sort((a,b)=>a.territorio - b.territorio);
 
-    const reportesRef = ref(db, "reportes");
+  items.forEach(p => {
 
-    onValue(reportesRef, (snap) => {
+    const card = document.createElement("div");
+    card.className = "card";
 
-      lista.innerHTML = "";
-      const datos = snap.val();
+    const listaPend = p.pendientes ? Object.values(p.pendientes).join(", ") : "-";
 
-      if (!datos) {
-        lista.innerHTML = "<p>No hay reportes aún.</p>";
-        return;
-      }
-
-      let hay = false;
-
-      Object.values(datos).forEach(r => {
-
-        if (r.pendientes && r.pendientes.length > 0) {
-
-          hay = true;
-
-          const card = document.createElement("div");
-          card.className = "card";
-
-          card.innerHTML = `
-            <div><strong>Territorio ${r.territorio || "-"}</strong></div>
-            <div>Pendientes: 
-              <span class="pend">${r.pendientes.join(", ")}</span>
-            </div>
-            <div>Conductor: ${r.conductor || "-"}</div>
-            <div>Fecha: ${r.fecha || "-"}</div>
-          `;
-
-          lista.appendChild(card);
-        }
-
-      });
-
-      if (!hay) {
-        lista.innerHTML = "<p>No hay territorios pendientes.</p>";
-      }
-
-    });
-
-  } catch (err) {
-
-    // ERROR VISIBLE
-    estado.innerHTML = `
-      <p class="warn">❌ Error cargando Firebase</p>
-      <p>${err.message}</p>
-      <p>Revisá que:</p>
-      <ul>
-        <li>firebase.js esté en la misma carpeta</li>
-        <li>el nombre esté bien escrito</li>
-        <li>estés en GitHub Pages, no local</li>
-      </ul>
+    card.innerHTML = `
+      <div><strong>Territorio ${p.territorio}</strong></div>
+      <div>Pendientes:
+        <span class="pend">${listaPend}</span>
+      </div>
+      <div>Último conductor: ${p.conductor || "-"}</div>
     `;
 
-    console.error("Error:", err);
+    lista.appendChild(card);
 
-  }
-}
+  });
 
-iniciar();
+});
 
 </script>
-
 </body>
 </html>
