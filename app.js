@@ -1,39 +1,18 @@
-/* app.js - Lógica de la app: Firebase, territorios, manzanas, guardado local, WhatsApp, UI */
+// app.js - Lógica de la app: Firebase (modular), territorios, manzanas, guardado local, WhatsApp, UI
+// Reemplaza completamente tu app.js por este archivo.
+
+// IMPORTS (usa tu firebase.js modular)
+import { db, ref, push, set, onValue } from "./firebase.js";
 
 /*******************************
- * CONFIG - Firebase (User's)
- *******************************/
-const firebaseConfig = {
-  apiKey: "AIzaSyAbAnz0hAHwttGtoDPjSzSgiJ9HP1wz-YY",
-  authDomain: "territorio-3c28d.firebaseapp.com",
-  databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com/",
-  projectId: "territorio-3c28d",
-  storageBucket: "territorio-3c28d.appspot.com",
-  messagingSenderId: "369901367983",
-  appId: "1:369901367983:web:33237b1b5661b82023a763"
-};
-
-let dbRef = null;
-try {
-  firebase.initializeApp(firebaseConfig);
-  const database = firebase.database();
-  dbRef = database.ref('reportes');
-  document.getElementById('connectionState').innerText = 'Conexión: conectado';
-  showToast('Firebase conectado');
-} catch (e) {
-  console.warn('Firebase init failed:', e);
-  document.getElementById('connectionState').innerText = 'Conexión: error';
-  showToast('Modo local (sin Firebase)');
-}
-
-/*******************************
- * TERRITORIOS MAP (manzanas per territory)
+ * TERRITORIOS MAP (manzanas por territorio - corregido)
+ * (Usé la lista completa que venías usando antes)
  *******************************/
 const territoryMap = {
-  1:4,2:4,3:4,4:5,5:8,6:4,7:4,8:4,
-  9:4,10:5,11:4,12:4,13:4,14:4,15:4,16:4,
-  17:4,18:4,19:4,20:4,21:4,22:4,23:4,24:4,
-  25:4,26:4,27:4,28:4,29:4,30:4,31:4,32:4
+  1:4,2:4,3:4,4:5,5:8,6:6,7:6,8:7,
+  9:9,10:9,11:5,12:6,13:9,14:6,15:5,16:7,
+  17:7,18:6,19:6,20:7,21:8,22:6,23:6,24:5,
+  25:6,26:7,27:7,28:6,29:5,30:8,31:8,32:6
 };
 
 /*******************************
@@ -41,13 +20,28 @@ const territoryMap = {
  *******************************/
 let selectedTerritory = null;
 let selectedManzanas = new Set();
-let reports = {}; // in-memory
+let reports = {}; // cache local/in-memory
+
+/*******************************
+ * DOM helpers (guards)
+ *******************************/
+const $ = id => document.getElementById(id) || null;
+
+function safeAddEvent(id, ev, fn){
+  const el = $(id);
+  if(el) el.addEventListener(ev, fn);
+}
 
 /*******************************
  * UI helpers
  *******************************/
 function showToast(msg, time=2500){
-  const t = document.getElementById('toast');
+  const t = $('toast');
+  if(!t) {
+    // fallback: console + alertless ephemeral
+    console.log('toast:', msg);
+    return;
+  }
   t.innerText = msg;
   t.style.display = 'block';
   clearTimeout(t._hideTimer);
@@ -60,82 +54,89 @@ function formatDateISO(ts){
 }
 
 /*******************************
- * Render cards grid
+ * Cards Grid render
  *******************************/
-const cardsGrid = document.getElementById('cardsGrid');
+const cardsGrid = $('cardsGrid');
+
 function renderCards(){
+  if(!cardsGrid) return;
   cardsGrid.innerHTML = '';
-  // Insert special cards first
+
+  // special action cards (placed first)
   const specials = [
     {title:'Mapa Interactivo', icon:'🗺️', action:()=> openNewScreenForTerritory(1)},
-    {title:'Nuevo Reporte', icon:'✍️', action:()=> { showToast('Elegí un territorio en Inicio'); }},
+    {title:'Nuevo Reporte', icon:'✍️', action:()=> showToast('Elegí un territorio en Inicio y presioná +')},
     {title:'Tablero de Anuncios', icon:'📣', action:()=> navigateTo('reportsScreen')},
     {title:'Reportes', icon:'📓', action:()=> navigateTo('reportsScreen')},
     {title:'Sugerencia próximas salidas', icon:'📅', action:()=> navigateTo('reportsScreen')}
   ];
-  for(let i=specials.length-1;i>=0;i--){
-    const s = specials[i];
+
+  for(const s of specials){
     const el = document.createElement('div');
     el.className = 'card';
-    el.innerHTML = `<div class="icon-wrap" style="background:#f3faf6; color:var(--green-500);">${s.icon}</div><div class="h">${s.title}</div>`;
+    el.innerHTML = `<div class="icon-wrap" style="background:#f3faf6; color:var(--green-500);">${s.icon}</div>
+                    <div class="h">${s.title}</div>`;
     el.addEventListener('click', s.action);
-    cardsGrid.insertBefore(el, cardsGrid.firstChild);
+    cardsGrid.appendChild(el);
   }
 
+  // territories
   Object.keys(territoryMap).forEach(k=>{
     const n = Number(k);
     const card = document.createElement('div');
     card.className = 'card';
-    if(n===1) card.innerHTML = `<div class="icon-wrap" style="background:linear-gradient(135deg,var(--green-400),var(--green-500)); color:white; font-size:22px;">📍</div><div class="h">Mapa Interactivo</div>`;
-    else card.innerHTML = `<div class="icon-wrap" style="background:#f3faf6; color:var(--green-500); font-size:22px;">${n}</div><div class="h">Territorio ${n}</div><div class="muted" style="margin-top:6px;">${territoryMap[n]} manzanas</div>`;
-    card.addEventListener('click', ()=> {
-      // single click selects; double click opens the form - implemented in attachSelectionBehavior
-      // also opening directly (for simplicity) will open form for this territory:
-      // openNewScreenForTerritory(n);
-      // (we rely on selection behavior below)
-    });
+    card.dataset.territorio = String(n);
+    const iconHtml = `<div class="icon-wrap" style="${n===1 ? 'background:linear-gradient(135deg,#9be7c7,#16a34a); color:white; font-size:22px;' : 'background:#f3faf6; color:var(--green-500); font-size:22px;'}">${n===1 ? '📍' : n}</div>`;
+    card.innerHTML = `${iconHtml}<div class="h">${n===1 ? 'Mapa Interactivo' : 'Territorio ' + n}</div><div class="muted" style="margin-top:6px;">${territoryMap[n]} manzanas</div>`;
     cardsGrid.appendChild(card);
   });
 }
 
 /*******************************
- * OPEN NEW SCREEN (manzanas)
+ * Open new screen (manzanas)
  *******************************/
-const newScreen = document.getElementById('newScreen');
-const homeScreen = document.getElementById('homeScreen');
 function openNewScreenForTerritory(n){
   selectedTerritory = n;
   selectedManzanas = new Set();
-  document.getElementById('newTitle').innerText = `Territorio ${n}`;
-  const wrap = document.getElementById('manzanasWrap');
+  const newTitle = $('newTitle');
+  const wrap = $('manzanasWrap');
+  if(newTitle) newTitle.innerText = `Territorio ${n}`;
+  if(!wrap){ showToast('Interfaz parcial: falta manzanasWrap'); return; }
   wrap.innerHTML = '';
+
   const count = territoryMap[n] || 4;
   for(let i=0;i<count;i++){
-    const label = String.fromCharCode(65+i);
-    const b = document.createElement('button');
-    b.className = 'manzana';
-    b.innerText = label;
-    b.addEventListener('click', ()=>{
-      if(selectedManzanas.has(label)){ selectedManzanas.delete(label); b.classList.remove('selected'); }
-      else { selectedManzanas.add(label); b.classList.add('selected'); }
+    const letra = String.fromCharCode(65 + i);
+    const btn = document.createElement('button');
+    btn.className = 'manzana';
+    btn.type = 'button';
+    btn.innerText = letra;
+    btn.addEventListener('click', ()=>{
+      if(selectedManzanas.has(letra)){
+        selectedManzanas.delete(letra);
+        btn.classList.remove('selected');
+      } else {
+        selectedManzanas.add(letra);
+        btn.classList.add('selected');
+      }
     });
-    wrap.appendChild(b);
+    wrap.appendChild(btn);
   }
-  navigateTo('newScreen', { animation: 'slideIn' });
+
+  navigateTo('newScreen', {animation:'slideIn'});
 }
 
 /*******************************
- * Navigation with iOS animations (option A)
+ * Navigation helper
  *******************************/
 function navigateTo(screenId, opts = {}){
   const screens = ['homeScreen','newScreen','reportsScreen','helpScreen','profileScreen'];
-  screens.forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
+  for(const id of screens){
+    const el = $(id);
+    if(!el) continue;
     if(id === screenId){
       el.classList.remove('hidden');
       el.setAttribute('aria-hidden','false');
-      // animation: slide in from right
       el.style.transform = 'translateX(10px)';
       el.style.opacity = '0';
       requestAnimationFrame(()=>{
@@ -143,9 +144,8 @@ function navigateTo(screenId, opts = {}){
         el.style.transform = 'translateX(0)';
         el.style.opacity = '1';
       });
-      setTimeout(()=>{ el.style.transition = ''; el.style.transform=''; el.style.opacity=''; }, 320);
+      setTimeout(()=>{ el.style.transition=''; el.style.transform=''; el.style.opacity=''; }, 320);
     } else {
-      // animate out
       if(!el.classList.contains('hidden')){
         el.style.transition = 'transform .22s ease, opacity .18s ease';
         el.style.transform = 'translateX(-8px)';
@@ -156,59 +156,46 @@ function navigateTo(screenId, opts = {}){
         el.setAttribute('aria-hidden','true');
       }
     }
-  });
-  const s = document.getElementById('settingsMenu'); if(s) s.style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  const s = $('settingsMenu'); if(s) s.style.display = 'none';
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
-/* Back from new */
-document.getElementById('backFromNew').addEventListener('click', ()=>{
+/* Back from New */
+safeAddEvent('backFromNew','click', ()=>{
   navigateTo('homeScreen');
   selectedTerritory = null;
   selectedManzanas = new Set();
 });
 
-/* nav click wiring */
-document.querySelectorAll('.nav').forEach(btn=>{
-  btn.addEventListener('click', ()=> {
-    const nav = btn.getAttribute('data-nav');
-    if(nav) navigateTo(nav + 'Screen');
-  });
-});
-document.querySelectorAll('.pc-nav').forEach(btn=>{
-  btn.addEventListener('click', ()=> {
-    const nav = btn.getAttribute('data-nav');
-    if(nav) navigateTo(nav + 'Screen');
-  });
-});
-document.querySelectorAll('[data-mobile]').forEach(btn=>{
-  btn.addEventListener('click', ()=> {
-    const t = btn.getAttribute('data-mobile');
-    if(t) navigateTo(t + 'Screen');
-  });
-});
-
-/* fab */
-document.getElementById('pcFab').addEventListener('click', ()=> {
-  if(!selectedTerritory) { showToast('Elegí primero un territorio en Inicio'); return; }
+/*******************************
+ * FAB wiring (guards)
+ *******************************/
+safeAddEvent('pcFab','click', ()=> {
+  if(!selectedTerritory){ showToast('Elegí primero un territorio en Inicio'); return; }
   openNewScreenForTerritory(selectedTerritory);
 });
-const fabMobile = document.getElementById('fabMobile');
+
+const fabMobile = $('fabMobile');
 if(fabMobile) fabMobile.addEventListener('click', ()=> {
-  if(!selectedTerritory) { showToast('Elegí primero un territorio en Inicio'); return; }
+  if(!selectedTerritory){ showToast('Elegí primero un territorio en Inicio'); return; }
   openNewScreenForTerritory(selectedTerritory);
 });
 
 /*******************************
  * Save report (firebase/local) + WhatsApp
  *******************************/
-document.getElementById('saveAndSend').addEventListener('click', async ()=>{
+safeAddEvent('saveAndSend','click', async ()=>{
   if(!selectedTerritory){ showToast('No hay territorio seleccionado'); return; }
   if(selectedManzanas.size === 0){ showToast('Tildá al menos una manzana'); return; }
-  const conductor = document.getElementById('conductorInput').value.trim();
+  const conductorInput = $('conductorInput');
+  const obsInput = $('obsInput');
+  const incompleteEl = $('incompleteFace');
+  const conductor = conductorInput ? conductorInput.value.trim() : '';
   if(!conductor){ showToast('Ingresá el nombre del conductor'); return; }
-  const obs = document.getElementById('obsInput').value.trim();
-  const incomplete = document.getElementById('incompleteFace').checked;
+  const obs = obsInput ? obsInput.value.trim() : '';
+  const incomplete = !!(incompleteEl && incompleteEl.checked);
+
   const payload = {
     territory: selectedTerritory,
     manzanas: Array.from(selectedManzanas).sort(),
@@ -218,47 +205,61 @@ document.getElementById('saveAndSend').addEventListener('click', async ()=>{
     timestamp: new Date().toISOString()
   };
 
+  // try remote then local fallback
   try {
-    if(dbRef) {
-      await dbRef.push(payload);
-    } else throw new Error('db not initialized');
-    showToast('Reporte guardado (sincronizado)');
+    if(db){
+      const rRef = push(ref(db, 'reportes'));
+      await set(rRef, payload);
+      // also update pendientes summary
+      const pendRef = ref(db, `pendientes/territorio_${payload.territory}`);
+      await set(pendRef, { territorio: payload.territory, pendientes: payload.manzanas, conductor, ts: Date.now() });
+      showToast('Reporte guardado (sincronizado)');
+    } else {
+      throw new Error('db not available');
+    }
   } catch(e){
+    console.warn('Remote save failed, saving local', e);
     localSave(payload);
     showToast('Guardado local (sin conexión)');
-    console.warn(e);
   }
 
+  // always save local copy as well
   localSave(payload);
+
+  // send whatsapp
   sendWhatsApp(payload);
 
-  document.getElementById('conductorInput').value = '';
-  document.getElementById('obsInput').value = '';
-  document.getElementById('incompleteFace').checked = false;
+  // reset form
+  if(conductorInput) conductorInput.value = '';
+  if(obsInput) obsInput.value = '';
+  if(incompleteEl) incompleteEl.checked = false;
   selectedManzanas = new Set();
-  navigateTo('homeScreen');
+
+  navigateTo('reportsScreen'); // after sending, go to reports
 });
 
-document.getElementById('saveLocal').addEventListener('click', ()=>{
+/* Save local only */
+safeAddEvent('saveLocal','click', ()=>{
   if(!selectedTerritory){ showToast('No hay territorio seleccionado'); return; }
   if(selectedManzanas.size === 0){ showToast('Tildá al menos una manzana'); return; }
-  const conductor = document.getElementById('conductorInput').value.trim();
+  const conductorInput = $('conductorInput');
+  const obsInput = $('obsInput');
+  const incompleteEl = $('incompleteFace');
+  const conductor = conductorInput ? conductorInput.value.trim() : '';
   if(!conductor){ showToast('Ingresá el nombre del conductor'); return; }
-  const obs = document.getElementById('obsInput').value.trim();
-  const incomplete = document.getElementById('incompleteFace').checked;
   const payload = {
     territory: selectedTerritory,
     manzanas: Array.from(selectedManzanas).sort(),
     conductor,
-    observation: obs,
-    incompleteFace: incomplete,
+    observation: obsInput ? obsInput.value.trim() : '',
+    incompleteFace: !!(incompleteEl && incompleteEl.checked),
     timestamp: new Date().toISOString()
   };
   localSave(payload);
   showToast('Guardado local');
-  document.getElementById('conductorInput').value = '';
-  document.getElementById('obsInput').value = '';
-  document.getElementById('incompleteFace').checked = false;
+  if(conductorInput) conductorInput.value = '';
+  if(obsInput) obsInput.value = '';
+  if(incompleteEl) incompleteEl.checked = false;
   selectedManzanas = new Set();
   navigateTo('homeScreen');
 });
@@ -266,63 +267,82 @@ document.getElementById('saveLocal').addEventListener('click', ()=>{
 /*******************************
  * Local persistence
  *******************************/
+const LOCAL_KEY = 'territorios_reports_v2';
 function localSave(payload){
-  const key = 'territorios_reports_v2';
-  const raw = localStorage.getItem(key);
-  const obj = raw ? JSON.parse(raw) : {};
+  let obj = {};
+  try { obj = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}'); } catch(e){ obj = {}; }
   const id = 'local_' + Date.now() + '_' + Math.floor(Math.random()*9999);
   obj[id] = payload;
-  localStorage.setItem(key, JSON.stringify(obj));
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(obj));
   reports[id] = payload;
   renderReportsList();
   return id;
 }
 function localLoadAll(){
-  const raw = localStorage.getItem('territorios_reports_v2');
-  if(!raw) return {};
-  try{ return JSON.parse(raw); }catch(e){ return {}; }
+  try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}'); } catch(e){ return {}; }
 }
 
 /*******************************
  * Render reports list (realtime merged)
  *******************************/
 function renderReportsList(){
-  const listWrap = document.getElementById('reportsList');
+  const listWrap = $('reportsList');
+  if(!listWrap) return;
   listWrap.innerHTML = '';
-  const merged = Object.assign({}, reports, localLoadAll());
+
+  // merged remote + local
+  const local = localLoadAll();
+  const merged = Object.assign({}, reports || {}, local || {});
   const keys = Object.keys(merged).sort((a,b)=> new Date(merged[b].timestamp) - new Date(merged[a].timestamp));
-  document.getElementById('reportsCount').innerText = keys.length;
+  const countEl = $('reportsCount');
+  if(countEl) countEl.innerText = keys.length;
+
   keys.forEach(k=>{
     const r = merged[k];
     const card = document.createElement('div');
-    card.style.background = 'var(--card)';
+    card.style.background = 'var(--card, #fff)';
     card.style.borderRadius = '12px';
     card.style.padding = '12px';
     card.style.display = 'flex';
     card.style.justifyContent = 'space-between';
     card.style.alignItems = 'flex-start';
     card.style.boxShadow = '0 6px 18px rgba(8,22,18,0.04)';
-    card.innerHTML = `<div>
-        <div style="font-weight:700">Territorio ${r.territory} — ${r.manzanas.join(', ')}</div>
-        <div style="color:#475569; margin-top:6px">${r.conductor} • ${new Date(r.timestamp).toLocaleString()}</div>
+
+    const leftHtml = `<div>
+        <div style="font-weight:700">Territorio ${r.territory} — ${Array.isArray(r.manzanas) ? r.manzanas.join(', ') : ''}</div>
+        <div style="color:#475569; margin-top:6px">${r.conductor || ''} • ${new Date(r.timestamp).toLocaleString()}</div>
         <div style="margin-top:6px; color:#64748b">${r.observation || ''}</div>
-      </div>
-      <div style="text-align:right">
-        <div>${r.incompleteFace ? '<span style="color:#e11d48;font-weight:700">Cara incompleta</span>' : '<span style="color:#10b981;font-weight:700">Completo</span>'}</div>
-        <div style="margin-top:8px"><button class="btn btn-ghost" onclick='openReportDetails("${k}")'>Ver</button></div>
       </div>`;
+
+    const statusHtml = r.incompleteFace ? `<span style="color:#e11d48;font-weight:700">Cara incompleta</span>` : `<span style="color:#10b981;font-weight:700">Completo</span>`;
+    const rightHtml = `<div style="text-align:right">
+        <div>${statusHtml}</div>
+        <div style="margin-top:8px"><button class="btn btn-ghost" data-report-id="${k}">Ver</button></div>
+      </div>`;
+
+    card.innerHTML = leftHtml + rightHtml;
     listWrap.appendChild(card);
+
+    // attach view button
+    const btn = card.querySelector('button[data-report-id]');
+    if(btn) btn.addEventListener('click', ()=> openReportDetails(k));
   });
 }
+
+/*******************************
+ * Open report details (new window)
+ *******************************/
 function openReportDetails(id){
   const merged = Object.assign({}, reports, localLoadAll());
   const r = merged[id];
   if(!r){ showToast('Reporte no encontrado'); return; }
   const w = window.open('', '_blank');
+  if(!w) { showToast('Permitir ventanas emergentes para ver detalles'); return; }
+  w.document.title = `Reporte Terr ${r.territory}`;
   w.document.body.style.fontFamily = '-apple-system, Inter, Arial, sans-serif';
   w.document.body.innerHTML = `<div style="padding:16px">
     <h2>Reporte — Territorio ${r.territory}</h2>
-    <p><strong>Manzanas:</strong> ${r.manzanas.join(', ')}</p>
+    <p><strong>Manzanas:</strong> ${Array.isArray(r.manzanas) ? r.manzanas.join(', ') : '-'}</p>
     <p><strong>Conductor:</strong> ${r.conductor}</p>
     <p><strong>Observación:</strong> ${r.observation || '—'}</p>
     <p><strong>Cara incompleta:</strong> ${r.incompleteFace ? 'Sí' : 'No'}</p>
@@ -338,7 +358,7 @@ function sendWhatsApp(payload){
   const d = new Date(payload.timestamp);
   const text = `Nuevo reporte de predicación:
 Territorio: ${payload.territory}
-Manzanas: ${payload.manzanas.join(', ')}
+Manzanas: ${Array.isArray(payload.manzanas) ? payload.manzanas.join(', ') : ''}
 Conductor: ${payload.conductor}
 Observación: ${payload.observation || '-'}
 Cara incompleta: ${payload.incompleteFace ? 'Sí' : 'No'}
@@ -348,126 +368,136 @@ Fecha: ${d.toLocaleString()}`;
 }
 
 /*******************************
- * Firebase realtime listeners
+ * Firebase realtime listeners (modular)
  *******************************/
-if(dbRef){
-  dbRef.on('value', snapshot=>{
-    const val = snapshot.val() || {};
-    reports = {};
-    Object.keys(val).forEach(k=> reports[k] = val[k]);
+if(db){
+  try{
+    const reportRef = ref(db, 'reportes');
+    onValue(reportRef, snapshot=>{
+      const val = snapshot.val() || {};
+      reports = {};
+      Object.keys(val).forEach(k => { reports[k] = val[k]; });
+      renderReportsList();
+    });
+  }catch(e){
+    console.warn('Firebase listener failed', e);
+    // fallback to local
+    const local = localLoadAll();
+    Object.keys(local).forEach(k=> reports[k] = local[k]);
     renderReportsList();
-  });
+  }
 } else {
+  // no db: load local
   const local = localLoadAll();
   Object.keys(local).forEach(k=> reports[k] = local[k]);
   renderReportsList();
 }
 
 /*******************************
- * Initial UI wiring + selection behavior
+ * Initial wiring
  *******************************/
-renderCards();
-renderReportsList();
+(function init(){
+  renderCards();
+  renderReportsList();
 
-document.getElementById('settingsBtn').addEventListener('click', ()=>{
-  const m = document.getElementById('settingsMenu');
-  if(!m) return;
-  m.style.display = (m.style.display === 'block') ? 'none' : 'block';
-});
-document.getElementById('darkToggle').addEventListener('change', (e)=>{
-  if(e.target.checked) document.body.classList.add('dark');
-  else document.body.classList.remove('dark');
-});
-document.getElementById('searchInput').addEventListener('input', (e)=>{
-  const q = e.target.value.trim().toLowerCase();
-  if(!q){ renderReportsList(); return; }
-  const merged = Object.assign({}, reports, localLoadAll());
-  const filteredKeys = Object.keys(merged).filter(k=>{
-    const r = merged[k];
-    return (String(r.territory).toLowerCase().includes(q) || (r.conductor||'').toLowerCase().includes(q) || (r.observation||'').toLowerCase().includes(q));
+  // settings button
+  safeAddEvent('settingsBtn','click', ()=>{
+    const m = $('settingsMenu');
+    if(!m) return;
+    m.style.display = (m.style.display === 'block') ? 'none' : 'block';
   });
-  const listWrap = document.getElementById('reportsList');
-  listWrap.innerHTML = '';
-  filteredKeys.sort((a,b)=> new Date(merged[b].timestamp) - new Date(merged[a].timestamp)).forEach(k=>{
-    const r = merged[k];
-    const card = document.createElement('div');
-    card.style.background = 'var(--card)'; card.style.borderRadius='12px'; card.style.padding='12px';
-    card.style.display='flex'; card.style.justifyContent='space-between'; card.style.alignItems='flex-start';
-    card.style.boxShadow='0 6px 18px rgba(8,22,18,0.04)';
-    card.innerHTML = `<div>
-        <div style="font-weight:700">Territorio ${r.territory} — ${r.manzanas.join(', ')}</div>
-        <div style="color:#475569; margin-top:6px">${r.conductor} • ${new Date(r.timestamp).toLocaleString()}</div>
-        <div style="margin-top:6px; color:#64748b">${r.observation || ''}</div>
-      </div>
-      <div style="text-align:right">
-        <div>${r.incompleteFace ? '<span style="color:#e11d48;font-weight:700">Cara incompleta</span>' : '<span style="color:#10b981;font-weight:700">Completo</span>'}</div>
-        <div style="margin-top:8px"><button class="btn btn-ghost" onclick='openReportDetails("${k}")'>Ver</button></div>
-      </div>`;
-    listWrap.appendChild(card);
-  });
-});
 
-/* mobile nav wiring */
-document.querySelectorAll('.mobile-bottom .nav-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const nav = btn.getAttribute('data-mobile');
-    if(nav) navigateTo(nav + 'Screen');
+  // dark toggle
+  const darkToggle = $('darkToggle');
+  if(darkToggle) darkToggle.addEventListener('change', (e)=>{
+    document.body.classList.toggle('dark', e.target.checked);
   });
-});
 
-/* clicking brand to home */
-document.querySelectorAll('.brand').forEach(b=> b.addEventListener('click', ()=> navigateTo('homeScreen')));
+  // search input
+  const searchInput = $('searchInput');
+  if(searchInput){
+    searchInput.addEventListener('input', (e)=>{
+      const q = e.target.value.trim().toLowerCase();
+      if(!q){ renderReportsList(); return; }
+      const merged = Object.assign({}, reports, localLoadAll());
+      const filteredKeys = Object.keys(merged).filter(k=>{
+        const r = merged[k];
+        return (String(r.territory).toLowerCase().includes(q) || (r.conductor||'').toLowerCase().includes(q) || (r.observation||'').toLowerCase().includes(q));
+      });
+      const listWrap = $('reportsList');
+      if(!listWrap) return;
+      listWrap.innerHTML = '';
+      filteredKeys.sort((a,b)=> new Date(merged[b].timestamp) - new Date(merged[a].timestamp)).forEach(k=>{
+        const r = merged[k];
+        // create simplified card (reuse render logic minimal)
+        const card = document.createElement('div');
+        card.style.background = 'var(--card, #fff)'; card.style.borderRadius='12px'; card.style.padding='12px';
+        card.style.display='flex'; card.style.justifyContent='space-between'; card.style.alignItems='flex-start';
+        card.style.boxShadow='0 6px 18px rgba(8,22,18,0.04)';
+        card.innerHTML = `<div>
+            <div style="font-weight:700">Territorio ${r.territory} — ${Array.isArray(r.manzanas) ? r.manzanas.join(', ') : ''}</div>
+            <div style="color:#475569; margin-top:6px">${r.conductor} • ${new Date(r.timestamp).toLocaleString()}</div>
+            <div style="margin-top:6px; color:#64748b">${r.observation || ''}</div>
+          </div>
+          <div style="text-align:right">
+            <div>${r.incompleteFace ? '<span style="color:#e11d48;font-weight:700">Cara incompleta</span>' : '<span style="color:#10b981;font-weight:700">Completo</span>'}</div>
+            <div style="margin-top:8px"><button class="btn btn-ghost">Ver</button></div>
+          </div>`;
+        listWrap.appendChild(card);
+      });
+    });
+  }
 
-/* selection behavior: single click selects, double click opens form */
-(function attachSelectionBehavior(){
-  const cardClickState = {};
-  cardsGrid.addEventListener('click', (ev)=>{
-    let el = ev.target;
-    while(el && !el.classList.contains('card')) el = el.parentElement;
-    if(!el) return;
-    const txt = el.innerText || '';
-    const match = txt.match(/Territorio\s*(\d+)/i) || txt.match(/^(\d+)/);
-    let n = null;
-    if(match) n = Number(match[1]);
-    if(!n) return;
-    const now = Date.now();
-    if(cardClickState[n] && (now - cardClickState[n] < 420)){
-      openNewScreenForTerritory(n);
-      cardClickState[n] = 0;
-    } else {
-      selectedTerritory = n;
-      highlightSelectedTerritory(n);
-      showToast(`Territorio ${n} seleccionado. Presioná + para reportar.`);
-      cardClickState[n] = now;
-    }
+  // selection behavior on cards (single click select, double click open)
+  if(cardsGrid){
+    const cardClickState = {};
+    cardsGrid.addEventListener('click', (ev)=>{
+      let el = ev.target;
+      while(el && !el.classList.contains('card')) el = el.parentElement;
+      if(!el) return;
+      const nAttr = el.dataset.territorio;
+      const match = nAttr ? Number(nAttr) : null;
+      if(!match) return;
+      const n = match;
+      const now = Date.now();
+      if(cardClickState[n] && (now - cardClickState[n] < 420)){
+        openNewScreenForTerritory(n);
+        cardClickState[n] = 0;
+      } else {
+        selectedTerritory = n;
+        highlightSelectedTerritory(n);
+        showToast(`Territorio ${n} seleccionado. Presioná + para reportar.`);
+        cardClickState[n] = now;
+      }
+    });
+  }
+
+  // mobile nav wiring (if exists)
+  document.querySelectorAll('.mobile-bottom .nav-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const nav = btn.getAttribute('data-mobile');
+      if(nav) navigateTo(nav + 'Screen');
+    });
   });
+
+  // brand click to home
+  document.querySelectorAll('.brand').forEach(b=> b.addEventListener('click', ()=> navigateTo('homeScreen')));
 })();
 
+/*******************************
+ * Highlight selected territory (visual)
+ *******************************/
 function highlightSelectedTerritory(n){
+  if(!cardsGrid) return;
   Array.from(cardsGrid.children).forEach(child=>{
     child.style.border=''; child.style.boxShadow='';
   });
   for(const child of cardsGrid.children){
-    if(child.innerText && child.innerText.indexOf(String(n)) !== -1){
-      child.style.boxShadow='0 18px 40px rgba(16,185,129,0.12)'; child.style.border='2px solid rgba(16,185,129,0.12)';
+    const d = child.dataset && child.dataset.territorio ? Number(child.dataset.territorio) : null;
+    if(d === n){
+      child.style.boxShadow='0 18px 40px rgba(16,185,129,0.12)';
+      child.style.border='2px solid rgba(16,185,129,0.12)';
       break;
     }
   }
 }
-
-/* initial load */
-(function initialLoad(){
-  if(!dbRef){
-    const local = localLoadAll();
-    reports = Object.assign({}, reports, local);
-    renderReportsList();
-    showToast('Trabajando en modo local (sin Firebase)');
-  } else {
-    dbRef.once('value').then(snap=>{
-      const val = snap.val() || {};
-      reports = {};
-      Object.keys(val).forEach(k=> reports[k] = val[k]);
-      renderReportsList();
-    }).catch(e=> console.warn('db read once failed', e));
-  }
-})();
