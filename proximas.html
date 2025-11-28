@@ -13,6 +13,7 @@
   .pend{color:#c1121f;font-weight:700}
   .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
   .warn{color:#c1121f;font-weight:bold}
+  .nofecha{color:#999;font-style:italic}
 </style>
 </head>
 
@@ -33,34 +34,71 @@ const lista = document.getElementById("listaPendientes");
 const pendientesRef = ref(db, "pendientes");
 
 /* ======================
-   FORMATO FECHA
+   FORMATO FECHA Y HORA
 ====================== */
 
-function formatearFecha(timestamp) {
-  if (!timestamp) return "-";
-  const fecha = new Date(Number(timestamp));
-  return fecha.toLocaleDateString("es-AR") + " " +
-         fecha.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+// Detecta fecha venga como venga
+function obtenerTimestamp(obj) {
+
+  if (!obj) return null;
+
+  // si es número directo
+  if (typeof obj === "number") return obj;
+
+  // si es string ISO
+  if (typeof obj === "string" && !isNaN(Date.parse(obj))) {
+    return Date.parse(obj);
+  }
+
+  // buscar nombres comunes dentro del objeto
+  const posibles = [
+    obj.fecha,
+    obj.reportadoAt,
+    obj.timestamp,
+    obj.ts,
+    obj.createdAt,
+    obj.creado
+  ];
+
+  for (let v of posibles) {
+
+    if (!v) continue;
+
+    if (typeof v === "number") return v;
+
+    if (typeof v === "string" && !isNaN(Date.parse(v))) {
+      return Date.parse(v);
+    }
+  }
+
+  return null;
 }
 
-function tiempoTranscurrido(timestamp) {
-  if (!timestamp) return "-";
+function formatearFecha(ts) {
+  if (!ts) return "<span class='nofecha'>Sin fecha</span>";
+  const d = new Date(ts);
+  return d.toLocaleDateString("es-AR") + " " +
+         d.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+}
 
-  const ahora = Date.now();
-  let diferencia = ahora - Number(timestamp);
+function tiempoTranscurrido(ts) {
+  if (!ts) return "";
 
-  const minutos = Math.floor(diferencia / 60000);
-  const horas = Math.floor(minutos / 60);
-  const dias = Math.floor(horas / 24);
+  let diff = Date.now() - ts;
+  if (diff < 0) return "";
+
+  let min = Math.floor(diff / 60000);
+  let hrs = Math.floor(min / 60);
+  let dias = Math.floor(hrs / 24);
 
   if (dias > 0) return `Hace ${dias} día${dias>1?"s":""}`;
-  if (horas > 0) return `Hace ${horas} hora${horas>1?"s":""}`;
-  if (minutos > 0) return `Hace ${minutos} min`;
+  if (hrs > 0) return `Hace ${hrs} hora${hrs>1?"s":""}`;
+  if (min > 0) return `Hace ${min} min`;
   return "Ahora";
 }
 
 /* ======================
-   LECTURA FIREBASE
+   LECTURA DE FIREBASE
 ====================== */
 
 onValue(pendientesRef, snap => {
@@ -73,23 +111,19 @@ onValue(pendientesRef, snap => {
     return;
   }
 
-  const items = Object.values(datos).sort((a,b)=>a.territorio - b.territorio);
+  const items = Object.values(datos)
+    .sort((a,b)=>Number(a.territorio) - Number(b.territorio));
 
   items.forEach(p => {
 
-    // busca fecha con distintos nombres posibles
-    const fechaTimestamp =
-      p.fecha ||
-      p.reportadoAt ||
-      p.timestamp ||
-      null;
+    const ts = obtenerTimestamp(p);
+
+    const fecha = formatearFecha(ts);
+    const tiempo = tiempoTranscurrido(ts);
 
     const listaPend = p.pendientes
       ? Object.values(p.pendientes).join(", ")
       : "-";
-
-    const fecha = formatearFecha(fechaTimestamp);
-    const tiempo = tiempoTranscurrido(fechaTimestamp);
 
     const card = document.createElement("div");
     card.className = "card";
@@ -100,8 +134,8 @@ onValue(pendientesRef, snap => {
         <span class="pend">${listaPend}</span>
       </div>
       <div>Último conductor: ${p.conductor || "-"}</div>
-      <div><small>📅 Reportado: ${fecha}</small></div>
-      <div><small class="warn">⏱ ${tiempo}</small></div>
+      <div>📅 Reportado: ${fecha}</div>
+      ${tiempo ? `<div class="warn">⏱ ${tiempo}</div>` : ""}
     `;
 
     lista.appendChild(card);
