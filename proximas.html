@@ -34,34 +34,28 @@ const lista = document.getElementById("listaPendientes");
 const pendientesRef = ref(db, "pendientes");
 
 /* ======================
-   FORMATO FECHA Y HORA
+   FECHA Y HORA
 ====================== */
 
-// Detecta fecha venga como venga
 function obtenerTimestamp(obj) {
 
   if (!obj) return null;
 
-  // si es número directo
   if (typeof obj === "number") return obj;
 
-  // si es string ISO
   if (typeof obj === "string" && !isNaN(Date.parse(obj))) {
     return Date.parse(obj);
   }
 
-  // buscar nombres comunes dentro del objeto
   const posibles = [
     obj.fecha,
     obj.reportadoAt,
     obj.timestamp,
     obj.ts,
-    obj.createdAt,
-    obj.creado
+    obj.createdAt
   ];
 
   for (let v of posibles) {
-
     if (!v) continue;
 
     if (typeof v === "number") return v;
@@ -84,12 +78,12 @@ function formatearFecha(ts) {
 function tiempoTranscurrido(ts) {
   if (!ts) return "";
 
-  let diff = Date.now() - ts;
+  const diff = Date.now() - ts;
   if (diff < 0) return "";
 
-  let min = Math.floor(diff / 60000);
-  let hrs = Math.floor(min / 60);
-  let dias = Math.floor(hrs / 24);
+  const min = Math.floor(diff / 60000);
+  const hrs = Math.floor(min / 60);
+  const dias = Math.floor(hrs / 24);
 
   if (dias > 0) return `Hace ${dias} día${dias>1?"s":""}`;
   if (hrs > 0) return `Hace ${hrs} hora${hrs>1?"s":""}`;
@@ -98,7 +92,7 @@ function tiempoTranscurrido(ts) {
 }
 
 /* ======================
-   LECTURA DE FIREBASE
+   LECTURA FIREBASE
 ====================== */
 
 onValue(pendientesRef, snap => {
@@ -111,8 +105,17 @@ onValue(pendientesRef, snap => {
     return;
   }
 
-  const items = Object.values(datos)
-    .sort((a,b)=>Number(a.territorio) - Number(b.territorio));
+  // convertimos en lista
+  const items = Object.values(datos);
+
+  // ORDENAR POR FECHA (MAS NUEVO PRIMERO)
+  items.sort((a,b) => {
+
+    const ta = obtenerTimestamp(a) || 0;
+    const tb = obtenerTimestamp(b) || 0;
+
+    return tb - ta;  // DESCENDENTE
+  });
 
   items.forEach(p => {
 
