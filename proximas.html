@@ -27,19 +27,18 @@
 <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
-
 import { db, ref, onValue } from "./firebase.js";
 
 const lista = document.getElementById("listaPendientes");
 const pendientesRef = ref(db, "pendientes");
 
 /* ======================
-   FUNCIONES DE FECHA
+   FORMATO FECHA
 ====================== */
 
 function formatearFecha(timestamp) {
   if (!timestamp) return "-";
-  const fecha = new Date(timestamp);
+  const fecha = new Date(Number(timestamp));
   return fecha.toLocaleDateString("es-AR") + " " +
          fecha.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
 }
@@ -48,7 +47,7 @@ function tiempoTranscurrido(timestamp) {
   if (!timestamp) return "-";
 
   const ahora = Date.now();
-  let diferencia = ahora - new Date(timestamp).getTime();
+  let diferencia = ahora - Number(timestamp);
 
   const minutos = Math.floor(diferencia / 60000);
   const horas = Math.floor(minutos / 60);
@@ -61,7 +60,7 @@ function tiempoTranscurrido(timestamp) {
 }
 
 /* ======================
-   LECTURA DE FIREBASE
+   LECTURA FIREBASE
 ====================== */
 
 onValue(pendientesRef, snap => {
@@ -78,15 +77,22 @@ onValue(pendientesRef, snap => {
 
   items.forEach(p => {
 
-    const card = document.createElement("div");
-    card.className = "card";
+    // busca fecha con distintos nombres posibles
+    const fechaTimestamp =
+      p.fecha ||
+      p.reportadoAt ||
+      p.timestamp ||
+      null;
 
     const listaPend = p.pendientes
       ? Object.values(p.pendientes).join(", ")
       : "-";
 
-    const fecha = formatearFecha(p.fecha);
-    const tiempo = tiempoTranscurrido(p.fecha);
+    const fecha = formatearFecha(fechaTimestamp);
+    const tiempo = tiempoTranscurrido(fechaTimestamp);
+
+    const card = document.createElement("div");
+    card.className = "card";
 
     card.innerHTML = `
       <div><strong>Territorio ${p.territorio}</strong></div>
@@ -101,7 +107,6 @@ onValue(pendientesRef, snap => {
     lista.appendChild(card);
   });
 });
-
 </script>
 
 </body>
