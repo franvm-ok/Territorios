@@ -11,7 +11,8 @@ import {
   set,
   push,
   update,
-  onValue 
+  onValue,
+  remove     // ✅ AGREGADO
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
 /* =============================
@@ -57,7 +58,8 @@ export {
   dbRef as ref,
   set, 
   push, 
-  update, 
+  update,
+  remove,     // ✅ EXPORTADO
   onValue,
   storage,
   storageRef as sRef,
