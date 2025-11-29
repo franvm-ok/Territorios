@@ -1,258 +1,161 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Tablero de Anuncios</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tablero</title>
 
 <style>
-:root { --verde:#1a4b27; --bg:#f4f4f4 }
-body { margin:0;font-family:Arial;background:var(--bg);color:#333 }
+:root{--verde:#1a4b27;--bg:#f4f4f4}
+body{margin:0;font-family:Arial;background:var(--bg)}
+header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:22px;font-weight:bold}
 
-header {
-  background:var(--verde);
-  color:#fff;
-  padding:18px;
-  text-align:center;
-  font-size:22px;
-  font-weight:700;
-}
+.top{display:flex;gap:8px;padding:12px}
+select,input[type=file]{padding:8px;border-radius:8px;border:1px solid #ccc;width:100%}
+button{background:var(--verde);color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:bold;cursor:pointer}
+.container{padding:15px;max-width:980px;margin:auto}
 
-.top { display:flex;gap:8px;padding:12px 20px; }
-.top select, .top label {
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  cursor:pointer;
-}
-.add-btn { background:#fff;color:var(--verde);font-weight:bold }
+.card{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.tipo{background:#e8f5e9;color:#1a4b27;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:13px;display:inline-block;margin-bottom:6px}
+.nombre{font-weight:bold}
+.btns{margin-top:8px}
+.btns button{margin-right:6px}
 
-.container { padding:0 20px 90px;max-width:980px;margin:auto }
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
+.modal-box{background:#fff;width:92%;height:90%;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.modal-body{flex:1}
+iframe,img{width:100%;height:100%;object-fit:contain}
+.close{background:#c1121f;margin:8px}
 
-.seccion { margin-top:20px }
-.seccion h2 { margin-bottom:8px;border-bottom:2px solid #1a4b27;padding-bottom:4px }
-
-.card {
-  background:#fff;
-  border-radius:12px;
-  padding:12px;
-  margin-bottom:14px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1)
-}
-
-.btn-row { display:flex;gap:8px;margin-top:8px }
-
-.btn {
-  padding:8px 12px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:bold
-}
-
-.ver {background:#1a4b27;color:white}
-.descargar {background:#ddd}
-
-.back-btn {
-  position:fixed;
-  left:16px;bottom:18px;
-  background:var(--verde);
-  color:#fff;
-  border:none;
-  padding:10px 14px;
-  border-radius:10px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-/* MODAL */
-#visorModal {
-  position:fixed;
-  top:0;left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,.75);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:1000;
-}
-
-#visorBox {
-  background:#fff;
-  width:92%;
-  height:92%;
-  border-radius:12px;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
-
-#visorHeader { padding:8px;background:#eee;text-align:right }
-
-#visorContent { flex:1 }
-
-iframe, img {
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
+.back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
+
 <body>
+<header>📌 Tablero General</header>
 
-<header>Tablero de Anuncios</header>
-
-<div class="top" id="panelSubida">
-
-  <select id="categoria">
-    <option value="">Seleccionar categoría…</option>
+<div class="top">
+  <select id="tipo">
+    <option value="">-- Seleccionar tipo --</option>
     <option>Asignaciones Vida Cristiana</option>
     <option>Limpieza del salón</option>
     <option>Cartas</option>
   </select>
-
-  <label for="fileInput" class="add-btn">📎 Subir archivo</label>
-  <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp" hidden>
-
+  <input type="file" id="archivo" accept=".pdf,.jpg,.jpeg,.png,.webp">
+  <button onclick="subir()">📤 Subir</button>
 </div>
 
-<div class="container" id="contenedor"></div>
-
-<button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
+<div class="container" id="lista"></div>
+<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <!-- MODAL -->
-<div id="visorModal" onclick="cerrarVisor()">
-  <div id="visorBox" onclick="event.stopPropagation()">
-    <div id="visorHeader">
-      <button onclick="cerrarVisor()">Cerrar</button>
-    </div>
-    <div id="visorContent"></div>
+<div class="modal" id="visor">
+  <div class="modal-box">
+    <button onclick="cerrar()" class="close">Cerrar</button>
+    <div class="modal-body" id="contenido"></div>
   </div>
 </div>
 
 <script type="module">
-import { db, ref, push, set, onValue, storage, sRef, uploadBytes, getDownloadURL } from "./firebase.js";
+import { db, ref, push, set, onValue } from "./firebase.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-const sesion = JSON.parse(localStorage.getItem("sesion") || "null");
-const rol = sesion?.rol || "invitado";
+const tipo = document.getElementById("tipo");
+const archivo = document.getElementById("archivo");
+const lista = document.getElementById("lista");
+const visor = document.getElementById("visor");
+const cont = document.getElementById("contenido");
 
-const panel = document.getElementById("panelSubida");
-const fileInput = document.getElementById("fileInput");
-const categoria = document.getElementById("categoria");
-const contenedor = document.getElementById("contenedor");
+const storage = getStorage();
 
-// PERMISOS
-if(rol === "invitado") panel.style.display = "none";
+/* SUBIR */
+window.subir = async ()=>{
 
-// SUBIR
-fileInput.addEventListener("change", async () => {
+  if(!tipo.value){
+    alert("Seleccione tipo");
+    return;
+  }
 
-  const cat = categoria.value.trim();
-  const file = fileInput.files[0];
+  const file = archivo.files[0];
+  if(!file){
+    alert("Seleccione archivo");
+    return;
+  }
 
-  if(!cat) return alert("Seleccioná una categoría");
-  if(!file) return;
+  try{
+    const ruta = `tablero/${Date.now()}_${file.name}`;
+    const refS = sRef(storage, ruta);
 
-  try {
-    const ruta = `anuncios/${Date.now()}_${file.name}`;
-    const archivoRef = sRef(storage, ruta);
-    await uploadBytes(archivoRef, file);
-    const url = await getDownloadURL(archivoRef);
+    await uploadBytes(refS, file);
+    const url = await getDownloadURL(refS);
 
-    const nuevo = push(ref(db,"anuncios"));
-    await set(nuevo, {
-      categoria: cat,
+    const refDB = push(ref(db,"tablero"));
+    await set(refDB,{
+      tipo: tipo.value,
       nombre: file.name,
       url,
-      tipo: file.type,
-      fecha: Date.now(),
-      autor: sesion?.nombre || rol
+      tipoArchivo: file.type,
+      ts: Date.now()
     });
 
-    categoria.value = "";
-    fileInput.value = "";
-    alert("Archivo subido correctamente ✅");
-  } catch(err){
-    console.error(err);
-    alert("Error al subir el archivo");
+    tipo.value="";
+    archivo.value="";
+    alert("✅ Archivo publicado");
+
+  }catch(e){
+    alert("Error al subir archivo");
+    console.error(e);
   }
-});
+};
 
-// MOSTRAR
-onValue(ref(db,"anuncios"), snap => {
-
-  const datos = snap.val();
-  contenedor.innerHTML = "";
-
-  if(!datos) return;
-
-  const agrupado = {};
-  Object.values(datos).forEach(item=>{
-    if(!agrupado[item.categoria]) agrupado[item.categoria]=[];
-    agrupado[item.categoria].push(item);
+/* LISTAR */
+onValue(ref(db,"tablero"), snap=>{
+  lista.innerHTML="";
+  const datos=[];
+  snap.forEach(x=>{
+    const o = x.val();
+    o.id = x.key;
+    datos.push(o);
   });
 
-  Object.keys(agrupado).forEach(cat=>{
+  datos.sort((a,b)=>b.ts-a.ts);
 
-    const sec = document.createElement("div");
-    sec.className="seccion";
-    sec.innerHTML = `<h2>${cat}</h2>`;
-
-    agrupado[cat].sort((a,b)=>b.fecha - a.fecha).forEach(item=>{
-      const card = document.createElement("div");
-      card.className="card";
-      card.innerHTML = `
-        <b>${item.nombre}</b><br>
-        <small>Subido por ${item.autor || ""}</small>
-      `;
-
-      const row = document.createElement("div");
-      row.className="btn-row";
-
-      const ver = document.createElement("button");
-      ver.textContent="Vista previa";
-      ver.className="btn ver";
-      ver.onclick = ()=>verArchivo(item);
-
-      const down = document.createElement("button");
-      down.textContent="Descargar";
-      down.className="btn descargar";
-      down.onclick = ()=>descargar(item.url,item.nombre);
-
-      row.appendChild(ver);
-      row.appendChild(down);
-      card.appendChild(row);
-
-      sec.appendChild(card);
-    });
-
-    contenedor.appendChild(sec);
+  datos.forEach(d=>{
+    const c = document.createElement("div");
+    c.className="card";
+    c.innerHTML=`
+      <div class="tipo">${d.tipo}</div>
+      <div class="nombre">${d.nombre}</div>
+      <div class="btns">
+        <button onclick="ver('${d.url}','${d.tipoArchivo}')">👁 Ver</button>
+        <button onclick="descargar('${d.url}','${d.nombre}')">⬇ Descargar</button>
+      </div>
+    `;
+    lista.appendChild(c);
   });
 });
 
-window.verArchivo = function(item){
-  const visor = document.getElementById("visorModal");
-  const content = document.getElementById("visorContent");
-  content.innerHTML="";
-
-  if(item.tipo==="application/pdf"){
-    content.innerHTML=`<iframe src="${item.url}"></iframe>`;
-  } else {
-    content.innerHTML=`<img src="${item.url}">`;
+/* VER */
+window.ver = (url,tipo)=>{
+  cont.innerHTML="";
+  if(tipo==="application/pdf"){
+    cont.innerHTML=`<iframe src="${url}"></iframe>`;
+  }else{
+    cont.innerHTML=`<img src="${url}">`;
   }
-
   visor.style.display="flex";
 }
 
-window.cerrarVisor = function(){
-  document.getElementById("visorModal").style.display="none";
-  document.getElementById("visorContent").innerHTML="";
+window.cerrar = ()=>{
+  cont.innerHTML="";
+  visor.style.display="none";
 }
 
-window.descargar = function(url,nombre){
+/* DESCARGA */
+window.descargar = (url,nombre)=>{
   const a=document.createElement("a");
-  a.href=url; a.download=nombre;
+  a.href=url;
+  a.download=nombre;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
