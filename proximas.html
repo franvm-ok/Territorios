@@ -1,158 +1,121 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Próximas Salidas</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Próximas Salidas y Pendientes</title>
 
 <style>
 :root{--verde:#1a4b27;--bg:#f4f4f4}
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial, sans-serif;background:var(--bg);color:#222}
-header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-weight:bold;font-size:20px}
+body{margin:0;font-family:Arial;background:var(--bg)}
+header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
 
-.container{padding:15px;max-width:900px;margin:auto}
-
-/* FILTROS */
-.filtros{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.filtros button{
-  border:2px solid var(--verde);
-  background:white;
-  color:var(--verde);
-  border-radius:20px;
-  padding:6px 14px;
-  font-weight:bold;
-  cursor:pointer
-}
-.filtros button.activo{background:var(--verde);color:white}
+.container{max-width:900px;margin:auto;padding:15px}
 
 /* TARJETAS */
-.card{
-  background:white;
-  border-radius:12px;
-  padding:14px;
-  margin-bottom:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,.07)
-}
+.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
+.pendiente{border-left:6px solid orange}
+.asignada{border-left:6px solid green}
 .pend{color:#c1121f;font-weight:bold}
-.obs{margin-top:6px;padding:8px;background:#f6f6f6;border-left:4px solid var(--verde);font-style:italic}
 
-.back-btn{
-  position:fixed;
-  left:15px;
-  bottom:15px;
+.obs{margin-top:6px;font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde)}
+
+.etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
+
+/* ADMIN */
+.admin input,.admin textarea{
+  width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc
+}
+button{
   background:var(--verde);
   color:white;
   border:none;
-  padding:10px 14px;
-  border-radius:10px;
+  padding:6px 10px;
+  border-radius:8px;
   font-weight:bold;
   cursor:pointer
 }
+.elim{background:#c1121f}
 
-/* ADMIN */
-.admin-box{margin-top:10px;border-top:1px dashed #ccc;padding-top:10px}
-.admin-box input,
-.admin-box textarea{
-  width:100%;
-  margin-bottom:6px;
-  padding:6px;
-  border-radius:6px;
-  border:1px solid #ccc
-}
-.admin-box button{
-  border:none;
-  border-radius:8px;
-  padding:6px 10px;
-  font-weight:bold;
-  cursor:pointer;
-  background:var(--verde);
-  color:white;
-}
-.eliminar{background:#c1121f;margin-left:6px}
+.back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
 
 <body>
-<header>📅 Próximas Salidas</header>
-
-<div class="container">
-
-<div class="filtros">
-  <button data-f="todos" class="activo">Todos</button>
-  <button data-f="hoy">Hoy</button>
-  <button data-f="7">7 días</button>
-  <button data-f="mes">Este mes</button>
-</div>
-
-<div id="lista"></div>
-
-</div>
-
-<button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
+<header>📅 Pendientes y Próximas Salidas</header>
+<div class="container" id="lista"></div>
+<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
-import { db, ref, onValue, update, remove } from "./firebase.js";
+import { db, ref, onValue, push, remove, update } from "./firebase.js";
 
 const lista = document.getElementById("lista");
-const botones = document.querySelectorAll("[data-f]");
-const refSalidas = ref(db,"salidas_asignadas");
+const pendientesRef = ref(db,"pendientes");
+const salidasRef = ref(db,"salidas_asignadas");
 
 const rol = localStorage.getItem("rol") || "invitado";
 const esAdmin = rol === "admin";
+let pendientes=[], salidas=[];
 
-let datos = [];
-let filtro = "todos";
-
-/* obtener fecha base */
-function getFecha(o){
-  return o.creado || Date.parse(o.fecha) || 0;
+/* fecha base */
+function getTs(o){
+  return o.creado || o.fecha || o.ts || 0;
 }
 
-/* aplicar filtro */
-function pasarFiltro(o){
-  const f = new Date(getFecha(o));
-  const hoy = new Date();
-
-  if(filtro==="hoy") return f.toDateString() === hoy.toDateString();
-  if(filtro==="7") return (hoy - f) <= 7*24*60*60*1000;
-  if(filtro==="mes") return f.getMonth()===hoy.getMonth() && f.getFullYear()===hoy.getFullYear();
-  return true;
-}
-
-/* render */
+/* pintar */
 function render(){
   lista.innerHTML = "";
-  const ver = datos.filter(pasarFiltro);
 
-  if(!ver.length){
-    lista.innerHTML = "<p style='color:#666'>No hay salidas registradas.</p>";
-    return;
-  }
-
-  ver.forEach(s=>{
-    const faltan = Array.isArray(s.pendientes) ? s.pendientes.join(", ") : "-";
-
+  pendientes.forEach(p=>{
     const card = document.createElement("div");
-    card.className = "card";
+    card.className="card pendiente";
+
+    const faltan = Array.isArray(p.pendientes)?p.pendientes.join(", "):"-";
 
     card.innerHTML = `
-      <b>🏘 Territorio ${s.territorio || "-"}</b>
-      <div>📅 Fecha: ${s.fecha || "-"}</div>
-      <div>👤 Conductor: ${s.conductor || "-"}</div>
-      <div>🧱 Pendientes: <span class="pend">${faltan}</span></div>
-      ${s.observaciones ? `<div class="obs">📝 ${s.observaciones}</div>` : ""}
+      <span class='etiqueta'>PENDIENTE</span>
+      <b>Territorio ${p.territorio||"-"}</b>
+      <div>🧱 Faltan: <span class="pend">${faltan}</span></div>
+      <div>👤 Último: ${p.conductor||"-"}</div>
     `;
 
     if(esAdmin){
-      const box = document.createElement("div");
-      box.className="admin-box";
-      box.innerHTML = `
-        <input id="c${s.id}" value="${s.conductor||""}" placeholder="Conductor">
-        <input id="f${s.id}" type="date" value="${s.fecha||""}">
-        <textarea id="o${s.id}" rows="2" placeholder="Observaciones">${s.observaciones||""}</textarea>
-        <button onclick="guardar('${s.id}')">💾 Guardar</button>
-        <button class="eliminar" onclick="borrar('${s.id}')">🗑 Eliminar</button>
+      const box=document.createElement("div");
+      box.className="admin";
+      box.innerHTML=`
+        <input id="c${p.id}" placeholder="Conductor">
+        <input type="date" id="f${p.id}">
+        <textarea id="o${p.id}" placeholder="Observación"></textarea>
+        <button onclick="asignar('${p.id}')">✅ Asignar</button>
+      `;
+      card.appendChild(box);
+    }
+
+    lista.appendChild(card);
+  });
+
+  salidas.forEach(s=>{
+    const card=document.createElement("div");
+    card.className="card asignada";
+
+    card.innerHTML=`
+      <span class='etiqueta'>ASIGNADA</span>
+      <b>Territorio ${s.territorio||"-"}</b>
+      <div>📅 Fecha: ${s.fecha||"-"}</div>
+      <div>👤 Conductor: ${s.conductor||"-"}</div>
+      <div>🧱 Pendientes: <span class="pend">${(s.pendientes||[]).join(", ")}</span></div>
+      ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
+    `;
+
+    if(esAdmin){
+      const box=document.createElement("div");
+      box.className="admin";
+      box.innerHTML=`
+        <input id="ec${s.id}" value="${s.conductor||""}">
+        <input type="date" id="ef${s.id}" value="${s.fecha||""}">
+        <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
+        <button onclick="editar('${s.id}')">💾 Guardar</button>
+        <button class="elim" onclick="borrar('${s.id}')">🗑 Eliminar</button>
       `;
       card.appendChild(box);
     }
@@ -161,46 +124,63 @@ function render(){
   });
 }
 
-/* guardar */
-window.guardar = async (id)=>{
-  await update(ref(db,"salidas_asignadas/"+id),{
-    conductor: document.getElementById("c"+id).value,
-    fecha: document.getElementById("f"+id).value,
-    observaciones: document.getElementById("o"+id).value
+/* ASIGNAR */
+window.asignar = async (id)=>{
+  const p = pendientes.find(x=>x.id===id);
+  const c = document.getElementById("c"+id).value;
+  const f = document.getElementById("f"+id).value;
+  const o = document.getElementById("o"+id).value;
+
+  if(!c||!f){ alert("Falta conductor o fecha");return;}
+
+  await push(salidasRef,{
+    territorio:p.territorio,
+    pendientes:p.pendientes,
+    conductor:c,
+    fecha:f,
+    observaciones:o,
+    creado:Date.now()
   });
-  alert("✅ Cambios guardados");
+
+  await remove(ref(db,"pendientes/"+id));
 }
 
-/* eliminar */
+/* EDITAR */
+window.editar = async (id)=>{
+  await update(ref(db,"salidas_asignadas/"+id),{
+    conductor:document.getElementById("ec"+id).value,
+    fecha:document.getElementById("ef"+id).value,
+    observaciones:document.getElementById("eo"+id).value
+  });
+  alert("✅ Guardado");
+}
+
+/* BORRAR */
 window.borrar = async (id)=>{
-  if(!confirm("¿Seguro que querés eliminar esta salida?")) return;
+  if(!confirm("Eliminar salida?")) return;
   await remove(ref(db,"salidas_asignadas/"+id));
-  alert("🗑 Eliminada");
 }
 
-/* botones filtros */
-botones.forEach(b=>{
-  b.onclick = ()=>{
-    botones.forEach(x=>x.classList.remove("activo"));
-    b.classList.add("activo");
-    filtro = b.dataset.f;
-    render();
-  }
+/* FIREBASE */
+onValue(pendientesRef,snap=>{
+  pendientes=[];
+  snap.forEach(x=>{
+    const o=x.val();
+    o.id=x.key;
+    pendientes.push(o);
+  });
+  render();
 });
 
-/* firebase */
-onValue(refSalidas, snap=>{
-  datos=[];
+onValue(salidasRef,snap=>{
+  salidas=[];
   snap.forEach(x=>{
-    const o = x.val();
-    o.id = x.key;
-    datos.push(o);
+    const o=x.val();
+    o.id=x.key;
+    salidas.push(o);
   });
-
-  datos.sort((a,b)=>getFecha(b)-getFecha(a));
   render();
 });
 </script>
-
 </body>
 </html>
