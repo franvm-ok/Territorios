@@ -35,13 +35,14 @@
         font-weight: bold;
     }
 
-    .login-btn:hover {
-        background: #e8e8e8;
+    .login-btn.logout {
+        background: #d62828;
+        color: white;
     }
 
-    .container {
-        padding: 20px;
-    }
+    .login-btn:hover { background: #e8e8e8 }
+
+    .container { padding: 20px }
 
     .grid {
         display: grid;
@@ -61,9 +62,7 @@
         transition: 0.2s;
     }
 
-    .btn-card:hover {
-        transform: scale(1.05);
-    }
+    .btn-card:hover { transform: scale(1.05) }
 
     .emoji {
         font-size: 45px;
@@ -72,51 +71,93 @@
     }
 </style>
 </head>
+
 <body>
 
 <header>
     Departamento de Territorio
-    <button class="login-btn" onclick="location.href='login.html'">Iniciar sesión</button>
+    <button class="login-btn" id="btnLogin" onclick="irLogin()">Iniciar sesión</button>
 </header>
 
 <div class="container">
     <div class="grid">
 
-        <div class="btn-card" onclick="location.href='tablero.html'">
-            <span class="emoji">📢</span>
-            Tablero de anuncios
+        <div class="btn-card" id="btnTablero" onclick="location.href='tablero.html'">
+            <span class="emoji">📢</span> Tablero de anuncios
         </div>
 
-        <div class="btn-card" onclick="location.href='informar.html'">
-            <span class="emoji">📝</span>
-            Informar territorio
+        <div class="btn-card" id="btnInformar" onclick="location.href='informar.html'">
+            <span class="emoji">📝</span> Informar territorio
         </div>
 
-        <div class="btn-card" onclick="location.href='proximas.html'">
-            <span class="emoji">📅</span>
-            Próximas salidas
+        <div class="btn-card" id="btnProximas" onclick="location.href='proximas.html'">
+            <span class="emoji">📅</span> Próximas salidas
         </div>
 
-        <div class="btn-card" onclick="location.href='mapa.html'">
-            <span class="emoji">🗺️</span>
-            Mapa interactivo
+        <div class="btn-card" id="btnMapa" onclick="location.href='mapa.html'">
+            <span class="emoji">🗺️</span> Mapa interactivo
         </div>
 
-        <div class="btn-card" onclick="location.href='sugerencia.html'">
-            <span class="emoji">💡</span>
-            Sugerencias
+        <div class="btn-card" id="btnSug" onclick="location.href='sugerencia.html'">
+            <span class="emoji">💡</span> Sugerencias
         </div>
 
-        <div class="btn-card" onclick="location.href='reportes.html'">
-            <span class="emoji">📊</span>
-            Reportes
+        <div class="btn-card" id="btnReportes" onclick="location.href='reportes.html'">
+            <span class="emoji">📊</span> Reportes
         </div>
 
     </div>
 </div>
 
-<!-- Carga la configuración sin claves expuestas -->
-<script type="module" src="firebase.js"></script>
+<script>
+const sesion = JSON.parse(localStorage.getItem("sesion") || "null");
+const rol = sesion?.rol || "invitado";
+const btnLogin = document.getElementById("btnLogin");
+
+// CAMBIAR BOTÓN
+if(sesion){
+  btnLogin.textContent = "Salir ("+sesion.nombre+")";
+  btnLogin.classList.add("logout");
+}else{
+  btnLogin.textContent = "Iniciar sesión";
+}
+
+// PERMISOS POR ROL
+const permisos = {
+  invitado: ["btnProximas","btnTablero","btnMapa","btnSug"],
+  conductor: ["btnProximas","btnTablero","btnMapa","btnSug","btnInformar","btnReportes"],
+  admin: ["btnProximas","btnTablero","btnMapa","btnSug","btnInformar","btnReportes"]
+};
+
+// OCULTAR TODO
+["btnProximas","btnTablero","btnMapa","btnSug","btnInformar","btnReportes"].forEach(id=>{
+  document.getElementById(id).style.display="none";
+});
+
+// MOSTRAR PERMITIDOS
+(permisos[rol]||[]).forEach(id=>{
+  document.getElementById(id).style.display="block";
+});
+
+// REDIRECCIÓN ESPECIAL ADMIN
+document.getElementById("btnProximas").onclick = ()=>{
+  if(rol === "admin"){
+    location.href = "proximas.html"; // luego será pendientes_admin
+  }else{
+    location.href = "proximas.html";
+  }
+};
+
+// LOGIN / LOGOUT
+function irLogin(){
+  if(sesion){
+    localStorage.removeItem("sesion");
+    location.reload();
+  }else{
+    location.href="login.html";
+  }
+}
+</script>
 
 </body>
-</html> 
+</html>
