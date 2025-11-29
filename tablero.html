@@ -57,8 +57,25 @@ iframe,img{width:100%;height:100%;object-fit:contain}
 </div>
 
 <script type="module">
-import { db, ref, push, set, onValue } from "./firebase.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+/* 🔴 PEGA ACÁ TU CONFIG DE FIREBASE */
+const firebaseConfig = {
+  apiKey: "PEGAR_AQUI",
+  authDomain: "PEGAR_AQUI",
+  databaseURL: "PEGAR_AQUI",
+  projectId: "PEGAR_AQUI",
+  storageBucket: "PEGAR_AQUI",
+  messagingSenderId: "PEGAR_AQUI",
+  appId: "PEGAR_AQUI"
+};
+/* 🔴 FIN CONFIG */
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const storage = getStorage(app);
 
 const tipo = document.getElementById("tipo");
 const archivo = document.getElementById("archivo");
@@ -66,27 +83,18 @@ const lista = document.getElementById("lista");
 const visor = document.getElementById("visor");
 const cont = document.getElementById("contenido");
 
-const storage = getStorage();
-
-/* SUBIR */
+/* SUBIR ARCHIVO */
 window.subir = async ()=>{
-
-  if(!tipo.value){
-    alert("Seleccione tipo");
-    return;
-  }
+  if(!tipo.value){ alert("Seleccione tipo"); return; }
 
   const file = archivo.files[0];
-  if(!file){
-    alert("Seleccione archivo");
-    return;
-  }
+  if(!file){ alert("Seleccione archivo"); return; }
 
   try{
     const ruta = `tablero/${Date.now()}_${file.name}`;
     const refS = sRef(storage, ruta);
 
-    await uploadBytes(refS, file);
+    await uploadBytes(refS, file, { contentType: file.type });
     const url = await getDownloadURL(refS);
 
     const refDB = push(ref(db,"tablero"));
@@ -100,28 +108,27 @@ window.subir = async ()=>{
 
     tipo.value="";
     archivo.value="";
-    alert("✅ Archivo publicado");
+    alert("✅ Archivo publicado correctamente");
 
   }catch(e){
-    alert("Error al subir archivo");
+    alert("❌ Error al subir archivo");
     console.error(e);
   }
 };
 
-/* LISTAR */
+/* LISTAR ARCHIVOS */
 onValue(ref(db,"tablero"), snap=>{
   lista.innerHTML="";
   const datos=[];
   snap.forEach(x=>{
-    const o = x.val();
-    o.id = x.key;
+    const o=x.val();
     datos.push(o);
   });
 
   datos.sort((a,b)=>b.ts-a.ts);
 
   datos.forEach(d=>{
-    const c = document.createElement("div");
+    const c=document.createElement("div");
     c.className="card";
     c.innerHTML=`
       <div class="tipo">${d.tipo}</div>
@@ -135,23 +142,17 @@ onValue(ref(db,"tablero"), snap=>{
   });
 });
 
-/* VER */
+/* VER ARCHIVO */
 window.ver = (url,tipo)=>{
   cont.innerHTML="";
-  if(tipo==="application/pdf"){
-    cont.innerHTML=`<iframe src="${url}"></iframe>`;
-  }else{
-    cont.innerHTML=`<img src="${url}">`;
-  }
+  if(tipo==="application/pdf") cont.innerHTML=`<iframe src="${url}"></iframe>`;
+  else cont.innerHTML=`<img src="${url}">`;
   visor.style.display="flex";
 }
 
-window.cerrar = ()=>{
-  cont.innerHTML="";
-  visor.style.display="none";
-}
+window.cerrar = ()=>{ visor.style.display="none"; }
 
-/* DESCARGA */
+/* DESCARGAR */
 window.descargar = (url,nombre)=>{
   const a=document.createElement("a");
   a.href=url;
