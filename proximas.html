@@ -2,193 +2,157 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Próximas Salidas</title>
+
 <style>
-  :root{--verde:#1a4b27;--bg:#f4f4f4}
-  body{margin:0;font-family:Arial;background:var(--bg);color:#222}
-  header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:20px;font-weight:700}
-  .container{padding:18px;max-width:980px;margin:0 auto}
+:root{--verde:#1a4b27;--bg:#f4f4f4}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial, sans-serif;background:var(--bg);color:#222}
+header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-weight:bold;font-size:20px}
 
-  .filtros{
-    display:flex;
-    gap:8px;
-    margin-bottom:12px;
-    flex-wrap:wrap;
-  }
-  .filtros button{
-    background:#fff;
-    border:2px solid var(--verde);
-    color:var(--verde);
-    padding:6px 12px;
-    border-radius:8px;
-    font-weight:700;
-    cursor:pointer;
-  }
-  .filtros button.activo{
-    background:var(--verde);
-    color:#fff;
-  }
+.container{padding:15px;max-width:900px;margin:auto}
 
-  .card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
-  .pend{color:#c1121f;font-weight:700}
-  .obs{font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde);margin-top:6px}
-  .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+/* FILTROS */
+.filtros{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filtros button{
+  border:2px solid var(--verde);
+  background:white;
+  color:var(--verde);
+  border-radius:20px;
+  padding:6px 14px;
+  font-weight:bold;
+  cursor:pointer
+}
+.filtros button.activo{background:var(--verde);color:white}
 
-  .warn{color:#c1121f;font-weight:bold}
-  .nofecha{color:#999;font-style:italic}
-  .urgente{color:#c1121f;font-weight:700;margin-bottom:4px}
+/* TARJETAS */
+.card{
+  background:white;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.07)
+}
+.pend{color:#c1121f;font-weight:bold}
+.obs{margin-top:6px;padding:8px;background:#f6f6f6;border-left:4px solid var(--verde);font-style:italic}
 
-  .admin-box{
-    margin-top:8px;border-top:1px dashed #ccc;padding-top:8px
-  }
+.back-btn{
+  position:fixed;
+  left:15px;
+  bottom:15px;
+  background:var(--verde);
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer
+}
 
-  .admin-box input, .admin-box textarea{
-    width:100%;
-    padding:6px;
-    margin-bottom:6px;
-    border-radius:6px;
-    border:1px solid #ccc;
-  }
-
-  .admin-box button{
-    background:var(--verde);
-    border:none;
-    color:white;
-    padding:6px 10px;
-    border-radius:6px;
-    cursor:pointer;
-    font-weight:bold;
-  }
+/* ADMIN */
+.admin-box{margin-top:10px;border-top:1px dashed #ccc;padding-top:10px}
+.admin-box input,
+.admin-box textarea{
+  width:100%;
+  margin-bottom:6px;
+  padding:6px;
+  border-radius:6px;
+  border:1px solid #ccc
+}
+.admin-box button{
+  border:none;
+  border-radius:8px;
+  padding:6px 10px;
+  font-weight:bold;
+  cursor:pointer;
+  background:var(--verde);
+  color:white;
+}
+.eliminar{background:#c1121f;margin-left:6px}
 </style>
 </head>
 
 <body>
-
-<header>Próximas Salidas / Pendientes</header>
+<header>📅 Próximas Salidas</header>
 
 <div class="container">
 
-  <div class="filtros">
-    <button data-filtro="todos" class="activo">Todos</button>
-    <button data-filtro="hoy">Hoy</button>
-    <button data-filtro="7dias">7 días</button>
-    <button data-filtro="mes">Mes</button>
-  </div>
+<div class="filtros">
+  <button data-f="todos" class="activo">Todos</button>
+  <button data-f="hoy">Hoy</button>
+  <button data-f="7">7 días</button>
+  <button data-f="mes">Este mes</button>
+</div>
 
-  <div id="listaPendientes"></div>
+<div id="lista"></div>
 
 </div>
 
 <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
-import { db, ref, onValue, push, remove } from "./firebase.js";
+import { db, ref, onValue, update, remove } from "./firebase.js";
 
-const lista = document.getElementById("listaPendientes");
-const pendientesRef = ref(db, "pendientes");
-const salidasRef = ref(db, "salidas_asignadas");
-const botones = document.querySelectorAll(".filtros button");
+const lista = document.getElementById("lista");
+const botones = document.querySelectorAll("[data-f]");
+const refSalidas = ref(db,"salidas_asignadas");
 
-let filtroActual = "todos";
-let datosGlobales = [];
+const rol = localStorage.getItem("rol") || "invitado";
+const esAdmin = rol === "admin";
 
-const DIAS_URGENTE = 14;
-const ES_ADMIN = true; // CAMBIAR A false PARA HERMANOS INVITADOS
+let datos = [];
+let filtro = "todos";
 
-/* ========= FECHA ========= */
-
-function obtenerTimestamp(obj) {
-  if (!obj) return null;
-  if (typeof obj === "number") return obj;
-  if (typeof obj === "string" && !isNaN(Date.parse(obj))) return Date.parse(obj);
-
-  const posibles = [obj.fecha,obj.ts,obj.createdAt,obj.reportadoAt];
-  for (let v of posibles) {
-    if (typeof v === "number") return v;
-    if (typeof v === "string" && !isNaN(Date.parse(v))) return Date.parse(v);
-  }
-  return null;
+/* obtener fecha base */
+function getFecha(o){
+  return o.creado || Date.parse(o.fecha) || 0;
 }
 
-function formatearFecha(ts) {
-  if (!ts) return "<span class='nofecha'>Sin fecha</span>";
-  const d = new Date(ts);
-  return d.toLocaleDateString("es-AR") + " " + 
-         d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-}
+/* aplicar filtro */
+function pasarFiltro(o){
+  const f = new Date(getFecha(o));
+  const hoy = new Date();
 
-function tiempoTranscurrido(ts) {
-  if (!ts) return "";
-  const diff = Date.now() - ts;
-  const dias = Math.floor(diff / (1000*60*60*24));
-  if (dias > 0) return `Hace ${dias} día${dias>1?"s":""}`;
-  return "";
-}
-
-function esUrgente(ts) {
-  if (!ts) return false;
-  return (Date.now() - ts) / (1000*60*60*24) >= DIAS_URGENTE;
-}
-
-/* ========= FILTROS ========= */
-
-function pasaFiltro(ts) {
-  if (!ts) return filtroActual === "todos";
-  const ahora = new Date();
-  const fecha = new Date(ts);
-  if (filtroActual === "hoy") return fecha.toDateString() === ahora.toDateString();
-  if (filtroActual === "7dias") return (ahora - fecha) <= 604800000;
-  if (filtroActual === "mes")
-    return fecha.getMonth() === ahora.getMonth() && fecha.getFullYear() === ahora.getFullYear();
+  if(filtro==="hoy") return f.toDateString() === hoy.toDateString();
+  if(filtro==="7") return (hoy - f) <= 7*24*60*60*1000;
+  if(filtro==="mes") return f.getMonth()===hoy.getMonth() && f.getFullYear()===hoy.getFullYear();
   return true;
 }
 
-/* ========= RENDER ========= */
-
-function render(datos) {
-
+/* render */
+function render(){
   lista.innerHTML = "";
-  const filtrados = datos.filter(p => pasaFiltro(obtenerTimestamp(p)));
+  const ver = datos.filter(pasarFiltro);
 
-  if (!filtrados.length){
-    lista.innerHTML = "<p style='color:#666'>No hay pendientes.</p>";
+  if(!ver.length){
+    lista.innerHTML = "<p style='color:#666'>No hay salidas registradas.</p>";
     return;
   }
 
-  filtrados.sort((a,b)=>(obtenerTimestamp(b)||0)-(obtenerTimestamp(a)||0));
-
-  filtrados.forEach((p,i)=>{
-
-    const ts = obtenerTimestamp(p);
-    const urgente = esUrgente(ts);
-
-    const pendientes = Array.isArray(p.pendientes)
-      ? p.pendientes.join(", ")
-      : Object.values(p.pendientes||{}).join(", ");
+  ver.forEach(s=>{
+    const faltan = Array.isArray(s.pendientes) ? s.pendientes.join(", ") : "-";
 
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      ${urgente?`<div class="urgente">🔴 URGENTE</div>`:""}
-      <b>Territorio ${p.territorio}</b>
-      <div>⏳ Pendientes: <span class="pend">${pendientes || "-"}</span></div>
-      <div>Último conductor: ${p.conductor || "-"}</div>
-      <div>📅 Reportado: ${formatearFecha(ts)}</div>
-      ${p.observaciones?`<div class="obs">📝 ${p.observaciones}</div>`:""}
+      <b>🏘 Territorio ${s.territorio || "-"}</b>
+      <div>📅 Fecha: ${s.fecha || "-"}</div>
+      <div>👤 Conductor: ${s.conductor || "-"}</div>
+      <div>🧱 Pendientes: <span class="pend">${faltan}</span></div>
+      ${s.observaciones ? `<div class="obs">📝 ${s.observaciones}</div>` : ""}
     `;
 
-    if (ES_ADMIN){
-
+    if(esAdmin){
       const box = document.createElement("div");
       box.className="admin-box";
-
       box.innerHTML = `
-        <input placeholder="Asignar conductor" id="cond${i}">
-        <input type="date" id="fecha${i}">
-        <textarea rows="2" id="obs${i}" placeholder="Observación nueva"></textarea>
-        <button onclick="atender(${i})">✅ ATENDER</button>
+        <input id="c${s.id}" value="${s.conductor||""}" placeholder="Conductor">
+        <input id="f${s.id}" type="date" value="${s.fecha||""}">
+        <textarea id="o${s.id}" rows="2" placeholder="Observaciones">${s.observaciones||""}</textarea>
+        <button onclick="guardar('${s.id}')">💾 Guardar</button>
+        <button class="eliminar" onclick="borrar('${s.id}')">🗑 Eliminar</button>
       `;
       card.appendChild(box);
     }
@@ -197,64 +161,44 @@ function render(datos) {
   });
 }
 
-/* ========= ATENDER ========= */
-
-window.atender = async (i)=>{
-
-  const p = datosGlobales[i];
-
-  const conductor = document.getElementById("cond"+i).value;
-  const fecha = document.getElementById("fecha"+i).value;
-  const obs = document.getElementById("obs"+i).value;
-
-  if (!conductor || !fecha){
-    alert("Falta conductor o fecha");
-    return;
-  }
-
-  await push(salidasRef,{
-    territorio:p.territorio,
-    pendientes:p.pendientes,
-    conductor,
-    fecha,
-    observaciones:obs,
-    creado: Date.now()
+/* guardar */
+window.guardar = async (id)=>{
+  await update(ref(db,"salidas_asignadas/"+id),{
+    conductor: document.getElementById("c"+id).value,
+    fecha: document.getElementById("f"+id).value,
+    observaciones: document.getElementById("o"+id).value
   });
-
-  if (p.id){
-    await remove(ref(db,"pendientes/"+p.id));
-  }
-
-  const mensaje = `Hola ${conductor}, se te ha asignado una salida:\n\nTerritorio ${p.territorio}\nFecha: ${fecha}\nPendientes: ${Object.values(p.pendientes||{}).join(", ")}\n\nIngresá a la app para más detalles.`;
-
-  window.open("https://wa.me/?text="+encodeURIComponent(mensaje));
-
+  alert("✅ Cambios guardados");
 }
 
-/* ========= EVENTOS FILTROS ========= */
+/* eliminar */
+window.borrar = async (id)=>{
+  if(!confirm("¿Seguro que querés eliminar esta salida?")) return;
+  await remove(ref(db,"salidas_asignadas/"+id));
+  alert("🗑 Eliminada");
+}
 
-botones.forEach(btn=>{
-  btn.onclick = ()=>{
-    botones.forEach(b=>b.classList.remove("activo"));
-    btn.classList.add("activo");
-    filtroActual = btn.dataset.filtro;
-    render(datosGlobales);
+/* botones filtros */
+botones.forEach(b=>{
+  b.onclick = ()=>{
+    botones.forEach(x=>x.classList.remove("activo"));
+    b.classList.add("activo");
+    filtro = b.dataset.f;
+    render();
   }
 });
 
-/* ========= FIREBASE ========= */
-
-onValue(pendientesRef, snap => {
-
-  const datos = [];
+/* firebase */
+onValue(refSalidas, snap=>{
+  datos=[];
   snap.forEach(x=>{
     const o = x.val();
     o.id = x.key;
     datos.push(o);
   });
 
-  datosGlobales = datos;
-  render(datosGlobales);
+  datos.sort((a,b)=>getFecha(b)-getFecha(a));
+  render();
 });
 </script>
 
