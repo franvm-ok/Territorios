@@ -32,18 +32,40 @@
 
   .card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
   .pend{color:#c1121f;font-weight:700}
+  .obs{font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde);margin-top:6px}
   .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
 
   .warn{color:#c1121f;font-weight:bold}
   .nofecha{color:#999;font-style:italic}
-
   .urgente{color:#c1121f;font-weight:700;margin-bottom:4px}
+
+  .admin-box{
+    margin-top:8px;border-top:1px dashed #ccc;padding-top:8px
+  }
+
+  .admin-box input, .admin-box textarea{
+    width:100%;
+    padding:6px;
+    margin-bottom:6px;
+    border-radius:6px;
+    border:1px solid #ccc;
+  }
+
+  .admin-box button{
+    background:var(--verde);
+    border:none;
+    color:white;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+  }
 </style>
 </head>
 
 <body>
 
-<header>Próximas Salidas</header>
+<header>Próximas Salidas / Pendientes</header>
 
 <div class="container">
 
@@ -61,193 +83,177 @@
 <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
-import { db, ref, onValue } from "./firebase.js";
+import { db, ref, onValue, push, remove } from "./firebase.js";
 
 const lista = document.getElementById("listaPendientes");
 const pendientesRef = ref(db, "pendientes");
+const salidasRef = ref(db, "salidas_asignadas");
 const botones = document.querySelectorAll(".filtros button");
 
 let filtroActual = "todos";
 let datosGlobales = [];
 
 const DIAS_URGENTE = 14;
+const ES_ADMIN = true; // CAMBIAR A false PARA HERMANOS INVITADOS
 
-/* ======================
-   FECHA
-====================== */
+/* ========= FECHA ========= */
 
 function obtenerTimestamp(obj) {
-
   if (!obj) return null;
-
   if (typeof obj === "number") return obj;
+  if (typeof obj === "string" && !isNaN(Date.parse(obj))) return Date.parse(obj);
 
-  if (typeof obj === "string" && !isNaN(Date.parse(obj))) {
-    return Date.parse(obj);
-  }
-
-  const posibles = [
-    obj.fecha,
-    obj.reportadoAt,
-    obj.timestamp,
-    obj.ts,
-    obj.createdAt
-  ];
-
+  const posibles = [obj.fecha,obj.ts,obj.createdAt,obj.reportadoAt];
   for (let v of posibles) {
-    if (!v) continue;
-
     if (typeof v === "number") return v;
-
-    if (typeof v === "string" && !isNaN(Date.parse(v))) {
-      return Date.parse(v);
-    }
+    if (typeof v === "string" && !isNaN(Date.parse(v))) return Date.parse(v);
   }
-
   return null;
 }
 
 function formatearFecha(ts) {
   if (!ts) return "<span class='nofecha'>Sin fecha</span>";
   const d = new Date(ts);
-  return d.toLocaleDateString("es-AR") + " " +
-         d.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+  return d.toLocaleDateString("es-AR") + " " + 
+         d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
 }
 
 function tiempoTranscurrido(ts) {
-
   if (!ts) return "";
-
   const diff = Date.now() - ts;
-  if (diff < 0) return "";
-
   const dias = Math.floor(diff / (1000*60*60*24));
-  const hrs = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-  const min = Math.floor((diff % (1000*60*60)) / (1000*60));
-
   if (dias > 0) return `Hace ${dias} día${dias>1?"s":""}`;
-  if (hrs > 0) return `Hace ${hrs} hora${hrs>1?"s":""}`;
-  if (min > 0) return `Hace ${min} min`;
-  return "Ahora";
+  return "";
 }
-
-/* ======================
-   URGENTE
-====================== */
 
 function esUrgente(ts) {
   if (!ts) return false;
-  const dias = (Date.now() - ts) / (1000*60*60*24);
-  return dias >= DIAS_URGENTE;
+  return (Date.now() - ts) / (1000*60*60*24) >= DIAS_URGENTE;
 }
 
-/* ======================
-   FILTROS
-====================== */
+/* ========= FILTROS ========= */
 
 function pasaFiltro(ts) {
-
   if (!ts) return filtroActual === "todos";
-
   const ahora = new Date();
   const fecha = new Date(ts);
-
-  if (filtroActual === "hoy") {
-    return fecha.toDateString() === ahora.toDateString();
-  }
-
-  if (filtroActual === "7dias") {
-    return (ahora - fecha) <= (7 * 24 * 60 * 60 * 1000);
-  }
-
-  if (filtroActual === "mes") {
-    return fecha.getMonth() === ahora.getMonth() &&
-           fecha.getFullYear() === ahora.getFullYear();
-  }
-
-  return true; // todos
+  if (filtroActual === "hoy") return fecha.toDateString() === ahora.toDateString();
+  if (filtroActual === "7dias") return (ahora - fecha) <= 604800000;
+  if (filtroActual === "mes")
+    return fecha.getMonth() === ahora.getMonth() && fecha.getFullYear() === ahora.getFullYear();
+  return true;
 }
 
-/* ======================
-   RENDER
-====================== */
+/* ========= RENDER ========= */
 
-function render(listaDatos) {
+function render(datos) {
 
   lista.innerHTML = "";
+  const filtrados = datos.filter(p => pasaFiltro(obtenerTimestamp(p)));
 
-  const filtrados = listaDatos.filter(p => pasaFiltro(obtenerTimestamp(p)));
-
-  if (filtrados.length === 0) {
-    lista.innerHTML = "<p style='color:#666'>No hay reportes para este filtro.</p>";
+  if (!filtrados.length){
+    lista.innerHTML = "<p style='color:#666'>No hay pendientes.</p>";
     return;
   }
 
-  // ordenar por más reciente
-  filtrados.sort((a,b)=>{
-    return (obtenerTimestamp(b) || 0) - (obtenerTimestamp(a) || 0);
-  });
+  filtrados.sort((a,b)=>(obtenerTimestamp(b)||0)-(obtenerTimestamp(a)||0));
 
-  filtrados.forEach(p => {
+  filtrados.forEach((p,i)=>{
 
     const ts = obtenerTimestamp(p);
     const urgente = esUrgente(ts);
 
-    const fecha = formatearFecha(ts);
-    const tiempo = tiempoTranscurrido(ts);
-
-    const listaPend = p.pendientes
-      ? Object.values(p.pendientes).join(", ")
-      : "-";
+    const pendientes = Array.isArray(p.pendientes)
+      ? p.pendientes.join(", ")
+      : Object.values(p.pendientes||{}).join(", ");
 
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      ${urgente ? `<div class="urgente">🔴 URGENTE</div>` : ""}
-      <div><strong>Territorio ${p.territorio}</strong></div>
-      <div>Pendientes:
-        <span class="pend">${listaPend}</span>
-      </div>
+      ${urgente?`<div class="urgente">🔴 URGENTE</div>`:""}
+      <b>Territorio ${p.territorio}</b>
+      <div>⏳ Pendientes: <span class="pend">${pendientes || "-"}</span></div>
       <div>Último conductor: ${p.conductor || "-"}</div>
-      <div>📅 Reportado: ${fecha}</div>
-      ${tiempo ? `<div class="warn">⏱ ${tiempo}</div>` : ""}
+      <div>📅 Reportado: ${formatearFecha(ts)}</div>
+      ${p.observaciones?`<div class="obs">📝 ${p.observaciones}</div>`:""}
     `;
+
+    if (ES_ADMIN){
+
+      const box = document.createElement("div");
+      box.className="admin-box";
+
+      box.innerHTML = `
+        <input placeholder="Asignar conductor" id="cond${i}">
+        <input type="date" id="fecha${i}">
+        <textarea rows="2" id="obs${i}" placeholder="Observación nueva"></textarea>
+        <button onclick="atender(${i})">✅ ATENDER</button>
+      `;
+      card.appendChild(box);
+    }
 
     lista.appendChild(card);
   });
 }
 
-/* ======================
-   EVENTOS BOTONES
-====================== */
+/* ========= ATENDER ========= */
 
-botones.forEach(btn => {
+window.atender = async (i)=>{
 
-  btn.onclick = () => {
+  const p = datosGlobales[i];
 
-    botones.forEach(b => b.classList.remove("activo"));
-    btn.classList.add("activo");
+  const conductor = document.getElementById("cond"+i).value;
+  const fecha = document.getElementById("fecha"+i).value;
+  const obs = document.getElementById("obs"+i).value;
 
-    filtroActual = btn.dataset.filtro;
-    render(datosGlobales);
-  };
-});
-
-/* ======================
-   FIREBASE
-====================== */
-
-onValue(pendientesRef, snap => {
-
-  const datos = snap.val();
-
-  if (!datos) {
-    lista.innerHTML = "<p style='color:#666'>No hay pendientes.</p>";
+  if (!conductor || !fecha){
+    alert("Falta conductor o fecha");
     return;
   }
 
-  datosGlobales = Object.values(datos);
+  await push(salidasRef,{
+    territorio:p.territorio,
+    pendientes:p.pendientes,
+    conductor,
+    fecha,
+    observaciones:obs,
+    creado: Date.now()
+  });
+
+  if (p.id){
+    await remove(ref(db,"pendientes/"+p.id));
+  }
+
+  const mensaje = `Hola ${conductor}, se te ha asignado una salida:\n\nTerritorio ${p.territorio}\nFecha: ${fecha}\nPendientes: ${Object.values(p.pendientes||{}).join(", ")}\n\nIngresá a la app para más detalles.`;
+
+  window.open("https://wa.me/?text="+encodeURIComponent(mensaje));
+
+}
+
+/* ========= EVENTOS FILTROS ========= */
+
+botones.forEach(btn=>{
+  btn.onclick = ()=>{
+    botones.forEach(b=>b.classList.remove("activo"));
+    btn.classList.add("activo");
+    filtroActual = btn.dataset.filtro;
+    render(datosGlobales);
+  }
+});
+
+/* ========= FIREBASE ========= */
+
+onValue(pendientesRef, snap => {
+
+  const datos = [];
+  snap.forEach(x=>{
+    const o = x.val();
+    o.id = x.key;
+    datos.push(o);
+  });
+
+  datosGlobales = datos;
   render(datosGlobales);
 });
 </script>
