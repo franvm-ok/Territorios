@@ -57,43 +57,42 @@ const rol = localStorage.getItem("rol") || "invitado";
 const esAdmin = rol === "admin";
 let pendientes=[], salidas=[];
 
-/* fecha base */
-function getTs(o){
-  return o.creado || o.fecha || o.ts || 0;
-}
-
 /* pintar */
 function render(){
   lista.innerHTML = "";
 
-  pendientes.forEach(p=>{
-    const card = document.createElement("div");
-    card.className="card pendiente";
+  // PENDIENTES solo para admin
+  if(esAdmin){
+    pendientes.forEach(p=>{
+      const card = document.createElement("div");
+      card.className="card pendiente";
 
-    const faltan = Array.isArray(p.pendientes)?p.pendientes.join(", "):"-";
+      const faltan = Array.isArray(p.pendientes)?p.pendientes.join(", "):"-";
 
-    card.innerHTML = `
-      <span class='etiqueta'>PENDIENTE</span>
-      <b>Territorio ${p.territorio||"-"}</b>
-      <div>🧱 Faltan: <span class="pend">${faltan}</span></div>
-      <div>👤 Último: ${p.conductor||"-"}</div>
-    `;
+      card.innerHTML = `
+        <span class='etiqueta'>PENDIENTE</span>
+        <b>Territorio ${p.territorio||"-"}</b>
+        <div>🧱 Faltan: <span class="pend">${faltan}</span></div>
+        <div>👤 Último: ${p.conductor||"-"}</div>
+      `;
 
-    if(esAdmin){
       const box=document.createElement("div");
       box.className="admin";
       box.innerHTML=`
         <input id="c${p.id}" placeholder="Conductor">
         <input type="date" id="f${p.id}">
+        <input id="calles${p.id}" placeholder="Calle">
+        <input id="inter${p.id}" placeholder="Intersección">
         <textarea id="o${p.id}" placeholder="Observación"></textarea>
         <button onclick="asignar('${p.id}')">✅ Asignar</button>
       `;
       card.appendChild(box);
-    }
 
-    lista.appendChild(card);
-  });
+      lista.appendChild(card);
+    });
+  }
 
+  // SALIDAS: todos las pueden ver, solo admin puede editar
   salidas.forEach(s=>{
     const card=document.createElement("div");
     card.className="card asignada";
@@ -103,6 +102,7 @@ function render(){
       <b>Territorio ${s.territorio||"-"}</b>
       <div>📅 Fecha: ${s.fecha||"-"}</div>
       <div>👤 Conductor: ${s.conductor||"-"}</div>
+      <div>📍 Punto de encuentro: ${s.calle||"-"} / ${s.interseccion||"-"}</div>
       <div>🧱 Pendientes: <span class="pend">${(s.pendientes||[]).join(", ")}</span></div>
       ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
     `;
@@ -113,6 +113,8 @@ function render(){
       box.innerHTML=`
         <input id="ec${s.id}" value="${s.conductor||""}">
         <input type="date" id="ef${s.id}" value="${s.fecha||""}">
+        <input id="ecalle${s.id}" value="${s.calle||""}" placeholder="Calle">
+        <input id="einter${s.id}" value="${s.interseccion||""}" placeholder="Intersección">
         <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
         <button onclick="editar('${s.id}')">💾 Guardar</button>
         <button class="elim" onclick="borrar('${s.id}')">🗑 Eliminar</button>
@@ -129,20 +131,29 @@ window.asignar = async (id)=>{
   const p = pendientes.find(x=>x.id===id);
   const c = document.getElementById("c"+id).value;
   const f = document.getElementById("f"+id).value;
+  const calle = document.getElementById("calles"+id).value;
+  const inter = document.getElementById("inter"+id).value;
   const o = document.getElementById("o"+id).value;
 
-  if(!c||!f){ alert("Falta conductor o fecha");return;}
+  if(!c || !f || !calle || !inter){
+    alert("Falta completar: Conductor, Fecha, Calle o Intersección");
+    return;
+  }
 
   await push(salidasRef,{
     territorio:p.territorio,
     pendientes:p.pendientes,
     conductor:c,
     fecha:f,
+    calle:calle,
+    interseccion:inter,
     observaciones:o,
     creado:Date.now()
   });
 
   await remove(ref(db,"pendientes/"+id));
+
+  alert("✅ Salida asignada");
 }
 
 /* EDITAR */
@@ -150,6 +161,8 @@ window.editar = async (id)=>{
   await update(ref(db,"salidas_asignadas/"+id),{
     conductor:document.getElementById("ec"+id).value,
     fecha:document.getElementById("ef"+id).value,
+    calle:document.getElementById("ecalle"+id).value,
+    interseccion:document.getElementById("einter"+id).value,
     observaciones:document.getElementById("eo"+id).value
   });
   alert("✅ Guardado");
