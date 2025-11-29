@@ -10,51 +10,80 @@
   .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.08)}
   h1{text-align:center;color:#1a4b27}
   input{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box}
-  .row{display:flex;justify-content:space-between;gap:8px}
   .btn{padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
   .btn-login{background:#1a4b27;color:#fff;width:100%}
-  .small{font-size:13px;color:#666;text-align:center;margin-top:8px}
+  .small{font-size:13px;color:#666;text-align:center;margin-top:8px;line-height:1.4}
   .back{position:fixed;left:16px;bottom:18px;background:#1a4b27;color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
 </style>
 </head>
 <body>
+
 <div class="wrap">
   <div class="card">
     <h1>Iniciar sesión</h1>
-    <input id="user" placeholder="Usuario (admin / conductor / invitado)"/>
+
+    <input id="user" placeholder="Usuario" />
     <input id="pass" placeholder="Contraseña" type="password"/>
+
     <button class="btn btn-login" id="loginBtn">Entrar</button>
-    <div class="small">Admin = admin / Contraseña admin = 1234. Conductor usuario = conductor / contraseña por defecto = Brasil643 (puede cambiarse más adelante)</div>
+
+    <div class="small">
+      Admin: <b>admin / 1234</b><br>
+      Conductor: <b>conductor / Brasil643</b><br>
+      Invitado: escribir solo <b>invitado</b>
+    </div>
   </div>
 </div>
 
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script>
-  // simple auth emulada con localStorage (sin Firebase Auth por simplicidad ahora)
-  document.getElementById('loginBtn').addEventListener('click', ()=>{
-    const u = document.getElementById('user').value.trim();
-    const p = document.getElementById('pass').value.trim();
-    if(u === 'admin' && p === '1234'){
-      localStorage.setItem('rol','admin');
-      alert('Ingresó como admin');
-      location.href='index.html';
-      return;
-    }
-    if(u === 'conductor' && p === 'Brasil643'){
-      localStorage.setItem('rol','conductor');
-      alert('Ingresó como conductor');
-      location.href='index.html';
-      return;
-    }
-    if(u === 'invitado'){
-      localStorage.setItem('rol','invitado');
-      alert('Ingresó como invitado');
-      location.href='index.html';
-      return;
-    }
-    alert('Usuario o contraseña incorrectos.');
-  });
+document.getElementById('loginBtn').addEventListener('click', ()=>{
+
+  const user = document.getElementById('user').value.trim();
+  const pass = document.getElementById('pass').value.trim();
+
+  if(!user){
+    alert('Ingrese usuario');
+    return;
+  }
+
+  // ADMIN
+  if(user === 'admin' && pass === '1234'){
+    guardarSesion('admin', user);
+    alert('Ingresaste como ADMIN');
+    location.href="index.html";
+    return;
+  }
+
+  // CONDUCTOR
+  if(user === 'conductor' && pass === 'Brasil643'){
+    guardarSesion('conductor', user);
+    alert('Ingresaste como CONDUCTOR');
+    location.href="index.html";
+    return;
+  }
+
+  // INVITADO
+  if(user === 'invitado'){
+    guardarSesion('invitado', 'Invitado');
+    alert('Ingresaste como INVITADO');
+    location.href="index.html";
+    return;
+  }
+
+  alert('Usuario o contraseña incorrectos');
+});
+
+function guardarSesion(rol, nombre){
+  const sesion = {
+    rol,
+    nombre,
+    fecha: Date.now()
+  };
+  localStorage.setItem("sesion", JSON.stringify(sesion));
+}
 </script>
+
 </body>
 </html>
