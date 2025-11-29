@@ -1,32 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
 <title>Tablero</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 :root{--verde:#1a4b27;--bg:#f4f4f4}
 body{margin:0;font-family:Arial;background:var(--bg)}
 header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:22px;font-weight:bold}
-
 .top{display:flex;gap:8px;padding:12px}
 select,input[type=file]{padding:8px;border-radius:8px;border:1px solid #ccc;width:100%}
-button{background:var(--verde);color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:bold;cursor:pointer}
+button{background:var(--verde);color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:bold}
 .container{padding:15px;max-width:980px;margin:auto}
-
-.card{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-.tipo{background:#e8f5e9;color:#1a4b27;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:13px;display:inline-block;margin-bottom:6px}
+.card{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px}
+.tipo{color:green;font-weight:bold}
 .nombre{font-weight:bold}
-.btns{margin-top:8px}
-.btns button{margin-right:6px}
-
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
-.modal-box{background:#fff;width:92%;height:90%;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.modal-body{flex:1}
+.modal-box{background:#fff;width:95%;height:90%;border-radius:12px}
 iframe,img{width:100%;height:100%;object-fit:contain}
-.close{background:#c1121f;margin:8px}
-
+.close{background:red;color:white;padding:10px;border:none}
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
@@ -35,25 +28,24 @@ iframe,img{width:100%;height:100%;object-fit:contain}
 <header>📌 Tablero General</header>
 
 <div class="top">
-  <select id="tipo">
-    <option value="">-- Seleccionar tipo --</option>
-    <option>Asignaciones Vida Cristiana</option>
-    <option>Limpieza del salón</option>
-    <option>Cartas</option>
-  </select>
-  <input type="file" id="archivo" accept=".pdf,.jpg,.jpeg,.png,.webp">
-  <button onclick="subir()">📤 Subir</button>
+<select id="tipo">
+<option value="">Seleccionar tipo</option>
+<option>Vida Cristiana</option>
+<option>Limpieza</option>
+<option>Cartas</option>
+</select>
+<input type="file" id="archivo">
+<button onclick="subir()">Subir</button>
 </div>
 
 <div class="container" id="lista"></div>
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
-<!-- MODAL -->
 <div class="modal" id="visor">
-  <div class="modal-box">
-    <button onclick="cerrar()" class="close">Cerrar</button>
-    <div class="modal-body" id="contenido"></div>
-  </div>
+<div class="modal-box">
+<button class="close" onclick="cerrar()">Cerrar</button>
+<div id="contenido"></div>
+</div>
 </div>
 
 <script type="module">
@@ -61,105 +53,70 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-/* 🔴 PEGA ACÁ TU CONFIG DE FIREBASE */
 const firebaseConfig = {
-  apiKey: "PEGAR_AQUI",
-  authDomain: "PEGAR_AQUI",
-  databaseURL: "PEGAR_AQUI",
-  projectId: "PEGAR_AQUI",
-  storageBucket: "PEGAR_AQUI",
-  messagingSenderId: "PEGAR_AQUI",
-  appId: "PEGAR_AQUI"
+  apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
+  authDomain: "territorio-3c28d.firebaseapp.com",
+  databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com",
+  projectId: "territorio-3c28d",
+  storageBucket: "territorio-3c28d.appspot.com",
+  messagingSenderId: "170925082008",
+  appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed"
 };
-/* 🔴 FIN CONFIG */
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const storage = getStorage(app);
 
-const tipo = document.getElementById("tipo");
-const archivo = document.getElementById("archivo");
-const lista = document.getElementById("lista");
-const visor = document.getElementById("visor");
-const cont = document.getElementById("contenido");
+const tipo=document.getElementById("tipo");
+const archivo=document.getElementById("archivo");
+const lista=document.getElementById("lista");
+const visor=document.getElementById("visor");
+const cont=document.getElementById("contenido");
 
-/* SUBIR ARCHIVO */
 window.subir = async ()=>{
-  if(!tipo.value){ alert("Seleccione tipo"); return; }
-
-  const file = archivo.files[0];
-  if(!file){ alert("Seleccione archivo"); return; }
-
-  try{
-    const ruta = `tablero/${Date.now()}_${file.name}`;
-    const refS = sRef(storage, ruta);
-
-    await uploadBytes(refS, file, { contentType: file.type });
-    const url = await getDownloadURL(refS);
-
-    const refDB = push(ref(db,"tablero"));
-    await set(refDB,{
-      tipo: tipo.value,
-      nombre: file.name,
-      url,
-      tipoArchivo: file.type,
-      ts: Date.now()
-    });
-
-    tipo.value="";
-    archivo.value="";
-    alert("✅ Archivo publicado correctamente");
-
-  }catch(e){
-    alert("❌ Error al subir archivo");
-    console.error(e);
-  }
-};
-
-/* LISTAR ARCHIVOS */
-onValue(ref(db,"tablero"), snap=>{
-  lista.innerHTML="";
-  const datos=[];
-  snap.forEach(x=>{
-    const o=x.val();
-    datos.push(o);
-  });
-
-  datos.sort((a,b)=>b.ts-a.ts);
-
-  datos.forEach(d=>{
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=`
-      <div class="tipo">${d.tipo}</div>
-      <div class="nombre">${d.nombre}</div>
-      <div class="btns">
-        <button onclick="ver('${d.url}','${d.tipoArchivo}')">👁 Ver</button>
-        <button onclick="descargar('${d.url}','${d.nombre}')">⬇ Descargar</button>
-      </div>
-    `;
-    lista.appendChild(c);
-  });
-});
-
-/* VER ARCHIVO */
-window.ver = (url,tipo)=>{
-  cont.innerHTML="";
-  if(tipo==="application/pdf") cont.innerHTML=`<iframe src="${url}"></iframe>`;
-  else cont.innerHTML=`<img src="${url}">`;
-  visor.style.display="flex";
+if(!tipo.value || !archivo.files[0]){ alert("Seleccione tipo y archivo"); return; }
+const f=archivo.files[0];
+const ruta="tablero/"+Date.now()+"_"+f.name;
+const refS=sRef(storage,ruta);
+await uploadBytes(refS,f,{contentType:f.type});
+const url=await getDownloadURL(refS);
+await set(push(ref(db,"tablero")),{tipo:tipo.value,nombre:f.name,url,tipoArchivo:f.type,ts:Date.now()});
+tipo.value="";archivo.value="";
+alert("Archivo subido");
 }
 
-window.cerrar = ()=>{ visor.style.display="none"; }
+onValue(ref(db,"tablero"),snap=>{
+lista.innerHTML="";
+const datos=[];
+snap.forEach(x=>datos.push(x.val()));
+datos.sort((a,b)=>b.ts-a.ts);
+datos.forEach(d=>{
+const div=document.createElement("div");
+div.className="card";
+div.innerHTML=`
+<div class="tipo">${d.tipo}</div>
+<div class="nombre">${d.nombre}</div>
+<button onclick="ver('${d.url}','${d.tipoArchivo}')">Ver</button>
+<button onclick="descargar('${d.url}','${d.nombre}')">Descargar</button>
+`;
+lista.appendChild(div);
+});
+})
 
-/* DESCARGAR */
-window.descargar = (url,nombre)=>{
-  const a=document.createElement("a");
-  a.href=url;
-  a.download=nombre;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+window.ver = (url,t)=>{
+cont.innerHTML="";
+if(t==="application/pdf") cont.innerHTML=`<iframe src="${url}"></iframe>`;
+else cont.innerHTML=`<img src="${url}">`;
+visor.style.display="flex";
+}
+
+window.cerrar=()=>visor.style.display="none";
+
+window.descargar=(url,n)=>{
+const a=document.createElement("a");
+a.href=url;a.download=n;
+document.body.appendChild(a);a.click();
+document.body.removeChild(a);
 }
 </script>
 
