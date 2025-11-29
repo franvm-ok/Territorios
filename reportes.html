@@ -91,7 +91,6 @@
 
 <header>Reportes Generados</header>
 
-<!-- FILTRO POR FECHA RÁPIDA -->
 <div class="filtros-bar">
   <button onclick="setRango('hoy')" id="btnHoy">HOY</button>
   <button onclick="setRango('7')" id="btn7">7 DÍAS</button>
@@ -99,7 +98,6 @@
   <button onclick="setRango('todos')" id="btnTodos" class="activo">TODOS</button>
 </div>
 
-<!-- FILTROS AVANZADOS -->
 <div class="panel-filtros">
   <input type="number" id="fTerritorio" placeholder="Territorio">
   <input type="text" id="fConductor" placeholder="Conductor">
@@ -179,6 +177,9 @@ function aplicarFiltros(){
     const hechas = Array.isArray(r.hechas) ? r.hechas.join(", ") : "-";
     const pendientes = Array.isArray(r.pendientes) ? r.pendientes.join(", ") : "-";
 
+    // ✅ SOPORTE AUTOMÁTICO PARA OBSERVACIONES CON CUALQUIER NOMBRE
+    const observacion = r.observaciones || r.observacion || r.obs || "";
+
     const d = document.createElement("div");
     d.className = "card";
     d.innerHTML = `
@@ -186,13 +187,12 @@ function aplicarFiltros(){
       <div><b>Conductor:</b> ${r.conductor || "-"}</div>
       <div>✅ Hechas: <span class="hechas">${hechas}</span></div>
       <div>⏳ Pendientes: <span class="pendientes">${pendientes}</span></div>
-      ${r.observaciones ? `<div class="obs">📝 ${r.observaciones}</div>` : ""}
+      ${observacion ? `<div class="obs">📝 ${observacion}</div>` : ""}
     `;
     cont.appendChild(d);
   });
 }
 
-/* ==== CARGA DE REPORTES ==== */
 onValue(ref(db,"reportes"), snap=>{
   reportes = [];
   snap.forEach(x=>{
