@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Salidas Asignadas</title>
+
+<style>
+:root{--verde:#1a4b27;--bg:#f4f4f4}
+body{margin:0;font-family:Arial;background:var(--bg);color:#222}
+header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:20px;font-weight:700}
+
+.container{padding:18px;max-width:980px;margin:0 auto}
+
+.filtros{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px
+}
+.filtros button{
+  background:#fff;border:2px solid var(--verde);
+  color:var(--verde);padding:6px 12px;border-radius:8px;
+  font-weight:700;cursor:pointer
+}
+.filtros button.activo{
+  background:var(--verde);color:#fff
+}
+
+.card{
+  background:#fff;padding:12px;border-radius:12px;
+  margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.07)
+}
+
+.obs{
+  margin-top:6px;
+  background:#f6f6f6;
+  padding:6px;
+  border-left:4px solid var(--verde);
+  font-style:italic
+}
+
+.back-btn{
+  position:fixed;
+  left:16px;
+  bottom:18px;
+  background:var(--verde);
+  color:#fff;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer
+}
+
+.admin-box{
+  margin-top:10px;
+  border-top:1px dashed #bbb;
+  padding-top:8px
+}
+.admin-box input,.admin-box textarea{
+  width:100%;
+  padding:6px;
+  margin-bottom:6px;
+  border-radius:6px;
+  border:1px solid #ccc
+}
+.admin-box button{
+  background:var(--verde);
+  border:none;
+  color:#fff;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold
+}
+.delete-btn{
+  background:#c1121f !important
+}
+</style>
+</head>
+
+<body>
+
+<header>Salidas Asignadas</header>
+
+<div class="container">
+
+<div class="filtros">
+  <button data-f="todos" class="activo">Todas</button>
+  <button data-f="hoy">Hoy</button>
+  <button data-f="7dias">7 días</button>
+  <button data-f="mes">Mes</button>
+</div>
+
+<div id="lista"></div>
+
+</div>
+
+<button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
+
+<script type="module">
+import { db, ref, onValue, update, remove } from "./firebase.js";
+
+const lista = document.getElementById("lista");
+const salidasRef = ref(db, "salidas_asignadas");
+
+const rol = localStorage.getItem("rol") || "invitado";
+const ES_ADMIN = rol === "admin";
+
+const botones = document.querySelectorAll(".filtros button");
+let filtroActual = "todos";
+let datosGlobales = [];
+
+
+/* ================= FECHAS ================= */
+
+function ts(x){
+  if(typeof x==="number") return x;
+  if(typeof x==="string" && !isNaN(Date.parse(x))) return Date.parse(x);
+  return null;
+}
+
+function formatear(ts){
+  if(!ts) return "Sin fecha";
+  const d = new Date(ts);
+  return d.toLocaleDateString("es-AR");
+}
+
+/* ================= FILTROS ================= */
+
+function pasaFiltro(fecha){
+  if(filtroActual==="todos") return true;
+  const ahora = new Date();
+  const d = new Date(fecha);
+
+  if(filtroActual==="hoy") return d.toDateString()===ahora.toDateString();
+  if(filtroActual==="7dias") return (d-ahora)<=7*86400000;
+  if(filtroActual==="mes") return d.getMonth()===ahora.getMonth();
+
+  return true;
+}
+
+/* ================= RENDER ================= */
+
+function render(listaDatos){
+  lista.innerHTML = "";
+
+  const filtrados = listaDatos.filter(x=>pasaFiltro(x.fecha_ts));
+
+  if(!filtrados.length){
+    lista.innerHTML="<p style='color:#777'>No hay salidas asignadas.</p>";
+    return;
+  }
+
+  filtrados.sort((a,b)=>a.fecha_ts-b.fecha_ts);
+
+  filtrados.forEach((s,i)=>{
+
+    const card = document.createElement("div");
+    card.className="card";
+
+    card.innerHTML=`
+      <b>Territorio ${s.territorio}</b>
+      <div>📅 Fecha: ${formatear(s.fecha_ts)}</div>
+      <div>👤 Conductor: ${s.conductor}</div>
+      <div>📍 Pendientes: ${s.pendientes}</div>
+      ${s.observaciones?`<div class='obs'>📝 ${s.observaciones}</div>`:""}
+    `;
+
+    if(ES_ADMIN){
+
+      const box = document.createElement("div");
+      box.className="admin-box";
+      box.innerHTML=`
+        <input id="c${i}" value="${s.conductor}">
+        <input type="date" id="f${i}">
+        <textarea id="o${i}" rows="2">${s.observaciones||""}</textarea>
+        <button onclick="guardar('${s.id}',${i})">Guardar</button>
+        <button class="delete-btn" onclick="borrar('${s.id}')">Eliminar</button>
+      `;
+      card.appendChild(box);
+    }
+
+    lista.appendChild(card);
+  });
+}
+
+/* ================= EDITAR ================= */
+
+window.guardar = async (id,i)=>{
+  const c = document.getElementById("c"+i).value;
+  const f = document.getElementById("f"+i).value;
+  const o = document.getElementById("o"+i).value;
+
+  if(!c){alert("Falta conductor");return;}
+
+  const cambios = {
+    conductor:c,
+    observaciones:o
+  };
+
+  if(f){
+    cambios.fecha_ts = new Date(f).getTime();
+  }
+
+  await update(ref(db,"salidas_asignadas/"+id),cambios);
+  alert("Actualizado");
+}
+
+window.borrar = async(id)=>{
+  if(!confirm("¿Eliminar esta salida?")) return;
+  await remove(ref(db,"salidas_asignadas/"+id));
+}
+
+/* ================= BOTONES ================= */
+
+botones.forEach(b=>{
+  b.onclick=()=>{
+    botones.forEach(x=>x.classList.remove("activo"));
+    b.classList.add("activo");
+    filtroActual=b.dataset.f;
+    render(datosGlobales);
+  }
+});
+
+/* ================= FIREBASE ================= */
+
+onValue(salidasRef,snap=>{
+  const arr=[];
+  snap.forEach(x=>{
+    const o=x.val();
+    arr.push({
+      ...o,
+      id:x.key,
+      fecha_ts: ts(o.fecha)||o.fecha_ts||0,
+      pendientes: Array.isArray(o.pendientes)?o.pendientes.join(", "):Object.values(o.pendientes||{}).join(", ")
+    });
+  });
+  datosGlobales=arr;
+  render(arr);
+});
+</script>
+
+</body>
+</html>
