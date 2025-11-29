@@ -4,164 +4,260 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Tablero de Anuncios</title>
+
 <style>
- :root{--verde:#1a4b27;--bg:#f4f4f4}
- body{margin:0;font-family:Arial;background:var(--bg);color:#333}
- header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:22px;font-weight:700}
- .top{display:flex;justify-content:flex-end;padding:12px 20px}
- .add-btn{background:#fff;color:var(--verde);border:1px solid #ddd;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
- .container{padding:0 20px 90px 20px;max-width:980px;margin:0 auto}
- .descripcion{width:100%;padding:12px;border-radius:10px;border:1px solid #d0d0d0;margin:12px 0;font-size:15px}
- .card{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
- .card strong{display:block;margin-bottom:6px}
- .preview-img{width:100%;border-radius:8px;margin-top:8px;object-fit:cover}
- .pdf-frame{width:100%;height:360px;border-radius:8px;border:1px solid #ddd;margin-top:8px}
- .btn-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
- .btn-mini{padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
- .ver-btn{background:#1a4b27;color:#fff}
- .down-btn{background:#ddd;color:#000}
- .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
- /* modal */
- #visorModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.72);display:none;justify-content:center;align-items:center;padding:20px;z-index:9999}
- #visorBox{background:#fff;width:92%;height:92%;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
- #visorHeader{display:flex;justify-content:flex-end;padding:8px;background:#f6f6f6}
- #visorClose{background:#e74c3c;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
- #visorContent{flex:1;display:flex;align-items:center;justify-content:center;padding:8px}
- iframe.viewer{width:100%;height:100%;border:0}
- img.viewer{max-width:100%;max-height:100%;object-fit:contain}
+:root { --verde:#1a4b27; --bg:#f4f4f4 }
+body { margin:0;font-family:Arial;background:var(--bg);color:#333 }
+
+header {
+  background:var(--verde);
+  color:#fff;
+  padding:18px;
+  text-align:center;
+  font-size:22px;
+  font-weight:700;
+}
+
+.top { display:flex;gap:8px;padding:12px 20px; }
+.top select, .top label {
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  cursor:pointer;
+}
+.add-btn { background:#fff;color:var(--verde);font-weight:bold }
+
+.container { padding:0 20px 90px;max-width:980px;margin:auto }
+
+.seccion { margin-top:20px }
+.seccion h2 { margin-bottom:8px;border-bottom:2px solid #1a4b27;padding-bottom:4px }
+
+.card {
+  background:#fff;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1)
+}
+
+.btn-row { display:flex;gap:8px;margin-top:8px }
+
+.btn {
+  padding:8px 12px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold
+}
+
+.ver {background:#1a4b27;color:white}
+.descargar {background:#ddd}
+
+.back-btn {
+  position:fixed;
+  left:16px;bottom:18px;
+  background:var(--verde);
+  color:#fff;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* MODAL */
+#visorModal {
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+#visorBox {
+  background:#fff;
+  width:92%;
+  height:92%;
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+#visorHeader { padding:8px;background:#eee;text-align:right }
+
+#visorContent { flex:1 }
+
+iframe, img {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
 </style>
 </head>
 <body>
+
 <header>Tablero de Anuncios</header>
 
-<div class="top">
-  <label class="add-btn" for="fileInput">📎 Agregar archivo</label>
+<div class="top" id="panelSubida">
+
+  <select id="categoria">
+    <option value="">Seleccionar categoría…</option>
+    <option>Asignaciones Vida Cristiana</option>
+    <option>Limpieza del salón</option>
+    <option>Cartas</option>
+  </select>
+
+  <label for="fileInput" class="add-btn">📎 Subir archivo</label>
+  <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp" hidden>
+
 </div>
 
-<div class="container">
-  <input id="fileInput" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display:none">
-  <input id="descripcion" class="descripcion" placeholder="Descripción (opcional)">
-  <div id="lista"></div>
-</div>
+<div class="container" id="contenedor"></div>
 
 <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
 
-<!-- modal -->
-<div id="visorModal">
-  <div id="visorBox">
-    <div id="visorHeader"><button id="visorClose">Cerrar</button></div>
+<!-- MODAL -->
+<div id="visorModal" onclick="cerrarVisor()">
+  <div id="visorBox" onclick="event.stopPropagation()">
+    <div id="visorHeader">
+      <button onclick="cerrarVisor()">Cerrar</button>
+    </div>
     <div id="visorContent"></div>
   </div>
 </div>
 
 <script type="module">
-import { db, ref, push, set, onValue, storage, sRef, uploadBytes, getDownloadURL, listAll } from "./firebase.js";
+import { db, ref, push, set, onValue, storage, sRef, uploadBytes, getDownloadURL } from "./firebase.js";
 
-const fileInput = document.getElementById('fileInput');
-const descripcionInput = document.getElementById('descripcion');
-const lista = document.getElementById('lista');
-const visorModal = document.getElementById('visorModal');
-const visorContent = document.getElementById('visorContent');
-const visorClose = document.getElementById('visorClose');
+const sesion = JSON.parse(localStorage.getItem("sesion") || "null");
+const rol = sesion?.rol || "invitado";
 
-fileInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
+const panel = document.getElementById("panelSubida");
+const fileInput = document.getElementById("fileInput");
+const categoria = document.getElementById("categoria");
+const contenedor = document.getElementById("contenedor");
+
+// PERMISOS
+if(rol === "invitado") panel.style.display = "none";
+
+// SUBIR
+fileInput.addEventListener("change", async () => {
+
+  const cat = categoria.value.trim();
+  const file = fileInput.files[0];
+
+  if(!cat) return alert("Seleccioná una categoría");
   if(!file) return;
 
-  let descripcion = descripcionInput.value.trim();
-  if(!descripcion){
-    const quiere = confirm("¿Desea agregar una descripción?");
-    if(quiere){
-      const texto = prompt("Ingrese la descripción:");
-      descripcion = (texto||"").trim();
-    }
-  }
-
-  try{
+  try {
     const ruta = `anuncios/${Date.now()}_${file.name}`;
-    const sref = sRef(storage, ruta);
-    await uploadBytes(sref, file);
-    const url = await getDownloadURL(sref);
+    const archivoRef = sRef(storage, ruta);
+    await uploadBytes(archivoRef, file);
+    const url = await getDownloadURL(archivoRef);
 
-    const newRef = push(ref(db, 'anuncios'));
-    await set(newRef, {
-      name: file.name,
-      type: file.type,
-      description: descripcion || '',
+    const nuevo = push(ref(db,"anuncios"));
+    await set(nuevo, {
+      categoria: cat,
+      nombre: file.name,
       url,
-      ts: Date.now()
+      tipo: file.type,
+      fecha: Date.now(),
+      autor: sesion?.nombre || rol
     });
 
-    descripcionInput.value = '';
-    fileInput.value = '';
+    categoria.value = "";
+    fileInput.value = "";
+    alert("Archivo subido correctamente ✅");
   } catch(err){
     console.error(err);
-    alert('Error subiendo archivo. Mirá consola.');
+    alert("Error al subir el archivo");
   }
 });
 
-/* render en tiempo real */
-onValue(ref(db, 'anuncios'), snapshot => {
-  const val = snapshot.val();
-  lista.innerHTML = '';
-  if(!val) return;
-  const items = Object.entries(val).map(([k,v])=>({id:k,...v}));
-  items.sort((a,b)=>b.ts - a.ts);
-  items.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `<strong>${item.name}</strong>
-                      <div style="margin-top:6px">${item.description||''}</div>`;
-    const btnRow = document.createElement('div'); btnRow.className = 'btn-row';
+// MOSTRAR
+onValue(ref(db,"anuncios"), snap => {
 
-    const ver = document.createElement('button'); ver.className='btn-mini ver-btn'; ver.textContent='👁️ Vista previa';
-    ver.onclick = () => openPreview(item);
-    const down = document.createElement('button'); down.className='btn-mini down-btn'; down.textContent='⬇ Descargar';
-    down.onclick = () => downloadFile(item.url, item.name);
+  const datos = snap.val();
+  contenedor.innerHTML = "";
 
-    btnRow.appendChild(ver); btnRow.appendChild(down);
-    card.appendChild(btnRow);
+  if(!datos) return;
 
-    if(item.type && item.type.startsWith('image/')){
-      const img = document.createElement('img'); img.className='preview-img'; img.src=item.url; img.alt=item.name;
-      img.style.cursor='pointer'; img.onclick = () => openPreview(item);
-      card.appendChild(img);
-    } else if(item.type === 'application/pdf'){
-      const note = document.createElement('div'); note.style.marginTop='8px'; note.textContent='PDF — usar Vista previa';
-      card.appendChild(note);
-    } else {
-      const note = document.createElement('div'); note.style.marginTop='8px'; note.textContent='Archivo — usar Vista previa o Descargar';
-      card.appendChild(note);
-    }
+  const agrupado = {};
+  Object.values(datos).forEach(item=>{
+    if(!agrupado[item.categoria]) agrupado[item.categoria]=[];
+    agrupado[item.categoria].push(item);
+  });
 
-    lista.appendChild(card);
+  Object.keys(agrupado).forEach(cat=>{
+
+    const sec = document.createElement("div");
+    sec.className="seccion";
+    sec.innerHTML = `<h2>${cat}</h2>`;
+
+    agrupado[cat].sort((a,b)=>b.fecha - a.fecha).forEach(item=>{
+      const card = document.createElement("div");
+      card.className="card";
+      card.innerHTML = `
+        <b>${item.nombre}</b><br>
+        <small>Subido por ${item.autor || ""}</small>
+      `;
+
+      const row = document.createElement("div");
+      row.className="btn-row";
+
+      const ver = document.createElement("button");
+      ver.textContent="Vista previa";
+      ver.className="btn ver";
+      ver.onclick = ()=>verArchivo(item);
+
+      const down = document.createElement("button");
+      down.textContent="Descargar";
+      down.className="btn descargar";
+      down.onclick = ()=>descargar(item.url,item.nombre);
+
+      row.appendChild(ver);
+      row.appendChild(down);
+      card.appendChild(row);
+
+      sec.appendChild(card);
+    });
+
+    contenedor.appendChild(sec);
   });
 });
 
-function openPreview(item){
-  visorContent.innerHTML = '';
-  if(item.type === 'application/pdf'){
-    const frame = document.createElement('iframe'); frame.className='viewer'; frame.src = item.url;
-    visorContent.appendChild(frame);
-  } else if(item.type && item.type.startsWith('image/')){
-    const img = document.createElement('img'); img.className='viewer'; img.src = item.url;
-    visorContent.appendChild(img);
-  } else {
-    window.open(item.url, '_blank');
-    return;
-  }
-  visorModal.style.display = 'flex';
-}
-visorClose.onclick = ()=>{ visorModal.style.display='none'; visorContent.innerHTML=''; }
+window.verArchivo = function(item){
+  const visor = document.getElementById("visorModal");
+  const content = document.getElementById("visorContent");
+  content.innerHTML="";
 
-function downloadFile(url, name){
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
+  if(item.tipo==="application/pdf"){
+    content.innerHTML=`<iframe src="${item.url}"></iframe>`;
+  } else {
+    content.innerHTML=`<img src="${item.url}">`;
+  }
+
+  visor.style.display="flex";
+}
+
+window.cerrarVisor = function(){
+  document.getElementById("visorModal").style.display="none";
+  document.getElementById("visorContent").innerHTML="";
+}
+
+window.descargar = function(url,nombre){
+  const a=document.createElement("a");
+  a.href=url; a.download=nombre;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 }
 </script>
+
 </body>
 </html>
