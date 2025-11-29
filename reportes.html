@@ -10,37 +10,41 @@
   header{
     background:var(--verde);
     color:#fff;
-    padding:18px;
+    padding:16px;
     text-align:center;
     font-size:20px;
     font-weight:700;
-    position:relative;
   }
 
-  .filtro-btn{
-    position:absolute;
-    left:12px;
-    top:50%;
-    transform:translateY(-50%);
+  .filtros-bar{
+    display:flex;
+    justify-content:space-around;
     background:#fff;
-    color:var(--verde);
+    padding:10px;
+    border-bottom:1px solid #ddd;
+  }
+
+  .filtros-bar button{
+    padding:6px 12px;
     border:none;
-    width:34px;
-    height:34px;
     border-radius:8px;
-    font-size:18px;
     cursor:pointer;
     font-weight:bold;
+    background:#eee;
+  }
+
+  .filtros-bar button.activo{
+    background:var(--verde);
+    color:#fff;
   }
 
   .panel-filtros{
     background:#ffffff;
-    padding:14px;
-    display:none;
+    padding:12px;
     border-bottom:2px solid #ddd;
   }
 
-  .panel-filtros input{
+  .panel-filtros input, .panel-filtros select{
     width:100%;
     padding:8px;
     margin-bottom:8px;
@@ -49,51 +53,41 @@
     font-size:14px;
   }
 
-  .panel-filtros button{
-    width:100%;
-    padding:8px;
-    background:var(--verde);
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    font-weight:bold;
-    cursor:pointer;
-  }
-
   .container{padding:18px;max-width:980px;margin:0 auto}
   .card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
   .hechas{color:#2d6a4f;font-weight:700}
   .pendientes{color:#c1121f;font-weight:700}
   .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
-  h3{margin-top:14px}
+  h3{margin-top:10px}
 </style>
 </head>
 <body>
 
-<header>
-<button class="filtro-btn" onclick="toggleFiltro()">🔍</button>
-Reportes Generados
-</header>
+<header>Reportes Generados</header>
 
-<div id="filtros" class="panel-filtros">
-  <input type="number" id="fTerritorio" placeholder="Filtrar por territorio">
-  <input type="text" id="fConductor" placeholder="Filtrar por conductor">
-  <input type="date" id="fFecha">
+<!-- FILTRO POR FECHA RÁPIDA -->
+<div class="filtros-bar">
+  <button onclick="setRango('hoy')" id="btnHoy">HOY</button>
+  <button onclick="setRango('7')" id="btn7">7 DÍAS</button>
+  <button onclick="setRango('30')" id="btn30">MES</button>
+  <button onclick="setRango('todos')" id="btnTodos" class="activo">TODOS</button>
+</div>
 
-  <label style="font-size:14px">
-    <input type="checkbox" id="fSoloPendientes">
-    Mostrar SOLO pendientes
-  </label>
+<!-- FILTROS AVANZADOS -->
+<div class="panel-filtros">
+  <input type="number" id="fTerritorio" placeholder="Territorio">
+  <input type="text" id="fConductor" placeholder="Conductor">
 
-  <button onclick="aplicarFiltros()">Aplicar filtro</button>
+  <select id="fEstado">
+    <option value="">Todos</option>
+    <option value="pendientes">Con pendientes</option>
+    <option value="completo">Completos</option>
+  </select>
 </div>
 
 <div class="container">
-  <h3>Reportes recientes</h3>
+  <h3>Resultados</h3>
   <div id="contenedorReportes"></div>
-
-  <h3>Próximas salidas (pendientes)</h3>
-  <div id="contenedorPendientes"></div>
 </div>
 
 <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
@@ -102,112 +96,107 @@ Reportes Generados
 import { db, ref, onValue } from "./firebase.js";
 
 const cont = document.getElementById("contenedorReportes");
-const pendCont = document.getElementById("contenedorPendientes");
-const filtros = document.getElementById("filtros");
 
-let reportesGlobal = [];
+let reportes = [];
+let rangoFecha = "todos";
 
-window.toggleFiltro = ()=>{
-  filtros.style.display = filtros.style.display === "block" ? "none" : "block";
+function hoyISO(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
 }
 
-window.aplicarFiltros = ()=>{
-  renderReportes(reportesGlobal);
+function convertirFecha(fecha){
+  if(!fecha) return null;
+  const [d,m,y] = fecha.split("/");
+  return `${y}-${m}-${d}`;
 }
 
-function renderReportes(lista){
-  cont.innerHTML = "";
+window.setRango = (r)=>{
+  rangoFecha = r;
 
-  let t = document.getElementById("fTerritorio").value.trim();
-  let c = document.getElementById("fConductor").value.toLowerCase().trim();
-  let f = document.getElementById("fFecha").value;
-  let soloPend = document.getElementById("fSoloPendientes").checked;
+  document.querySelectorAll(".filtros-bar button").forEach(b=>b.classList.remove("activo"));
+  if(r==="hoy") btnHoy.classList.add("activo");
+  if(r==="7") btn7.classList.add("activo");
+  if(r==="30") btn30.classList.add("activo");
+  if(r==="todos") btnTodos.classList.add("activo");
 
-  let filtrados = lista.filter(r => {
+  aplicarFiltros();
+}
 
-    if(t && String(r.territorio) !== t) return false;
-    if(c && !String(r.conductor||"").toLowerCase().includes(c)) return false;
+["fTerritorio","fConductor","fEstado"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", aplicarFiltros);
+});
 
-    if(f && r.fecha){
-      const [d,m,y] = r.fecha.split("/");
-      const fechaNorm = `${y}-${m}-${d}`;
-      if(fechaNorm !== f) return false;
+function aplicarFiltros(){
+  let t = fTerritorio.value.trim();
+  let c = fConductor.value.toLowerCase().trim();
+  let estado = fEstado.value;
+
+  const hoy = new Date();
+
+  let lista = reportes.filter(r=>{
+
+    /* FILTRO FECHA */
+    if(rangoFecha !== "todos" && r.fecha){
+      const rf = new Date(convertirFecha(r.fecha));
+      let dif = Math.floor((hoy - rf) / (1000*60*60*24));
+
+      if(rangoFecha === "hoy" && dif !== 0) return false;
+      if(rangoFecha === "7" && dif > 7) return false;
+      if(rangoFecha === "30" && dif > 30) return false;
     }
 
-    if(soloPend){
-      if(!Array.isArray(r.pendientes) || r.pendientes.length === 0) return false;
+    /* TERRITORIO */
+    if(t && String(r.territorio) !== t) return false;
+
+    /* CONDUCTOR */
+    if(c && !String(r.conductor||"").toLowerCase().includes(c)) return false;
+
+    /* ESTADO */
+    if(estado === "pendientes"){
+      if(!r.pendientes || r.pendientes.length === 0) return false;
+    }
+
+    if(estado === "completo"){
+      if(r.pendientes && r.pendientes.length > 0) return false;
     }
 
     return true;
   });
 
-  if(filtrados.length === 0){
-    cont.innerHTML = "<p style='color:#666'>Sin resultados.</p>";
-    return;
-  }
+  cont.innerHTML = lista.length ? "" : "<p style='color:#666'>Sin resultados.</p>";
 
-  filtrados.forEach(r=>{
+  lista.forEach(r=>{
     const hechas = Array.isArray(r.hechas) ? r.hechas.join(", ") : "-";
     const pendientes = Array.isArray(r.pendientes) ? r.pendientes.join(", ") : "-";
 
     const d = document.createElement("div");
     d.className = "card";
     d.innerHTML = `
-      <h4 style="margin:0 0 8px">Territorio ${r.territorio} — ${r.fecha||""} ${r.hora||""}</h4>
-      <div><strong>Conductor:</strong> ${r.conductor||"-"}</div>
-      <div><strong>Manzanas hechas:</strong> <span class="hechas">${hechas}</span></div>
-      <div><strong>Manzanas pendientes:</strong> <span class="pendientes">${pendientes}</span></div>
-      <div><strong>Observaciones:</strong> ${r.observaciones || "-"}</div>
+      <h4>Territorio ${r.territorio} — ${r.fecha || ""} ${r.hora || ""}</h4>
+      <div>Conductor: ${r.conductor || "-"}</div>
+      <div>Hechas: <span class="hechas">${hechas}</span></div>
+      <div>Pendientes: <span class="pendientes">${pendientes}</span></div>
+      <div>${r.observaciones || ""}</div>
     `;
     cont.appendChild(d);
   });
 }
 
-/* ==== REPORTES ==== */
-onValue(ref(db, "reportes"), snap=>{
-  reportesGlobal = [];
+/* ==== CARGA DE REPORTES ==== */
+onValue(ref(db,"reportes"), snap=>{
+  reportes = [];
 
   snap.forEach(x=>{
     const r = x.val() || {};
     if(!r.territorio) return;
-    reportesGlobal.push(r);
+    reportes.push(r);
   });
 
-  reportesGlobal.sort((a,b)=>(b.ts||0)-(a.ts||0));
-  renderReportes(reportesGlobal);
-});
-
-/* ==== PENDIENTES ==== */
-onValue(ref(db, "pendientes"), snap=>{
-  pendCont.innerHTML = "";
-
-  if(!snap.exists()){
-    pendCont.innerHTML = '<p style="color:#666">No hay pendientes.</p>';
-    return;
-  }
-
-  const arr = [];
-  snap.forEach(x=>{
-    const p = x.val() || {};
-    if(!p.territorio) return;
-    arr.push(p);
-  });
-
-  arr.sort((a,b)=>(a.territorio||99)-(b.territorio||99));
-
-  arr.forEach(p=>{
-    const pendientes = Array.isArray(p.pendientes) ? p.pendientes.join(", ") : "-";
-
-    const d = document.createElement("div");
-    d.className = "card";
-    d.innerHTML = `
-      <div><strong>Territorio ${p.territorio}</strong></div>
-      <div>Pendientes: <span class="pendientes">${pendientes}</span></div>
-      <div>Último conductor: ${p.conductor||"-"}</div>
-    `;
-    pendCont.appendChild(d);
-  });
+  reportes.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  aplicarFiltros();
 });
 </script>
+
 </body>
 </html>
