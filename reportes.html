@@ -79,6 +79,12 @@ Reportes Generados
   <input type="number" id="fTerritorio" placeholder="Filtrar por territorio">
   <input type="text" id="fConductor" placeholder="Filtrar por conductor">
   <input type="date" id="fFecha">
+
+  <label style="font-size:14px">
+    <input type="checkbox" id="fSoloPendientes">
+    Mostrar SOLO pendientes
+  </label>
+
   <button onclick="aplicarFiltros()">Aplicar filtro</button>
 </div>
 
@@ -112,14 +118,26 @@ window.aplicarFiltros = ()=>{
 function renderReportes(lista){
   cont.innerHTML = "";
 
-  let t = document.getElementById("fTerritorio").value;
-  let c = document.getElementById("fConductor").value.toLowerCase();
+  let t = document.getElementById("fTerritorio").value.trim();
+  let c = document.getElementById("fConductor").value.toLowerCase().trim();
   let f = document.getElementById("fFecha").value;
+  let soloPend = document.getElementById("fSoloPendientes").checked;
 
-  let filtrados = lista.filter(r=>{
+  let filtrados = lista.filter(r => {
+
     if(t && String(r.territorio) !== t) return false;
     if(c && !String(r.conductor||"").toLowerCase().includes(c)) return false;
-    if(f && r.fecha !== f.split("-").reverse().join("/")) return false;
+
+    if(f && r.fecha){
+      const [d,m,y] = r.fecha.split("/");
+      const fechaNorm = `${y}-${m}-${d}`;
+      if(fechaNorm !== f) return false;
+    }
+
+    if(soloPend){
+      if(!Array.isArray(r.pendientes) || r.pendientes.length === 0) return false;
+    }
+
     return true;
   });
 
