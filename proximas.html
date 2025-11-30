@@ -61,7 +61,7 @@ let pendientes=[], salidas=[];
 function render(){
   lista.innerHTML = "";
 
-  // PENDIENTES solo para admin
+  // PENDIENTES solo visibles para admin
   if(esAdmin){
     pendientes.forEach(p=>{
       const card = document.createElement("div");
@@ -92,7 +92,7 @@ function render(){
     });
   }
 
-  // SALIDAS: todos las pueden ver, solo admin puede editar
+  // SALIDAS visibles para todos, solo admin ve inputs
   salidas.forEach(s=>{
     const card=document.createElement("div");
     card.className="card asignada";
