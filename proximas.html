@@ -53,27 +53,26 @@ const lista = document.getElementById("lista");
 const pendientesRef = ref(db,"pendientes");
 const salidasRef = ref(db,"salidas_asignadas");
 
-/* ROL CORREGIDO */
+/* ROL */
 const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
 const esAdmin = rol === "admin";
-let pendientes = [], salidas = [];
 
-/* PINTAR */
+let pendientes = [];
+let salidas = [];
+
 function render(){
   lista.innerHTML = "";
 
-  /* SOLO ADMIN VE PENDIENTES */
+  /* ---------- PENDIENTES: SOLO ADMIN ---------- */
   if(esAdmin){
     pendientes.forEach(p=>{
       const card = document.createElement("div");
       card.className="card pendiente";
 
-      const faltan = Array.isArray(p.pendientes)?p.pendientes.join(", "):"-";
-
       card.innerHTML = `
-        <span class='etiqueta'>PENDIENTE</span>
+        <span class="etiqueta">PENDIENTE</span>
         <b>Territorio ${p.territorio||"-"}</b>
-        <div>🧱 Faltan: <span class="pend">${faltan}</span></div>
+        <div>🧱 Faltan: <span class="pend">${(p.pendientes||[]).join(", ")}</span></div>
         <div>👤 Último: ${p.conductor||"-"}</div>
       `;
 
@@ -93,15 +92,15 @@ function render(){
     });
   }
 
-  /* SOLO SALIDAS COMPLETAS SE MUESTRAN */
+  /* ---------- SALIDAS: SOLO LAS ASIGNADAS ---------- */
   salidas
-    .filter(s => s.fecha && s.conductor && s.calle && s.interseccion)
+    .filter(s => s.estado === "asignada")
     .forEach(s=>{
       const card=document.createElement("div");
       card.className="card asignada";
 
       card.innerHTML=`
-        <span class='etiqueta'>ASIGNADA</span>
+        <span class="etiqueta">ASIGNADA</span>
         <b>Territorio ${s.territorio||"-"}</b>
         <div>📅 Fecha: ${s.fecha||"-"}</div>
         <div>👤 Conductor: ${s.conductor||"-"}</div>
@@ -110,14 +109,15 @@ function render(){
         ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
       `;
 
+      /* ---------- EDICIÓN: SOLO ADMIN ---------- */
       if(esAdmin){
         const box=document.createElement("div");
         box.className="admin";
         box.innerHTML=`
           <input id="ec${s.id}" value="${s.conductor||""}">
           <input type="date" id="ef${s.id}" value="${s.fecha||""}">
-          <input id="ecalle${s.id}" value="${s.calle||""}" placeholder="Calle">
-          <input id="einter${s.id}" value="${s.interseccion||""}" placeholder="Intersección">
+          <input id="ecalle${s.id}" value="${s.calle||""}">
+          <input id="einter${s.id}" value="${s.interseccion||""}">
           <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
           <button onclick="editar('${s.id}')">💾 Guardar</button>
           <button class="elim" onclick="borrar('${s.id}')">🗑 Eliminar</button>
@@ -129,7 +129,7 @@ function render(){
     });
 }
 
-/* ASIGNAR */
+/* ---------- ASIGNAR ---------- */
 window.asignar = async (id)=>{
   const p = pendientes.find(x=>x.id===id);
   const c = document.getElementById("c"+id).value;
@@ -139,45 +139,46 @@ window.asignar = async (id)=>{
   const o = document.getElementById("o"+id).value;
 
   if(!c || !f || !calle || !inter){
-    alert("Falta completar: Conductor, Fecha, Calle o Intersección");
+    alert("Falta completar");
     return;
   }
 
   await push(salidasRef,{
-    territorio:p.territorio,
-    pendientes:p.pendientes,
-    conductor:c,
-    fecha:f,
-    calle:calle,
-    interseccion:inter,
-    observaciones:o,
-    creado:Date.now()
+    estado: "asignada",
+    territorio: p.territorio,
+    pendientes: p.pendientes,
+    conductor: c,
+    fecha: f,
+    calle: calle,
+    interseccion: inter,
+    observaciones: o,
+    creado: Date.now()
   });
 
   await remove(ref(db,"pendientes/"+id));
-
   alert("✅ Salida asignada");
 };
 
-/* EDITAR */
+/* ---------- EDITAR ---------- */
 window.editar = async (id)=>{
   await update(ref(db,"salidas_asignadas/"+id),{
-    conductor:document.getElementById("ec"+id).value,
-    fecha:document.getElementById("ef"+id).value,
-    calle:document.getElementById("ecalle"+id).value,
-    interseccion:document.getElementById("einter"+id).value,
-    observaciones:document.getElementById("eo"+id).value
+    conductor: document.getElementById("ec"+id).value,
+    fecha: document.getElementById("ef"+id).value,
+    calle: document.getElementById("ecalle"+id).value,
+    interseccion: document.getElementById("einter"+id).value,
+    observaciones: document.getElementById("eo"+id).value,
+    estado: "asignada"
   });
   alert("✅ Guardado");
 };
 
-/* BORRAR */
+/* ---------- BORRAR ---------- */
 window.borrar = async (id)=>{
   if(!confirm("Eliminar salida?")) return;
   await remove(ref(db,"salidas_asignadas/"+id));
 };
 
-/* FIREBASE */
+/* ---------- FIREBASE ---------- */
 onValue(pendientesRef,snap=>{
   pendientes=[];
   snap.forEach(x=>{
