@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Próximas Salidas y Pendientes</title>
+
+<style>
+:root{--verde:#1a4b27;--bg:#f4f4f4}
+body{margin:0;font-family:Arial;background:var(--bg)}
+header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
+
+.container{max-width:900px;margin:auto;padding:15px}
+
+/* TARJETAS */
+.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
+.pendiente{border-left:6px solid orange}
+.asignada{border-left:6px solid green}
+.pend{color:#c1121f;font-weight:bold}
+
+.obs{margin-top:6px;font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde)}
+
+.etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
+
+/* ADMIN */
+.admin input,.admin textarea{
+  width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc
+}
+button{
+  background:var(--verde);
+  color:white;
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer
+}
+.elim{background:#c1121f}
+
+.back{position:fixed;left:15px;bottom:15px}
+</style>
+</head>
+
+<body>
+<header>📅 Pendientes y Próximas Salidas</header>
+<div class="container" id="lista"></div>
+<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
+
+<script type="module">
+import { db, ref, onValue, push, remove, update } from "./firebase.js";
+
+const lista = document.getElementById("lista");
+const pendientesRef = ref(db,"pendientes");
+const salidasRef = ref(db,"salidas_asignadas");
+
+const rol = localStorage.getItem("rol") || "invitado";
+const esAdmin = rol === "admin";
+let pendientes=[], salidas=[];
+
+/* RENDER */
+function render(){
+  lista.innerHTML = "";
+
+  // SOLO ADMIN VE PENDIENTES
+  if(esAdmin){
+    pendientes.forEach(p=>{
+      const card = document.createElement("div");
+      card.className="card pendiente";
+
+      const faltan = Array.isArray(p.pendientes)?p.pendientes.join(", "):"-";
+
+      card.innerHTML = `
+        <span class="etiqueta">PENDIENTE</span>
+        <b>Territorio ${p.territorio||"-"}</b>
+        <div>🧱 Faltan: <span class="pend">${faltan}</span></div>
+        <div>👤 Último: ${p.conductor||"-"}</div>
+      `;
+
+      const box=document.createElement("div");
+      box.className="admin";
+      box.innerHTML=`
+        <input id="c${p.id}" placeholder="Conductor">
+        <input type="date" id="f${p.id}">
+        <input id="calles${p.id}" placeholder="Calle">
+        <input id="inter${p.id}" placeholder="Intersección">
+        <textarea id="o${p.id}" placeholder="Observación"></textarea>
+        <button onclick="asignar('${p.id}')">✅ Asignar</button>
+      `;
+      card.appendChild(box);
+      lista.appendChild(card);
+    });
+  }
+
+  // TODOS VEN SALIDAS (SOLO ADMIN EDITA)
+  salidas.forEach(s=>{
+    const card=document.createElement("div");
+    card.className="card asignada";
+
+    card.innerHTML=`
+      <span class="etiqueta">ASIGNADA</span>
+      <b>Territorio ${s.territorio||"-"}</b>
+      <div>📅 Fecha: ${s.fecha||"-"}</div>
+      <div>👤 Conductor: ${s.conductor||"-"}</div>
+      <div>📍 Punto: ${s.calle||"-"} / ${s.interseccion||"-"}</div>
+      <div>🧱 Pendientes: <span class="pend">${(s.pendientes||[]).join(", ")}</span></div>
+      ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
+    `;
+
+    if(esAdmin){
+      const box=document.createElement("div");
+      box.className="admin";
+      box.innerHTML=`
+        <input id="ec${s.id}" value="${s.conductor||""}">
+        <input type="date" id="ef${s.id}" value="${s.fecha||""}">
+        <input id="ecalle${s.id}" value="${s.calle||""}">
+        <input id="einter${s.id}" value="${s.interseccion||""}">
+        <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
+        <button onclick="editar('${s.id}')">💾 Guardar</button>
+        <button class="elim" onclick="borrar('${s.id}')">🗑 Eliminar</button>
+      `;
+      card.appendChild(box);
+    }
+
+    lista.appendChild(card);
+  });
+}
+
+/* ASIGNAR */
+window.asignar = async (id)=>{
+  const p = pendientes.find(x=>x.id===id);
+  const c = document.getElementById("c"+id).value;
+  const f = document.getElementById("f"+id).value;
+  const calle = document.getElementById("calles"+id).value;
+  const inter = document.getElementById("inter"+id).value;
+  const o = document.getElementById("o"+id).value;
+
+  if(!c || !f || !calle || !inter){
+    alert("Completar conductor, fecha, calle e intersección");
+    return;
+  }
+
+  await push(salidasRef,{
+    territorio:p.territorio,
+    pendientes:p.pendientes,
+    conductor:c,
+    fecha:f,
+    calle:calle,
+    interseccion:inter,
+    observaciones:o,
+    creado:Date.now()
+  });
+
+  await remove(ref(db,"pendientes/"+id));
+
+  alert("✅ Salida asignada");
+}
+
+/* EDITAR */
+window.editar = async (id)=>{
+  await update(ref(db,"salidas_asignadas/"+id),{
+    conductor:document.getElementById("ec"+id).value,
+    fecha:document.getElementById("ef"+id).value,
+    calle:document.getElementById("ecalle"+id).value,
+    interseccion:document.getElementById("einter"+id).value,
+    observaciones:document.getElementById("eo"+id).value
+  });
+  alert("✅ Guardado");
+}
+
+/* BORRAR */
+window.borrar = async (id)=>{
+  if(!confirm("Eliminar salida?")) return;
+  await remove(ref(db,"salidas_asignadas/"+id));
+}
+
+/* FIREBASE */
+onValue(pendientesRef,snap=>{
+  pendientes=[];
+  snap.forEach(x=>{
+    const o=x.val();
+    o.id=x.key;
+    pendientes.push(o);
+  });
+  render();
+});
+
+onValue(salidasRef,snap=>{
+  salidas=[];
+  snap.forEach(x=>{
+    const o=x.val();
+    o.id=x.key;
+    salidas.push(o);
+  });
+  render();
+});
+</script>
+</body>
+</html>
