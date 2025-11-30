@@ -53,15 +53,16 @@ const lista = document.getElementById("lista");
 const pendientesRef = ref(db,"pendientes");
 const salidasRef = ref(db,"salidas_asignadas");
 
-const rol = localStorage.getItem("rol") || "invitado";
+/* ROL CORREGIDO */
+const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
 const esAdmin = rol === "admin";
-let pendientes=[], salidas=[];
+let pendientes = [], salidas = [];
 
-/* pintar */
+/* PINTAR */
 function render(){
   lista.innerHTML = "";
 
-  // PENDIENTES solo visibles para admin
+  /* SOLO ADMIN VE PENDIENTES */
   if(esAdmin){
     pendientes.forEach(p=>{
       const card = document.createElement("div");
@@ -92,38 +93,40 @@ function render(){
     });
   }
 
-  // SALIDAS visibles para todos, solo admin ve inputs
-  salidas.forEach(s=>{
-    const card=document.createElement("div");
-    card.className="card asignada";
+  /* SOLO SALIDAS COMPLETAS SE MUESTRAN */
+  salidas
+    .filter(s => s.fecha && s.conductor && s.calle && s.interseccion)
+    .forEach(s=>{
+      const card=document.createElement("div");
+      card.className="card asignada";
 
-    card.innerHTML=`
-      <span class='etiqueta'>ASIGNADA</span>
-      <b>Territorio ${s.territorio||"-"}</b>
-      <div>📅 Fecha: ${s.fecha||"-"}</div>
-      <div>👤 Conductor: ${s.conductor||"-"}</div>
-      <div>📍 Punto de encuentro: ${s.calle||"-"} / ${s.interseccion||"-"}</div>
-      <div>🧱 Pendientes: <span class="pend">${(s.pendientes||[]).join(", ")}</span></div>
-      ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
-    `;
-
-    if(esAdmin){
-      const box=document.createElement("div");
-      box.className="admin";
-      box.innerHTML=`
-        <input id="ec${s.id}" value="${s.conductor||""}">
-        <input type="date" id="ef${s.id}" value="${s.fecha||""}">
-        <input id="ecalle${s.id}" value="${s.calle||""}" placeholder="Calle">
-        <input id="einter${s.id}" value="${s.interseccion||""}" placeholder="Intersección">
-        <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
-        <button onclick="editar('${s.id}')">💾 Guardar</button>
-        <button class="elim" onclick="borrar('${s.id}')">🗑 Eliminar</button>
+      card.innerHTML=`
+        <span class='etiqueta'>ASIGNADA</span>
+        <b>Territorio ${s.territorio||"-"}</b>
+        <div>📅 Fecha: ${s.fecha||"-"}</div>
+        <div>👤 Conductor: ${s.conductor||"-"}</div>
+        <div>📍 Punto de encuentro: ${s.calle||"-"} / ${s.interseccion||"-"}</div>
+        <div>🧱 Pendientes: <span class="pend">${(s.pendientes||[]).join(", ")}</span></div>
+        ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
       `;
-      card.appendChild(box);
-    }
 
-    lista.appendChild(card);
-  });
+      if(esAdmin){
+        const box=document.createElement("div");
+        box.className="admin";
+        box.innerHTML=`
+          <input id="ec${s.id}" value="${s.conductor||""}">
+          <input type="date" id="ef${s.id}" value="${s.fecha||""}">
+          <input id="ecalle${s.id}" value="${s.calle||""}" placeholder="Calle">
+          <input id="einter${s.id}" value="${s.interseccion||""}" placeholder="Intersección">
+          <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
+          <button onclick="editar('${s.id}')">💾 Guardar</button>
+          <button class="elim" onclick="borrar('${s.id}')">🗑 Eliminar</button>
+        `;
+        card.appendChild(box);
+      }
+
+      lista.appendChild(card);
+    });
 }
 
 /* ASIGNAR */
@@ -154,7 +157,7 @@ window.asignar = async (id)=>{
   await remove(ref(db,"pendientes/"+id));
 
   alert("✅ Salida asignada");
-}
+};
 
 /* EDITAR */
 window.editar = async (id)=>{
@@ -166,13 +169,13 @@ window.editar = async (id)=>{
     observaciones:document.getElementById("eo"+id).value
   });
   alert("✅ Guardado");
-}
+};
 
 /* BORRAR */
 window.borrar = async (id)=>{
   if(!confirm("Eliminar salida?")) return;
   await remove(ref(db,"salidas_asignadas/"+id));
-}
+};
 
 /* FIREBASE */
 onValue(pendientesRef,snap=>{
