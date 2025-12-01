@@ -4,48 +4,93 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pendientes - Admin</title>
+
 <style>
 :root{--verde:#1a4b27;--bg:#f4f4f4}
 body{margin:0;font-family:Arial;background:var(--bg)}
 header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
+
 .container{max-width:900px;margin:auto;padding:15px}
 
 /* TARJETAS */
-.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+  margin-bottom:10px
+}
 .pendiente{border-left:6px solid orange}
 .pend{color:#c1121f;font-weight:bold}
-.etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
+.obs{
+  margin-top:6px;
+  font-style:italic;
+  background:#f7f7f7;
+  padding:6px;
+  border-left:4px solid var(--verde)
+}
+.etiqueta{
+  background:#ffe095;
+  padding:3px 6px;
+  border-radius:6px;
+  font-size:12px;
+  margin-right:6px
+}
 
 /* ADMIN */
-.admin input,.admin textarea{width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc}
-button{background:var(--verde);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
-button:disabled{background:gray;cursor:not-allowed}
+.admin input,.admin textarea{
+  width:100%;
+  margin-bottom:6px;
+  padding:6px;
+  border-radius:6px;
+  border:1px solid #ccc
+}
+button{
+  background:var(--verde);
+  color:white;
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer
+}
 
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
 
 <body>
+
 <header>📝 Pendientes - Asignar</header>
+
 <div class="container" id="lista"></div>
+
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
+
 import { db, ref, onValue, push, remove } from "./firebase.js";
 
+/* REFERENCIAS */
 const lista = document.getElementById("lista");
 const pendientesRef = ref(db,"pendientes");
-const salidasRef    = ref(db,"salidas_asignadas");
+const salidasRef = ref(db,"salidas_asignadas");
 
-const rol = (localStorage.getItem("rol") || "").toLowerCase().trim();
+/* SESION */
+const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
+const rol = (sesion.rol || "invitado").toLowerCase();
+
 if(rol !== "admin"){
+  alert("No tenés permisos");
   location.href = "index.html";
 }
 
+/* DATOS */
 let pendientes = [];
 
 /* RENDER */
 function render(){
+
   lista.innerHTML = "";
 
   if(pendientes.length === 0){
@@ -53,89 +98,91 @@ function render(){
     return;
   }
 
-  pendientes.forEach(p=>{
+  pendientes.forEach(p => {
+
     const card = document.createElement("div");
-    card.className="card pendiente";
+    card.className = "card pendiente";
+
     card.innerHTML = `
       <span class="etiqueta">PENDIENTE</span>
-      <b>Territorio ${p.territorio||"-"}</b>
-      <div>🧱 Faltan: <span class="pend">${(p.pendientes||[]).join(", ")}</span></div>
-      <div>👤 Último: ${p.conductor||"-"}</div>
+      <b>Territorio ${p.territorio || "-"}</b>
+      <div>🧱 Faltan: <span class="pend">${(p.pendientes || []).join(", ")}</span></div>
+      <div>👤 Último: ${p.conductor || "-"}</div>
     `;
 
-    const box=document.createElement("div");
-    box.className="admin";
-    box.innerHTML=`
+    const box = document.createElement("div");
+    box.className = "admin";
+
+    box.innerHTML = `
       <input id="c${p.id}" placeholder="Conductor">
       <input type="date" id="f${p.id}">
       <input id="calles${p.id}" placeholder="Calle">
       <input id="inter${p.id}" placeholder="Intersección">
       <textarea id="o${p.id}" placeholder="Observación"></textarea>
-      <button id="btn${p.id}">✅ Asignar</button>
+      <button data-id="${p.id}">✅ Asignar</button>
     `;
 
     card.appendChild(box);
     lista.appendChild(card);
 
-    // EVENTO ASIGNAR
-    document.getElementById("btn"+p.id).onclick = async ()=>{
+  });
 
-      const btn = document.getElementById("btn"+p.id);
-      btn.disabled = true;
-      btn.textContent = "Enviando...";
+  /* EVENTOS ASIGNAR */
+  document.querySelectorAll("button[data-id]").forEach(btn => {
 
-      const c = document.getElementById("c"+p.id).value.trim();
-      const f = document.getElementById("f"+p.id).value;
-      const calle = document.getElementById("calles"+p.id).value.trim();
-      const inter = document.getElementById("inter"+p.id).value.trim();
-      const o = document.getElementById("o"+p.id).value;
+    btn.onclick = async () => {
+
+      const id = btn.dataset.id;
+      const p = pendientes.find(x => x.id === id);
+      if(!p) return;
+
+      const c = document.getElementById("c"+id).value.trim();
+      const f = document.getElementById("f"+id).value;
+      const calle = document.getElementById("calles"+id).value.trim();
+      const inter = document.getElementById("inter"+id).value.trim();
+      const o = document.getElementById("o"+id).value.trim();
 
       if(!c || !f || !calle || !inter){
-        alert("Faltan datos");
-        btn.disabled = false;
-        btn.textContent = "✅ Asignar";
+        alert("Completá todos los datos");
         return;
       }
 
-      try{
-        // GUARDAR EN PRÓXIMAS
-        await push(salidasRef,{
-          territorio: p.territorio,
-          pendientes: p.pendientes,
-          conductor: c,
-          fecha: f,
-          calle: calle,
-          interseccion: inter,
-          observaciones: o,
-          creado: Date.now()
-        });
+      /* ENVIAR A PROXIMAS */
+      await push(salidasRef, {
+        territorio: p.territorio,
+        pendientes: p.pendientes || [],
+        conductor: c,
+        fecha: f,
+        calle,
+        interseccion: inter,
+        observaciones: o,
+        creado: Date.now()
+      });
 
-        // BORRAR DE PENDIENTES
-        await remove(ref(db,"pendientes/"+p.id));
+      /* BORRAR DE PENDIENTES */
+      await remove(ref(db,"pendientes/"+id));
 
-        // REDIRECCIÓN FORZADA
-        window.location.href = "proximas.html";
-
-      }catch(e){
-        alert("Error al asignar");
-        console.error(e);
-        btn.disabled = false;
-        btn.textContent = "✅ Asignar";
-      }
+      /* REDIRIGIR */
+      window.location.replace("proximas.html");
     };
   });
+
 }
 
-/* FIREBASE */
-onValue(pendientesRef, snap=>{
+/* ESCUCHAR PENDIENTES */
+onValue(pendientesRef, snap => {
+
   pendientes = [];
-  snap.forEach(x=>{
-    const o = x.val();
-    o.id = x.key;
+
+  snap.forEach(item=>{
+    const o = item.val();
+    o.id = item.key;
     pendientes.push(o);
   });
+
   render();
 });
+
 </script>
 
 </body>
