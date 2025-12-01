@@ -14,12 +14,13 @@ header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;pad
 .card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
 .pendiente{border-left:6px solid orange}
 .pend{color:#c1121f;font-weight:bold}
-.obs{margin-top:6px;font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde)}
 .etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
 
 /* ADMIN */
 .admin input,.admin textarea{width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc}
 button{background:var(--verde);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
+button:disabled{background:gray;cursor:not-allowed}
+
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
@@ -36,15 +37,14 @@ const lista = document.getElementById("lista");
 const pendientesRef = ref(db,"pendientes");
 const salidasRef    = ref(db,"salidas_asignadas");
 
-// ✅ CONTROL DE ROL
-const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
+const rol = (localStorage.getItem("rol") || "").toLowerCase().trim();
 if(rol !== "admin"){
   location.href = "index.html";
 }
 
 let pendientes = [];
 
-/* PINTAR */
+/* RENDER */
 function render(){
   lista.innerHTML = "";
 
@@ -55,66 +55,73 @@ function render(){
 
   pendientes.forEach(p=>{
     const card = document.createElement("div");
-    card.className = "card pendiente";
+    card.className="card pendiente";
     card.innerHTML = `
       <span class="etiqueta">PENDIENTE</span>
-      <b>Territorio ${p.territorio || "-"}</b>
+      <b>Territorio ${p.territorio||"-"}</b>
       <div>🧱 Faltan: <span class="pend">${(p.pendientes||[]).join(", ")}</span></div>
-      <div>👤 Último: ${p.conductor || "-"}</div>
+      <div>👤 Último: ${p.conductor||"-"}</div>
     `;
 
-    const box = document.createElement("div");
-    box.className = "admin";
-    box.innerHTML = `
+    const box=document.createElement("div");
+    box.className="admin";
+    box.innerHTML=`
       <input id="c${p.id}" placeholder="Conductor">
       <input type="date" id="f${p.id}">
       <input id="calles${p.id}" placeholder="Calle">
       <input id="inter${p.id}" placeholder="Intersección">
       <textarea id="o${p.id}" placeholder="Observación"></textarea>
-      <button data-id="${p.id}">✅ Asignar</button>
+      <button id="btn${p.id}">✅ Asignar</button>
     `;
 
     card.appendChild(box);
     lista.appendChild(card);
-  });
 
-  // EVENTOS
-  document.querySelectorAll("button[data-id]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      const id = btn.dataset.id;
-      const p = pendientes.find(x=>x.id === id);
-      if(!p) return;
+    // EVENTO ASIGNAR
+    document.getElementById("btn"+p.id).onclick = async ()=>{
 
-      const c = document.getElementById("c"+id).value.trim();
-      const f = document.getElementById("f"+id).value;
-      const calle = document.getElementById("calles"+id).value.trim();
-      const inter = document.getElementById("inter"+id).value.trim();
-      const o = document.getElementById("o"+id).value;
+      const btn = document.getElementById("btn"+p.id);
+      btn.disabled = true;
+      btn.textContent = "Enviando...";
+
+      const c = document.getElementById("c"+p.id).value.trim();
+      const f = document.getElementById("f"+p.id).value;
+      const calle = document.getElementById("calles"+p.id).value.trim();
+      const inter = document.getElementById("inter"+p.id).value.trim();
+      const o = document.getElementById("o"+p.id).value;
 
       if(!c || !f || !calle || !inter){
-        alert("Falta completar");
+        alert("Faltan datos");
+        btn.disabled = false;
+        btn.textContent = "✅ Asignar";
         return;
       }
 
-      // ✅ ENVIAR A PRÓXIMAS SALIDAS
-      await push(salidasRef,{
-        territorio: p.territorio,
-        pendientes: p.pendientes,
-        conductor: c,
-        fecha: f,
-        calle: calle,
-        interseccion: inter,
-        observaciones: o,
-        creado: Date.now()
-      });
+      try{
+        // GUARDAR EN PRÓXIMAS
+        await push(salidasRef,{
+          territorio: p.territorio,
+          pendientes: p.pendientes,
+          conductor: c,
+          fecha: f,
+          calle: calle,
+          interseccion: inter,
+          observaciones: o,
+          creado: Date.now()
+        });
 
-      // ✅ BORRAR DE PENDIENTES
-      await remove(ref(db,"pendientes/"+id));
+        // BORRAR DE PENDIENTES
+        await remove(ref(db,"pendientes/"+p.id));
 
-      // ✅ REDIRECCIÓN CORRECTA
-      setTimeout(()=>{
-        window.location.replace("proximas.html");
-      },300);
+        // REDIRECCIÓN FORZADA
+        window.location.href = "proximas.html";
+
+      }catch(e){
+        alert("Error al asignar");
+        console.error(e);
+        btn.disabled = false;
+        btn.textContent = "✅ Asignar";
+      }
     };
   });
 }
