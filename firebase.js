@@ -1,7 +1,10 @@
 // firebase.js (VERSIÓN ESTABLE PARA GITHUB PAGES)
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 
-/* REALTIME DATABASE */
+/* =============================
+   REALTIME DATABASE
+   ============================= */
 import { 
   getDatabase,
   ref as dbRef,
@@ -12,16 +15,20 @@ import {
   remove
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-/* STORAGE */
+/* =============================
+   STORAGE
+   ============================= */
 import { 
   getStorage,
   ref as storageRef,
   uploadBytes,
   getDownloadURL,
-  listAll
+  listAll 
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
 
-/* CONFIG */
+/* =============================
+   CONFIGURACIÓN
+   ============================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
   authDomain: "territorio-3c28d.firebaseapp.com",
@@ -32,12 +39,20 @@ const firebaseConfig = {
   appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed"
 };
 
-/* INICIALIZAR */
+/* =============================
+   INICIALIZAR APP
+   ============================= */
 const app = initializeApp(firebaseConfig);
+
+/* =============================
+   SERVICIOS
+   ============================= */
 const db = getDatabase(app);
 const storage = getStorage(app);
 
-/* EXPORTAR */
+/* =============================
+   EXPORTAR
+   ============================= */
 export { 
   db, 
   dbRef as ref,
