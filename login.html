@@ -51,7 +51,6 @@ document.getElementById('loginBtn').addEventListener('click', ()=>{
   // ADMIN
   if(user === 'admin' && pass === '1234'){
     guardarSesion('admin', user);
-    alert('Ingresaste como ADMIN');
     location.href="index.html";
     return;
   }
@@ -59,7 +58,6 @@ document.getElementById('loginBtn').addEventListener('click', ()=>{
   // CONDUCTOR
   if(user === 'conductor' && pass === 'Brasil643'){
     guardarSesion('conductor', user);
-    alert('Ingresaste como CONDUCTOR');
     location.href="index.html";
     return;
   }
@@ -67,7 +65,6 @@ document.getElementById('loginBtn').addEventListener('click', ()=>{
   // INVITADO
   if(user === 'invitado'){
     guardarSesion('invitado', 'Invitado');
-    alert('Ingresaste como INVITADO');
     location.href="index.html";
     return;
   }
@@ -81,6 +78,9 @@ function guardarSesion(rol, nombre){
     nombre,
     fecha: Date.now()
   };
+
+  // ✅ ESTO ES LO QUE FALTABA
+  localStorage.setItem("rol", rol);
   localStorage.setItem("sesion", JSON.stringify(sesion));
 }
 </script>
