@@ -9,58 +9,96 @@
 body{margin:0;font-family:Arial;background:var(--bg)}
 header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
 .container{max-width:900px;margin:auto;padding:15px}
+
+/* TARJETAS */
 .card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
 .asignada{border-left:6px solid green}
 .pend{color:#c1121f;font-weight:bold}
 .obs{margin-top:6px;font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde)}
-.etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
+.etiqueta{background:#b0f2b6;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
+
+/* ADMIN */
+.admin input,.admin textarea{width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc}
+button{background:var(--verde);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
+.elim{background:#c1121f}
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
 <body>
-
 <header>📅 Próximas Salidas</header>
 <div class="container" id="lista"></div>
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
-import { db, ref, onValue } from "./firebase.js";
+import { db, ref, onValue, update, remove } from "./firebase.js";
 
 const lista = document.getElementById("lista");
 const salidasRef = ref(db,"salidas_asignadas");
 
-const rol = (localStorage.getItem("rol")||"invitado").toLowerCase();
+const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
 const esAdmin = rol==="admin";
 
 let salidas = [];
 
-function render(){
-  lista.innerHTML = "";
-  salidas.forEach(s=>{
-    if(!s.fecha||!s.conductor||!s.calle||!s.interseccion) return;
-
-    const card=document.createElement("div");
-    card.className="card asignada";
-    card.innerHTML=`
-      <span class="etiqueta">ASIGNADA</span>
-      <b>Territorio ${s.territorio||"-"}</b>
-      <div>📅 Fecha: ${s.fecha||"-"}</div>
-      <div>👤 Conductor: ${s.conductor||"-"}</div>
-      <div>📍 Punto de encuentro: ${s.calle||"-"} / ${s.interseccion||"-"}</div>
-      <div>🧱 Pendientes: ${(s.pendientes||[]).join(", ")}</div>
-      ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
-    `;
-    lista.appendChild(card);
+/* EDITAR */
+async function editarSalida(id){
+  await update(ref(db,"salidas_asignadas/"+id),{
+    conductor: document.getElementById("ec"+id).value,
+    fecha: document.getElementById("ef"+id).value,
+    calle: document.getElementById("ecalle"+id).value,
+    interseccion: document.getElementById("einter"+id).value,
+    observaciones: document.getElementById("eo"+id).value
   });
+  alert("✅ Guardado");
 }
 
-onValue(salidasRef,snap=>{
-  salidas=[];
-  snap.forEach(x=>{
-    const o=x.val();
-    o.id=x.key;
-    salidas.push(o);
-  });
+/* BORRAR */
+async function borrarSalida(id){
+  if(!confirm("Eliminar salida?")) return;
+  await remove(ref(db,"salidas_asignadas/"+id));
+}
+
+/* PINTAR */
+function render(){
+  lista.innerHTML = "";
+  salidas
+    .filter(s => s.conductor && s.fecha && s.calle && s.interseccion)
+    .forEach(s=>{
+      const card = document.createElement("div");
+      card.className="card asignada";
+      card.innerHTML = `
+        <span class="etiqueta">ASIGNADA</span>
+        <b>Territorio ${s.territorio||"-"}</b>
+        <div>📅 Fecha: ${s.fecha||"-"}</div>
+        <div>👤 Conductor: ${s.conductor||"-"}</div>
+        <div>📍 Punto de encuentro: ${s.calle||"-"} / ${s.interseccion||"-"}</div>
+        <div>🧱 Pendientes: <span class="pend">${(s.pendientes||[]).join(", ")}</span></div>
+        ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
+      `;
+
+      if(esAdmin){
+        const box = document.createElement("div");
+        box.className="admin";
+        box.innerHTML = `
+          <input id="ec${s.id}" value="${s.conductor||""}">
+          <input type="date" id="ef${s.id}" value="${s.fecha||""}">
+          <input id="ecalle${s.id}" value="${s.calle||""}">
+          <input id="einter${s.id}" value="${s.interseccion||""}">
+          <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
+          <button onclick="editarSalida('${s.id}')">💾 Guardar</button>
+          <button class="elim" onclick="borrarSalida('${s.id}')">🗑 Eliminar</button>
+        `;
+        card.appendChild(box);
+      }
+
+      lista.appendChild(card);
+    });
+}
+
+/* FIREBASE */
+onValue(salidasRef, snap=>{
+  salidas = [];
+  snap.forEach(x=>{ const o=x.val(); o.id=x.key; salidas.push(o); });
   render();
 });
 </script>
