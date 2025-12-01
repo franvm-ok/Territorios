@@ -93,6 +93,7 @@ function render(){
 
       await remove(ref(db,"pendientes/"+id));
       alert("✅ Salida asignada");
+      location.href = "proximas_salidas.html"; // redirige automáticamente
     });
   });
 }
