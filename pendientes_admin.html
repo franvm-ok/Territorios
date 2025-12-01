@@ -23,8 +23,8 @@ button{background:var(--verde);color:white;border:none;padding:6px 10px;border-r
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
-<body>
 
+<body>
 <header>📝 Pendientes - Asignar</header>
 <div class="container" id="lista"></div>
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
@@ -36,10 +36,10 @@ const lista = document.getElementById("lista");
 const pendientesRef = ref(db,"pendientes");
 const salidasRef    = ref(db,"salidas_asignadas");
 
+// ✅ CONTROL DE ROL
 const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
-if(rol!=="admin"){
-  alert("No tenés permisos");
-  location.href="index.html";
+if(rol !== "admin"){
+  location.href = "index.html";
 }
 
 let pendientes = [];
@@ -55,17 +55,17 @@ function render(){
 
   pendientes.forEach(p=>{
     const card = document.createElement("div");
-    card.className="card pendiente";
+    card.className = "card pendiente";
     card.innerHTML = `
       <span class="etiqueta">PENDIENTE</span>
-      <b>Territorio ${p.territorio||"-"}</b>
+      <b>Territorio ${p.territorio || "-"}</b>
       <div>🧱 Faltan: <span class="pend">${(p.pendientes||[]).join(", ")}</span></div>
-      <div>👤 Último: ${p.conductor||"-"}</div>
+      <div>👤 Último: ${p.conductor || "-"}</div>
     `;
 
-    const box=document.createElement("div");
-    box.className="admin";
-    box.innerHTML=`
+    const box = document.createElement("div");
+    box.className = "admin";
+    box.innerHTML = `
       <input id="c${p.id}" placeholder="Conductor">
       <input type="date" id="f${p.id}">
       <input id="calles${p.id}" placeholder="Calle">
@@ -80,9 +80,9 @@ function render(){
 
   // EVENTOS
   document.querySelectorAll("button[data-id]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const id = btn.getAttribute("data-id");
-      const p = pendientes.find(x=>x.id===id);
+    btn.onclick = async ()=>{
+      const id = btn.dataset.id;
+      const p = pendientes.find(x=>x.id === id);
       if(!p) return;
 
       const c = document.getElementById("c"+id).value.trim();
@@ -96,6 +96,7 @@ function render(){
         return;
       }
 
+      // ✅ ENVIAR A PRÓXIMAS SALIDAS
       await push(salidasRef,{
         territorio: p.territorio,
         pendientes: p.pendientes,
@@ -107,26 +108,28 @@ function render(){
         creado: Date.now()
       });
 
+      // ✅ BORRAR DE PENDIENTES
       await remove(ref(db,"pendientes/"+id));
 
-      // ✅ REDIRECCIÓN SEGURA
+      // ✅ REDIRECCIÓN CORRECTA
       setTimeout(()=>{
-        location.href = "proximas_salidas.html";
+        window.location.replace("proximas.html");
       },300);
-    });
+    };
   });
 }
 
 /* FIREBASE */
 onValue(pendientesRef, snap=>{
-  pendientes=[];
+  pendientes = [];
   snap.forEach(x=>{
-    const o=x.val();
-    o.id=x.key;
+    const o = x.val();
+    o.id = x.key;
     pendientes.push(o);
   });
   render();
 });
 </script>
+
 </body>
 </html>
