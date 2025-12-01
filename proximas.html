@@ -10,36 +10,16 @@
 body{margin:0;font-family:Arial;background:var(--bg)}
 header{background:var(--verde);color:white;padding:18px;text-align:center;font-size:20px}
 .container{max-width:900px;margin:auto;padding:15px}
-
 .card{
-  background:white;
-  padding:16px;
-  border-radius:14px;
-  margin-bottom:14px;
-  box-shadow:0 2px 8px rgba(0,0,0,.1);
-  border-left:8px solid var(--verde);
+  background:white;padding:16px;border-radius:14px;margin-bottom:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);border-left:8px solid var(--verde)
 }
-
-.fecha{
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:6px;
-}
-
-.linea{
-  font-size:17px;
-  margin:4px 0;
-}
-
+.fecha{font-size:22px;font-weight:bold;margin-bottom:6px}
+.linea{font-size:17px;margin:4px 0}
 .back{
-  position:fixed;
-  bottom:15px;
-  left:15px;
-  background:var(--verde);
-  color:white;
-  border:none;
-  padding:10px 14px;
-  border-radius:10px;
+  position:fixed;bottom:15px;left:15px;
+  background:var(--verde);color:white;border:none;
+  padding:10px 14px;border-radius:10px
 }
 </style>
 </head>
@@ -52,13 +32,19 @@ header{background:var(--verde);color:white;padding:18px;text-align:center;font-s
 
 <script type="module">
 import { db, ref, onValue } from "./firebase.js";
-const lista=document.getElementById("lista");
-const salidasRef=ref(db,"salidas_asignadas");
 
-const formatear=(f)=>{
-  const d=new Date(f);
-  return d.toLocaleDateString("es-AR",{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-};
+const lista = document.getElementById("lista");
+const salidasRef = ref(db,"salidas_asignadas");
+
+const formatearFecha = f => 
+  new Date(f).toLocaleDateString("es-AR",{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+
+function timestamp(fecha,hora){
+  const [h,m]=hora.split(":");
+  const d=new Date(fecha);
+  d.setHours(h,m,0,0);
+  return d.getTime();
+}
 
 onValue(salidasRef,s=>{
   lista.innerHTML="";
@@ -67,17 +53,29 @@ onValue(salidasRef,s=>{
     return;
   }
 
+  let salidas = [];
+
   s.forEach(x=>{
-    const o=x.val();
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <div class="fecha">🕒 ${formatear(o.fecha)} - ${o.hora}</div>
+    const o = x.val();
+    const ts = timestamp(o.fecha,o.hora);
+    if(ts > Date.now()){  // solo futuras
+      salidas.push({...o, ts});
+    }
+  });
+
+  // ordenar por fecha y hora
+  salidas.sort((a,b)=>a.ts - b.ts);
+
+  salidas.forEach(o=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="fecha">🕒 ${formatearFecha(o.fecha)} - ${o.hora}</div>
       <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>
       <div class="linea">👤 Conductor: ${o.conductor}</div>
       <div class="linea">📌 Dirección: ${o.calle} y ${o.interseccion}</div>
-      <div class="linea">🧱 Faltan: ${(o.pendientes||[]).join(", ")}</div>
-      ${o.observaciones?`<div class="linea">✍ ${o.observaciones}</div>`:""}
+      <div class="linea">🧱 Faltan: ${(o.pendientes||[]).join(", ") || "Nadie"}</div>
+      ${o.observaciones ? `<div class="linea">✍ ${o.observaciones}</div>` : ""}
     `;
     lista.appendChild(card);
   });
