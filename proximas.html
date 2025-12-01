@@ -29,7 +29,7 @@ button{background:var(--verde);color:white;border:none;padding:6px 10px;border-r
 </head>
 
 <body>
-<header>📅 Pendientes y Próximas Salidas</header>
+<header>📅 Próximas Salidas</header>
 <div class="container" id="lista"></div>
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
@@ -41,7 +41,8 @@ const pendientesRef = ref(db,"pendientes");
 const salidasRef    = ref(db,"salidas_asignadas");
 
 /* ROL */
-const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
+const sesion = JSON.parse(localStorage.getItem("sesion") || "null");
+const rol = sesion?.rol?.toLowerCase() || "invitado";
 const esAdmin = rol === "admin";
 
 let pendientes = [];
