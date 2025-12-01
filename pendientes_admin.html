@@ -20,12 +20,11 @@ header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;pad
 /* ADMIN */
 .admin input,.admin textarea{width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc}
 button{background:var(--verde);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
-.elim{background:#c1121f}
-
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
 <body>
+
 <header>📝 Pendientes - Asignar</header>
 <div class="container" id="lista"></div>
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
@@ -38,13 +37,22 @@ const pendientesRef = ref(db,"pendientes");
 const salidasRef    = ref(db,"salidas_asignadas");
 
 const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
-if(rol!=="admin"){ alert("No tenés permisos"); location.href="index.html"; }
+if(rol!=="admin"){
+  alert("No tenés permisos");
+  location.href="index.html";
+}
 
 let pendientes = [];
 
 /* PINTAR */
 function render(){
   lista.innerHTML = "";
+
+  if(pendientes.length === 0){
+    lista.innerHTML = "<p style='text-align:center;color:#777'>No hay pendientes</p>";
+    return;
+  }
+
   pendientes.forEach(p=>{
     const card = document.createElement("div");
     card.className="card pendiente";
@@ -54,6 +62,7 @@ function render(){
       <div>🧱 Faltan: <span class="pend">${(p.pendientes||[]).join(", ")}</span></div>
       <div>👤 Último: ${p.conductor||"-"}</div>
     `;
+
     const box=document.createElement("div");
     box.className="admin";
     box.innerHTML=`
@@ -64,21 +73,28 @@ function render(){
       <textarea id="o${p.id}" placeholder="Observación"></textarea>
       <button data-id="${p.id}">✅ Asignar</button>
     `;
+
     card.appendChild(box);
     lista.appendChild(card);
   });
 
-  // ASIGNAR CLICK
+  // EVENTOS
   document.querySelectorAll("button[data-id]").forEach(btn=>{
     btn.addEventListener("click", async ()=>{
       const id = btn.getAttribute("data-id");
       const p = pendientes.find(x=>x.id===id);
+      if(!p) return;
+
       const c = document.getElementById("c"+id).value.trim();
       const f = document.getElementById("f"+id).value;
       const calle = document.getElementById("calles"+id).value.trim();
       const inter = document.getElementById("inter"+id).value.trim();
       const o = document.getElementById("o"+id).value;
-      if(!c || !f || !calle || !inter){ alert("Falta completar"); return; }
+
+      if(!c || !f || !calle || !inter){
+        alert("Falta completar");
+        return;
+      }
 
       await push(salidasRef,{
         territorio: p.territorio,
@@ -92,8 +108,11 @@ function render(){
       });
 
       await remove(ref(db,"pendientes/"+id));
-      alert("✅ Salida asignada");
-      location.href = "proximas_salidas.html"; // redirige automáticamente
+
+      // ✅ REDIRECCIÓN SEGURA
+      setTimeout(()=>{
+        location.href = "proximas_salidas.html";
+      },300);
     });
   });
 }
@@ -101,7 +120,11 @@ function render(){
 /* FIREBASE */
 onValue(pendientesRef, snap=>{
   pendientes=[];
-  snap.forEach(x=>{ const o=x.val(); o.id=x.key; pendientes.push(o); });
+  snap.forEach(x=>{
+    const o=x.val();
+    o.id=x.key;
+    pendientes.push(o);
+  });
   render();
 });
 </script>
