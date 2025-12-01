@@ -3,22 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pendientes</title>
+<title>Pendientes - Admin</title>
 <style>
 :root{--verde:#1a4b27;--bg:#f4f4f4}
 body{margin:0;font-family:Arial;background:var(--bg)}
 header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
 .container{max-width:900px;margin:auto;padding:15px}
+
+/* TARJETAS */
 .card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
+.pendiente{border-left:6px solid orange}
+.pend{color:#c1121f;font-weight:bold}
+.obs{margin-top:6px;font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde)}
 .etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
+
+/* ADMIN */
 .admin input,.admin textarea{width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc}
 button{background:var(--verde);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
+.elim{background:#c1121f}
+
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
 <body>
-
-<header>🟠 Pendientes</header>
+<header>📝 Pendientes - Asignar</header>
 <div class="container" id="lista"></div>
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
@@ -26,25 +34,24 @@ button{background:var(--verde);color:white;border:none;padding:6px 10px;border-r
 import { db, ref, onValue, push, remove } from "./firebase.js";
 
 const lista = document.getElementById("lista");
-const reportesRef = ref(db,"reportes");
-const salidasRef  = ref(db,"salidas_asignadas");
+const pendientesRef = ref(db,"pendientes");
+const salidasRef    = ref(db,"salidas_asignadas");
 
-const rol = (localStorage.getItem("rol")||"invitado").toLowerCase();
-if(rol!=="admin"){ location.href="index.html"; }
+const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
+if(rol!=="admin"){ alert("No tenés permisos"); location.href="index.html"; }
 
 let pendientes = [];
 
+/* PINTAR */
 function render(){
   lista.innerHTML = "";
   pendientes.forEach(p=>{
-    if(!p.pendientes || p.pendientes.length===0) return;
-
     const card = document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
+    card.className="card pendiente";
+    card.innerHTML = `
       <span class="etiqueta">PENDIENTE</span>
       <b>Territorio ${p.territorio||"-"}</b>
-      <div>🧱 Faltan: ${p.pendientes.join(", ")}</div>
+      <div>🧱 Faltan: <span class="pend">${(p.pendientes||[]).join(", ")}</span></div>
       <div>👤 Último: ${p.conductor||"-"}</div>
     `;
     const box=document.createElement("div");
@@ -55,47 +62,45 @@ function render(){
       <input id="calles${p.id}" placeholder="Calle">
       <input id="inter${p.id}" placeholder="Intersección">
       <textarea id="o${p.id}" placeholder="Observación"></textarea>
-      <button onclick="asignar('${p.id}')">✅ Asignar</button>
+      <button data-id="${p.id}">✅ Asignar</button>
     `;
     card.appendChild(box);
     lista.appendChild(card);
   });
+
+  // ASIGNAR CLICK
+  document.querySelectorAll("button[data-id]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const id = btn.getAttribute("data-id");
+      const p = pendientes.find(x=>x.id===id);
+      const c = document.getElementById("c"+id).value.trim();
+      const f = document.getElementById("f"+id).value;
+      const calle = document.getElementById("calles"+id).value.trim();
+      const inter = document.getElementById("inter"+id).value.trim();
+      const o = document.getElementById("o"+id).value;
+      if(!c || !f || !calle || !inter){ alert("Falta completar"); return; }
+
+      await push(salidasRef,{
+        territorio: p.territorio,
+        pendientes: p.pendientes,
+        conductor: c,
+        fecha: f,
+        calle: calle,
+        interseccion: inter,
+        observaciones: o,
+        creado: Date.now()
+      });
+
+      await remove(ref(db,"pendientes/"+id));
+      alert("✅ Salida asignada");
+    });
+  });
 }
 
-window.asignar = async (id)=>{
-  const p = pendientes.find(x=>x.id===id);
-  if(!p) return;
-
-  const c = document.getElementById("c"+id).value.trim();
-  const f = document.getElementById("f"+id).value;
-  const calle = document.getElementById("calles"+id).value.trim();
-  const inter = document.getElementById("inter"+id).value.trim();
-  const o = document.getElementById("o"+id).value;
-
-  if(!c||!f||!calle||!inter){ alert("Falta completar todos los campos"); return; }
-
-  await push(salidasRef,{
-    territorio: p.territorio,
-    pendientes: p.pendientes,
-    conductor: c,
-    fecha: f,
-    calle: calle,
-    interseccion: inter,
-    observaciones: o,
-    creado: Date.now()
-  });
-
-  await remove(ref(db,"reportes/"+id));
-  alert("✅ Salida asignada correctamente");
-};
-
-onValue(reportesRef,snap=>{
+/* FIREBASE */
+onValue(pendientesRef, snap=>{
   pendientes=[];
-  snap.forEach(x=>{
-    const o=x.val();
-    o.id=x.key;
-    pendientes.push(o);
-  });
+  snap.forEach(x=>{ const o=x.val(); o.id=x.key; pendientes.push(o); });
   render();
 });
 </script>
