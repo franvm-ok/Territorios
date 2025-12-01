@@ -4,103 +4,85 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Próximas Salidas</title>
+
 <style>
 :root{--verde:#1a4b27;--bg:#f4f4f4}
 body{margin:0;font-family:Arial;background:var(--bg)}
-header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
+header{background:var(--verde);color:white;padding:18px;text-align:center;font-size:20px}
 .container{max-width:900px;margin:auto;padding:15px}
 
-/* TARJETAS */
-.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
-.asignada{border-left:6px solid green}
-.pend{color:#c1121f;font-weight:bold}
-.obs{margin-top:6px;font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde)}
-.etiqueta{background:#b0f2b6;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
+.card{
+  background:white;
+  padding:16px;
+  border-radius:14px;
+  margin-bottom:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+  border-left:8px solid var(--verde);
+}
 
-/* ADMIN */
-.admin input,.admin textarea{width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc}
-button{background:var(--verde);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
-.elim{background:#c1121f}
-.back{position:fixed;left:15px;bottom:15px}
+.fecha{
+  font-size:22px;
+  font-weight:bold;
+  margin-bottom:6px;
+}
+
+.linea{
+  font-size:17px;
+  margin:4px 0;
+}
+
+.back{
+  position:fixed;
+  bottom:15px;
+  left:15px;
+  background:var(--verde);
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+}
 </style>
 </head>
+
 <body>
+
 <header>📅 Próximas Salidas</header>
 <div class="container" id="lista"></div>
-<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
+<button class="back" onclick="location.href='index.html'">⬅ Inicio</button>
 
 <script type="module">
-import { db, ref, onValue, update, remove } from "./firebase.js";
+import { db, ref, onValue } from "./firebase.js";
+const lista=document.getElementById("lista");
+const salidasRef=ref(db,"salidas_asignadas");
 
-const lista = document.getElementById("lista");
-const salidasRef = ref(db,"salidas_asignadas");
+const formatear=(f)=>{
+  const d=new Date(f);
+  return d.toLocaleDateString("es-AR",{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+};
 
-const rol = (localStorage.getItem("rol") || "invitado").toLowerCase().trim();
-const esAdmin = rol==="admin";
+onValue(salidasRef,s=>{
+  lista.innerHTML="";
+  if(!s.exists()){
+    lista.innerHTML="<p align='center'>No hay salidas asignadas</p>";
+    return;
+  }
 
-let salidas = [];
-
-/* EDITAR */
-async function editarSalida(id){
-  await update(ref(db,"salidas_asignadas/"+id),{
-    conductor: document.getElementById("ec"+id).value,
-    fecha: document.getElementById("ef"+id).value,
-    calle: document.getElementById("ecalle"+id).value,
-    interseccion: document.getElementById("einter"+id).value,
-    observaciones: document.getElementById("eo"+id).value
+  s.forEach(x=>{
+    const o=x.val();
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <div class="fecha">🕒 ${formatear(o.fecha)} - ${o.hora}</div>
+      <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>
+      <div class="linea">👤 Conductor: ${o.conductor}</div>
+      <div class="linea">📌 Dirección: ${o.calle} y ${o.interseccion}</div>
+      <div class="linea">🧱 Faltan: ${(o.pendientes||[]).join(", ")}</div>
+      ${o.observaciones?`<div class="linea">✍ ${o.observaciones}</div>`:""}
+    `;
+    lista.appendChild(card);
   });
-  alert("✅ Guardado");
-}
-
-/* BORRAR */
-async function borrarSalida(id){
-  if(!confirm("Eliminar salida?")) return;
-  await remove(ref(db,"salidas_asignadas/"+id));
-}
-
-/* PINTAR */
-function render(){
-  lista.innerHTML = "";
-  salidas
-    .filter(s => s.conductor && s.fecha && s.calle && s.interseccion)
-    .forEach(s=>{
-      const card = document.createElement("div");
-      card.className="card asignada";
-      card.innerHTML = `
-        <span class="etiqueta">ASIGNADA</span>
-        <b>Territorio ${s.territorio||"-"}</b>
-        <div>📅 Fecha: ${s.fecha||"-"}</div>
-        <div>👤 Conductor: ${s.conductor||"-"}</div>
-        <div>📍 Punto de encuentro: ${s.calle||"-"} / ${s.interseccion||"-"}</div>
-        <div>🧱 Pendientes: <span class="pend">${(s.pendientes||[]).join(", ")}</span></div>
-        ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
-      `;
-
-      if(esAdmin){
-        const box = document.createElement("div");
-        box.className="admin";
-        box.innerHTML = `
-          <input id="ec${s.id}" value="${s.conductor||""}">
-          <input type="date" id="ef${s.id}" value="${s.fecha||""}">
-          <input id="ecalle${s.id}" value="${s.calle||""}">
-          <input id="einter${s.id}" value="${s.interseccion||""}">
-          <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
-          <button onclick="editarSalida('${s.id}')">💾 Guardar</button>
-          <button class="elim" onclick="borrarSalida('${s.id}')">🗑 Eliminar</button>
-        `;
-        card.appendChild(box);
-      }
-
-      lista.appendChild(card);
-    });
-}
-
-/* FIREBASE */
-onValue(salidasRef, snap=>{
-  salidas = [];
-  snap.forEach(x=>{ const o=x.val(); o.id=x.key; salidas.push(o); });
-  render();
 });
 </script>
+
 </body>
 </html>
