@@ -3,199 +3,94 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Próximas Salidas y Pendientes</title>
+<title>Pendientes - Admin</title>
 
 <style>
 :root{--verde:#1a4b27;--bg:#f4f4f4}
 body{margin:0;font-family:Arial;background:var(--bg)}
 header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
 .container{max-width:900px;margin:auto;padding:15px}
-
 .card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
 .pendiente{border-left:6px solid orange}
-.asignada{border-left:6px solid green}
 .pend{color:#c1121f;font-weight:bold}
-.obs{margin-top:6px;font-style:italic;background:#f7f7f7;padding:6px;border-left:4px solid var(--verde)}
 .etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
-
-.admin input,.admin textarea{
-  width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc
-}
-button{
-  background:var(--verde);
-  color:white;
-  border:none;
-  padding:6px 10px;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer
-}
-.elim{background:#c1121f}
+.admin input,.admin textarea{width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid #ccc}
+button{background:var(--verde);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
 
 <body>
-<header>📅 Pendientes y Próximas Salidas</header>
+<header>🟠 Pendientes</header>
 <div class="container" id="lista"></div>
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
-import { db, ref, onValue, push, remove, update } from "./firebase.js";
+import { db, ref, onValue, push, remove } from "./firebase.js";
 
 const lista = document.getElementById("lista");
-const pendientesRef = ref(db,"pendientes");
-const salidasRef = ref(db,"salidas_asignadas");
+const reportesRef = ref(db,"reportes");
+const salidasRef  = ref(db,"salidas_asignadas");
+const rol = (localStorage.getItem("rol")||"invitado").toLowerCase().trim();
+const esAdmin = rol==="admin";
+let pendientes=[];
 
-const rol = (localStorage.getItem("rol") || "invitado").toLowerCase();
-const esAdmin = rol === "admin";
-
-let pendientes = [];
-let salidas = [];
-
+/* PINTAR */
 function render(){
-
-  lista.innerHTML = "";
-
-  /* SOLO ADMIN VE PENDIENTES */
-  if(esAdmin){
-
-    pendientes.forEach(p=>{
-      const card = document.createElement("div");
-      card.className = "card pendiente";
-
-      const faltan = Array.isArray(p.pendientes)?p.pendientes.join(", "):"-";
-
-      card.innerHTML = `
-        <span class='etiqueta'>PENDIENTE</span>
-        <b>Territorio ${p.territorio||"-"}</b>
-        <div>🧱 Faltan: <span class="pend">${faltan}</span></div>
-        <div>👤 Último: ${p.conductor||"-"}</div>
-      `;
-
-      const box=document.createElement("div");
-      box.className="admin";
-      box.innerHTML=`
-        <input id="c${p.id}" placeholder="Conductor (obligatorio)">
-        <input type="date" id="f${p.id}">
-        <input id="ca${p.id}" placeholder="Calle (obligatorio)">
-        <input id="i${p.id}" placeholder="Intersección (obligatorio)">
-        <textarea id="o${p.id}" placeholder="Observación"></textarea>
-        <button onclick="asignar('${p.id}')">✅ Asignar salida</button>
-      `;
-      card.appendChild(box);
-
-      lista.appendChild(card);
-    });
-
-  }
-
-  /* TODOS VEN SALIDAS YA ASIGNADAS */
-  salidas.forEach(s=>{
-
+  lista.innerHTML="";
+  pendientes.forEach(r=>{
+    if(!r.pendientes || r.pendientes.length===0) return; // solo pendientes reales
     const card=document.createElement("div");
-    card.className="card asignada";
-
+    card.className="card pendiente";
     card.innerHTML=`
-      <span class='etiqueta'>ASIGNADA</span>
-      <b>Territorio ${s.territorio||"-"}</b>
-      <div>📅 Fecha: ${s.fecha||"-"}</div>
-      <div>👤 Conductor: ${s.conductor||"-"}</div>
-      <div>📍 Lugar: ${s.calle||"-"} / ${s.interseccion||"-"}</div>
-      <div>🧱 Pendientes: <span class="pend">${(s.pendientes||[]).join(", ")}</span></div>
-      ${s.observaciones?`<div class="obs">${s.observaciones}</div>`:""}
+      <span class="etiqueta">PENDIENTE</span>
+      <b>Territorio ${r.territorio||"-"}</b>
+      <div>🧱 Faltan: <span class="pend">${r.pendientes.join(", ")}</span></div>
+      <div>👤 Último: ${r.conductor||"-"}</div>
     `;
-
-    if(esAdmin){
-      const box = document.createElement("div");
-      box.className="admin";
-      box.innerHTML=`
-        <input id="ec${s.id}" value="${s.conductor||""}">
-        <input type="date" id="ef${s.id}" value="${s.fecha||""}">
-        <input id="eca${s.id}" value="${s.calle||""}">
-        <input id="ei${s.id}" value="${s.interseccion||""}">
-        <textarea id="eo${s.id}">${s.observaciones||""}</textarea>
-        <button onclick="editar('${s.id}')">💾 Guardar</button>
-        <button class="elim" onclick="borrar('${s.id}')">🗑 Eliminar</button>
-      `;
-      card.appendChild(box);
-    }
-
+    const box=document.createElement("div");
+    box.className="admin";
+    box.innerHTML=`
+      <input id="c${r.id}" placeholder="Conductor">
+      <input type="date" id="f${r.id}">
+      <input id="calles${r.id}" placeholder="Calle">
+      <input id="inter${r.id}" placeholder="Intersección">
+      <button onclick="asignar('${r.id}')">✅ Asignar</button>
+    `;
+    card.appendChild(box);
     lista.appendChild(card);
   });
-
 }
 
 /* ASIGNAR */
-window.asignar = async (id)=>{
-  const p = pendientes.find(x=>x.id===id);
-
+window.asignar=async(id)=>{
+  const r = pendientes.find(x=>x.id===id);
   const c = document.getElementById("c"+id).value.trim();
   const f = document.getElementById("f"+id).value;
-  const ca = document.getElementById("ca"+id).value.trim();
-  const i = document.getElementById("i"+id).value.trim();
-  const o = document.getElementById("o"+id).value;
-
-  if(!c || !f || !ca || !i){
-    alert("Faltan datos obligatorios");
-    return;
-  }
+  const calle = document.getElementById("calles"+id).value.trim();
+  const inter = document.getElementById("inter"+id).value.trim();
+  if(!c||!f||!calle||!inter){ alert("Falta completar"); return; }
 
   await push(salidasRef,{
-    territorio:p.territorio,
-    pendientes:p.pendientes,
-    conductor:c,
-    fecha:f,
-    calle:ca,
-    interseccion:i,
-    observaciones:o,
-    creado:Date.now()
+    territorio: r.territorio,
+    pendientes: r.pendientes,
+    conductor: c,
+    fecha: f,
+    calle: calle,
+    interseccion: inter,
+    creado: Date.now()
   });
 
-  await remove(ref(db,"pendientes/"+id));
-
+  await remove(ref(db,"reportes/"+id));
   alert("✅ Salida asignada");
-}
-
-/* EDITAR */
-window.editar = async (id)=>{
-  await update(ref(db,"salidas_asignadas/"+id),{
-    conductor:document.getElementById("ec"+id).value,
-    fecha:document.getElementById("ef"+id).value,
-    calle:document.getElementById("eca"+id).value,
-    interseccion:document.getElementById("ei"+id).value,
-    observaciones:document.getElementById("eo"+id).value
-  });
-  alert("✅ Cambios guardados");
-}
-
-/* BORRAR */
-window.borrar = async (id)=>{
-  if(!confirm("¿Eliminar salida?")) return;
-  await remove(ref(db,"salidas_asignadas/"+id));
-}
+};
 
 /* FIREBASE */
-onValue(pendientesRef,snap=>{
+onValue(reportesRef,snap=>{
   pendientes=[];
-  snap.forEach(x=>{
-    const o=x.val();
-    o.id=x.key;
-    pendientes.push(o);
-  });
+  snap.forEach(x=>{ const o=x.val(); o.id=x.key; pendientes.push(o); });
   render();
 });
-
-onValue(salidasRef,snap=>{
-  salidas=[];
-  snap.forEach(x=>{
-    const o=x.val();
-    o.id=x.key;
-    salidas.push(o);
-  });
-  render();
-});
-
 </script>
 </body>
 </html>
