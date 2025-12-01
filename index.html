@@ -6,59 +6,57 @@
 <title>Departamento de Territorio - Cuatro Plazas</title>
 
 <style>
-    body { font-family: Arial; margin: 0; background: #f4f4f4; color: #333; }
-    header { background: #1a4b27; padding: 20px; display: flex; justify-content: space-between; align-items: center; color: white; font-size: 22px; font-weight: bold; }
-    .login-btn { background: white; color: #1a4b27; border: none; padding: 10px 18px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; }
-    .login-btn.logout { background: #d62828; color: white; }
-    .login-btn:hover { background: #e8e8e8 }
-    .container { padding: 20px }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-    .btn-card { background: white; border-radius: 15px; padding: 25px 10px; text-align: center; font-size: 18px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
-    .btn-card:hover { transform: scale(1.05) }
-    .emoji { font-size: 45px; display: block; margin-bottom: 8px; }
+body { font-family: Arial; margin:0; background:#f4f4f4; color:#333; }
+header { background:#1a4b27; padding:20px; display:flex; justify-content:space-between; align-items:center; color:white; font-size:22px; font-weight:bold; }
+.login-btn { background:white; color:#1a4b27; border:none; padding:10px 18px; border-radius:10px; font-size:16px; cursor:pointer; font-weight:bold; }
+.login-btn.logout { background:#d62828; color:white; }
+.login-btn:hover { background:#e8e8e8; }
+.container { padding:20px; }
+.grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:15px; }
+.btn-card { background:white; border-radius:15px; padding:25px 10px; text-align:center; font-size:18px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.1); cursor:pointer; transition:0.2s; }
+.btn-card:hover { transform:scale(1.05); }
+.emoji { font-size:45px; display:block; margin-bottom:8px; }
 </style>
 </head>
 
 <body>
-
 <header>
-    Departamento de Territorio
-    <button class="login-btn" id="btnLogin" onclick="irLogin()">Iniciar sesión</button>
+  Departamento de Territorio
+  <button class="login-btn" id="btnLogin" onclick="irLogin()">Iniciar sesión</button>
 </header>
 
 <div class="container">
-    <div class="grid">
+  <div class="grid">
 
-        <div class="btn-card" id="btnTablero" onclick="location.href='tablero.html'">
-            <span class="emoji">📢</span> Tablero de anuncios
-        </div>
-
-        <div class="btn-card" id="btnInformar" onclick="location.href='informar.html'">
-            <span class="emoji">📝</span> Informar territorio
-        </div>
-
-        <div class="btn-card" id="btnProximas" onclick="location.href='proximas.html'">
-            <span class="emoji">📅</span> Próximas salidas
-        </div>
-
-        <div class="btn-card" id="btnMapa" onclick="location.href='mapa.html'">
-            <span class="emoji">🗺️</span> Mapa interactivo
-        </div>
-
-        <div class="btn-card" id="btnSug" onclick="location.href='sugerencia.html'">
-            <span class="emoji">💡</span> Sugerencias
-        </div>
-
-        <div class="btn-card" id="btnReportes" onclick="location.href='reportes.html'">
-            <span class="emoji">📊</span> Reportes
-        </div>
-
-        <!-- NUEVO: BOTÓN SOLO ADMIN -->
-        <div class="btn-card" id="btnPendientes" onclick="location.href='proximas.html'" style="display:none;">
-            <span class="emoji">🟠</span> Pendientes
-        </div>
-
+    <div class="btn-card" id="btnTablero" onclick="location.href='tablero.html'">
+      <span class="emoji">📢</span> Tablero de anuncios
     </div>
+
+    <div class="btn-card" id="btnInformar" onclick="location.href='informar.html'">
+      <span class="emoji">📝</span> Informar territorio
+    </div>
+
+    <div class="btn-card" id="btnPendientes" onclick="location.href='pendientes.html'">
+      <span class="emoji">🟠</span> Pendientes
+    </div>
+
+    <div class="btn-card" id="btnProximas" onclick="location.href='proximas.html'">
+      <span class="emoji">📅</span> Próximas salidas
+    </div>
+
+    <div class="btn-card" id="btnMapa" onclick="location.href='mapa.html'">
+      <span class="emoji">🗺️</span> Mapa interactivo
+    </div>
+
+    <div class="btn-card" id="btnSug" onclick="location.href='sugerencia.html'">
+      <span class="emoji">💡</span> Sugerencias
+    </div>
+
+    <div class="btn-card" id="btnReportes" onclick="location.href='reportes.html'">
+      <span class="emoji">📊</span> Reportes
+    </div>
+
+  </div>
 </div>
 
 <script>
@@ -66,11 +64,11 @@ const sesion = JSON.parse(localStorage.getItem("sesion") || "null");
 const rol = sesion?.rol?.toLowerCase() || "invitado";
 const btnLogin = document.getElementById("btnLogin");
 
-// CAMBIAR BOTÓN
+// BOTÓN LOGIN/LOGOUT
 if(sesion){
-  btnLogin.textContent = "Salir ("+sesion.nombre+")";
+  btnLogin.textContent = "Salir (" + sesion.nombre + ")";
   btnLogin.classList.add("logout");
-}else{
+} else {
   btnLogin.textContent = "Iniciar sesión";
 }
 
@@ -91,23 +89,15 @@ const permisos = {
   document.getElementById(id).style.display="block";
 });
 
-// REDIRECCIÓN BOTÓN PENDIENTES SOLO ADMIN
-document.getElementById("btnPendientes").onclick = ()=>{
-  if(rol === "admin"){
-    location.href = "proximas.html"; // admin ve pendientes
-  }
-};
-
-// LOGIN / LOGOUT
+// LOGIN/LOGOUT
 function irLogin(){
   if(sesion){
     localStorage.removeItem("sesion");
     location.reload();
-  }else{
+  } else {
     location.href="login.html";
   }
 }
 </script>
-
 </body>
 </html>
