@@ -11,10 +11,12 @@ header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;pad
 .container{max-width:900px;margin:auto;padding:15px}
 .card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
 .pendiente{border-left:6px solid orange}
+.completado{border-left:6px solid #ccc;opacity:0.7}
 .pend{color:#c1121f;font-weight:bold}
 .etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
 .admin input,.admin textarea{width:100%;margin-bottom:6px;padding:8px;border-radius:6px;border:1px solid #ccc}
-button{background:var(--verde);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:bold}
+button{background:var(--verde);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
+button.disabled{background:#999;cursor:not-allowed}
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
@@ -45,28 +47,32 @@ function render(){
   }
 
   pendientes.forEach(p=>{
+    const tienePendientes = p.pendientes && p.pendientes.length > 0;
+
     const card=document.createElement("div");
-    card.className="card pendiente";
+    card.className = "card " + (tienePendientes ? "pendiente" : "completado");
     card.innerHTML=`
-      <span class="etiqueta">PENDIENTE</span>
+      <span class="etiqueta">${tienePendientes ? "PENDIENTE" : "COMPLETADO"}</span>
       <b>Territorio ${p.territorio}</b>
-      <div>🧱 Faltan: <b>${(p.pendientes||[]).join(", ")}</b></div>
+      <div>🧱 Faltan: <b>${(p.pendientes||[]).join(", ") || "-"}</b></div>
       <div>👤 Último: ${p.conductor||"-"}</div>
     `;
 
-    const box=document.createElement("div");
-    box.className="admin";
-    box.innerHTML=`
-      <input id="c${p.id}" placeholder="Conductor">
-      <input type="date" id="f${p.id}">
-      <input type="time" id="h${p.id}">
-      <input id="calles${p.id}" placeholder="Calle">
-      <input id="inter${p.id}" placeholder="Intersección">
-      <textarea id="o${p.id}" placeholder="Observación"></textarea>
-      <button data-id="${p.id}">✅ Asignar</button>
-    `;
+    if(tienePendientes){
+      const box=document.createElement("div");
+      box.className="admin";
+      box.innerHTML=`
+        <input id="c${p.id}" placeholder="Conductor">
+        <input type="date" id="f${p.id}">
+        <input type="time" id="h${p.id}">
+        <input id="calles${p.id}" placeholder="Calle">
+        <input id="inter${p.id}" placeholder="Intersección">
+        <textarea id="o${p.id}" placeholder="Observación"></textarea>
+        <button data-id="${p.id}">✅ Asignar</button>
+      `;
+      card.appendChild(box);
+    }
 
-    card.appendChild(box);
     lista.appendChild(card);
   });
 
@@ -102,7 +108,11 @@ function render(){
 
 onValue(pendientesRef,s=>{
   pendientes=[];
-  s.forEach(x=>{ let o=x.val(); o.id=x.key; pendientes.push(o); });
+  s.forEach(x=>{
+    let o = x.val();
+    o.id = x.key;
+    pendientes.push(o);
+  });
   render();
 });
 </script>
