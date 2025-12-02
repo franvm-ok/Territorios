@@ -11,6 +11,27 @@ body{margin:0;font-family:Arial;background:var(--bg)}
 header{background:var(--verde);color:white;padding:18px;text-align:center;font-size:20px}
 .container{max-width:900px;margin:auto;padding:15px}
 
+.filtros{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  margin-bottom:15px;
+}
+
+.filtros button{
+  padding:8px 12px;
+  border-radius:20px;
+  border:none;
+  background:#ccc;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.filtros button.activo{
+  background:var(--verde);
+  color:white;
+}
+
 .card{
   background:white;
   padding:16px;
@@ -40,7 +61,6 @@ header{background:var(--verde);color:white;padding:18px;text-align:center;font-s
   border:none;
   padding:10px 14px;
   border-radius:10px;
-  cursor:pointer;
 }
 </style>
 </head>
@@ -49,7 +69,17 @@ header{background:var(--verde);color:white;padding:18px;text-align:center;font-s
 
 <header>📅 Próximas Salidas</header>
 
-<div class="container" id="lista"></div>
+<div class="container">
+
+  <div class="filtros">
+    <button id="hoy" class="activo">Hoy</button>
+    <button id="siete">7 días</button>
+    <button id="todos">Todos</button>
+  </div>
+
+  <div id="lista"></div>
+
+</div>
 
 <button class="back" onclick="location.href='index.html'">⬅ Inicio</button>
 
@@ -59,8 +89,15 @@ import { db, ref as dbRef, onValue } from "./firebase.js";
 const lista = document.getElementById("lista");
 const salidasRef = dbRef(db,"salidas_asignadas");
 
-// FORMATO FECHA SIMPLE
-function mostrarFecha(fecha){
+const btnHoy = document.getElementById("hoy");
+const btn7 = document.getElementById("siete");
+const btnTodos = document.getElementById("todos");
+
+let filtro = "hoy";
+let cache = [];
+
+/* ===== FECHA ===== */
+function fechaTexto(fecha){
   try{
     return new Date(fecha).toLocaleDateString("es-AR",{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
   }catch{
@@ -68,47 +105,115 @@ function mostrarFecha(fecha){
   }
 }
 
-// ESCUCHAR FIREBASE SIN FILTROS
-onValue(salidasRef, snap => {
+/* ===== TIMESTAMP ===== */
+function tiempo(fecha,hora){
+  try{
+    const [h,m] = (hora||"00:00").split(":");
+    const d = new Date(fecha);
+    d.setHours(h,m,0,0);
+    return d.getTime();
+  }catch{
+    return 0;
+  }
+}
+
+/* ===== BOTONES ===== */
+function activar(btn){
+  document.querySelectorAll(".filtros button").forEach(b=>b.classList.remove("activo"));
+  btn.classList.add("activo");
+}
+
+btnHoy.onclick=()=>{
+  filtro="hoy";
+  activar(btnHoy);
+  mostrar();
+};
+
+btn7.onclick=()=>{
+  filtro="7";
+  activar(btn7);
+  mostrar();
+};
+
+btnTodos.onclick=()=>{
+  filtro="todos";
+  activar(btnTodos);
+  mostrar();
+};
+
+/* ===== MOSTRAR ===== */
+function mostrar(){
 
   lista.innerHTML="";
 
-  if(!snap.exists()){
+  if(cache.length===0){
     lista.innerHTML="<p align='center'>No hay salidas asignadas</p>";
     return;
   }
 
-  let salidas = [];
+  let hoyInicio = new Date();
+  hoyInicio.setHours(0,0,0,0);
+
+  let limite7 = new Date();
+  limite7.setDate(limite7.getDate()+7);
+  limite7.setHours(23,59,59,999);
+
+  let mostrados = [];
+
+  cache.forEach(o=>{
+
+    const ts = tiempo(o.fecha,o.hora);
+
+    if(filtro==="hoy"){
+      if(new Date(ts).toDateString() === new Date().toDateString()) mostrados.push(o);
+    }
+
+    if(filtro==="7"){
+      if(ts >= hoyInicio.getTime() && ts <= limite7.getTime()) mostrados.push(o);
+    }
+
+    if(filtro==="todos"){
+      mostrados.push(o);
+    }
+
+  });
+
+  if(mostrados.length===0){
+    lista.innerHTML="<p align='center'>No hay salidas para mostrar</p>";
+    return;
+  }
+
+  mostrados.sort((a,b)=>tiempo(a.fecha,a.hora)-tiempo(b.fecha,b.hora));
+
+  mostrados.forEach(o=>{
+    const card = document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <div class="fecha">🕒 ${fechaTexto(o.fecha)} - ${o.hora || "—"}</div>
+      <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>
+      <div class="linea">👤 Conductor: ${o.conductor||"—"}</div>
+      <div class="linea">📌 Dirección: ${o.calle||"-"} y ${o.interseccion||"-"}</div>
+      <div class="linea">🧱 Faltan: ${(o.pendientes||[]).join(", ")||"Nadie"}</div>
+      ${o.observaciones?`<div class="linea">✍ ${o.observaciones}</div>`:""}
+    `;
+    lista.appendChild(card);
+  });
+
+}
+
+/* ===== LEER FIREBASE ===== */
+onValue(salidasRef, snap=>{
+
+  cache=[];
 
   snap.forEach(x=>{
-    salidas.push({
-      id: x.key,
+    cache.push({
+      id:x.key,
       ...x.val()
     });
   });
 
-  // ORDENAR POR FECHA TEXTO (NO FALLA)
-  salidas.sort((a,b)=>{
-    return String(a.fecha).localeCompare(String(b.fecha));
-  });
-
-  salidas.forEach(o=>{
-
-    const card=document.createElement("div");
-    card.className="card";
-
-    card.innerHTML=`
-      <div class="fecha">🕒 ${mostrarFecha(o.fecha)} - ${o.hora || "—"}</div>
-      <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>
-      <div class="linea">👤 Conductor: ${o.conductor || "—"}</div>
-      <div class="linea">📌 Dirección: ${o.calle || "—"} y ${o.interseccion || "—"}</div>
-      <div class="linea">🧱 Faltan: ${(o.pendientes || []).join(", ") || "Nadie"}</div>
-      ${o.observaciones ? `<div class="linea">✍ ${o.observaciones}</div>` : ""}
-    `;
-
-    lista.appendChild(card);
-
-  });
+  mostrar();
 
 });
 </script>
