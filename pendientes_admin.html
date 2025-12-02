@@ -32,14 +32,18 @@ const lista = document.getElementById("lista");
 const pendientesRef = dbRef(db,"pendientes");
 const salidasRef = dbRef(db,"salidas_asignadas");
 
-// SESIÓN Y ROL
+/* ============================
+   VALIDAR ADMIN
+============================ */
 const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 const rol = (sesion.rol || "invitado").toLowerCase();
 if (rol !== "admin") location.href="index.html";
 
 let pendientes = [];
 
-// RENDER
+/* ============================
+   RENDER
+============================ */
 function render(){
   lista.innerHTML="";
   if(pendientes.length===0){
@@ -48,15 +52,22 @@ function render(){
   }
 
   pendientes.forEach(p=>{
-    const card=document.createElement("div");
-    card.className = "card pendiente";
-    card.innerHTML=`
-      <span class="etiqueta">PENDIENTE</span>
-      <b>Territorio ${p.territorio}</b>
-      <div>🧱 Faltan: <b>${(p.pendientes||[]).join(", ")}</b></div>
-      <div>👤 Último conductor: ${p.conductor||"—"}</div>
+    const tiene = Array.isArray(p.pendientes) && p.pendientes.length>0;
 
-      <div class="admin">
+    const card=document.createElement("div");
+    card.className = "card " + (tiene ? "pendiente" : "completado");
+
+    card.innerHTML=`
+      <span class="etiqueta">${tiene?"PENDIENTE":"COMPLETADO"}</span>
+      <b>Territorio ${p.territorio}</b>
+      <div>🧱 Faltan: <b>${(p.pendientes||[]).join(", ") || "Ninguna"}</b></div>
+      <div>👤 Último conductor: ${p.conductor||"—"}</div>
+    `;
+
+    if(tiene){
+      const admin=document.createElement("div");
+      admin.className="admin";
+      admin.innerHTML=`
         <input id="c${p.id}" placeholder="Conductor">
         <input type="date" id="f${p.id}">
         <input type="time" id="h${p.id}">
@@ -64,11 +75,16 @@ function render(){
         <input id="inter${p.id}" placeholder="Intersección">
         <textarea id="o${p.id}" placeholder="Observación"></textarea>
         <button data-id="${p.id}">✅ Asignar salida</button>
-      </div>
-    `;
+      `;
+      card.appendChild(admin);
+    }
+
     lista.appendChild(card);
   });
 
+  /* ============================
+     EVENTO ASIGNAR
+  ============================ */
   document.querySelectorAll("button[data-id]").forEach(btn=>{
     btn.onclick = async ()=>{
       const id=btn.dataset.id;
@@ -86,29 +102,37 @@ function render(){
         return;
       }
 
-      // CREAR SALIDA
+      /* ============================
+         GUARDAR EN PROXIMAS
+      ============================ */
       await push(salidasRef,{
         territorio:p.territorio,
         pendientes:p.pendientes||[],
         conductor:c,
         fecha:f,
         hora:h,
-        calle,
+        calle:calle,
         interseccion:inter,
         observaciones:o,
         creado:Date.now()
       });
 
-      // BORRAR PENDIENTE
+      /* ============================
+         ELIMINAR PENDIENTE
+      ============================ */
       await remove(dbRef(db,"pendientes/"+id));
 
-      // IR A PRÓXIMAS SALIDAS
+      /* ============================
+         REDIRIGIR
+      ============================ */
       location.replace("proximas.html");
     };
   });
 }
 
-// LEER PENDIENTES
+/* ============================
+   ESCUCHAR FIREBASE
+============================ */
 onValue(pendientesRef,s=>{
   pendientes=[];
   s.forEach(x=>{
