@@ -10,35 +10,36 @@ body{margin:0;font-family:Arial;background:var(--bg)}
 header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
 .container{max-width:900px;margin:auto;padding:15px}
 .card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
-.pendiente{border-left:6px solid orange}
+.pendiente{border-left:6px solid #c1121f}
 .completado{border-left:6px solid #ccc;opacity:0.7}
-.pend{color:#c1121f;font-weight:bold}
 .etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
 .admin input,.admin textarea{width:100%;margin-bottom:6px;padding:8px;border-radius:6px;border:1px solid #ccc}
 button{background:var(--verde);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
-button.disabled{background:#999;cursor:not-allowed}
 .back{position:fixed;left:15px;bottom:15px}
 </style>
 </head>
 
 <body>
-<header>📝 Pendientes - Asignar</header>
+
+<header>🧱 Pendientes - Asignar Salidas</header>
 <div class="container" id="lista"></div>
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
-import { db, ref, onValue, push, remove } from "./firebase.js";
+import { db, ref as dbRef, onValue, push, remove } from "./firebase.js";
 
 const lista = document.getElementById("lista");
-const pendientesRef = ref(db,"pendientes");
-const salidasRef = ref(db,"salidas_asignadas");
+const pendientesRef = dbRef(db,"pendientes");
+const salidasRef = dbRef(db,"salidas_asignadas");
 
+// SESIÓN Y ROL
 const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 const rol = (sesion.rol || "invitado").toLowerCase();
 if (rol !== "admin") location.href="index.html";
 
 let pendientes = [];
 
+// RENDER
 function render(){
   lista.innerHTML="";
   if(pendientes.length===0){
@@ -47,32 +48,24 @@ function render(){
   }
 
   pendientes.forEach(p=>{
-    const tienePendientes = p.pendientes && p.pendientes.length > 0;
-
     const card=document.createElement("div");
-    card.className = "card " + (tienePendientes ? "pendiente" : "completado");
+    card.className = "card pendiente";
     card.innerHTML=`
-      <span class="etiqueta">${tienePendientes ? "PENDIENTE" : "COMPLETADO"}</span>
+      <span class="etiqueta">PENDIENTE</span>
       <b>Territorio ${p.territorio}</b>
-      <div>🧱 Faltan: <b>${(p.pendientes||[]).join(", ") || "-"}</b></div>
-      <div>👤 Último: ${p.conductor||"-"}</div>
-    `;
+      <div>🧱 Faltan: <b>${(p.pendientes||[]).join(", ")}</b></div>
+      <div>👤 Último conductor: ${p.conductor||"—"}</div>
 
-    if(tienePendientes){
-      const box=document.createElement("div");
-      box.className="admin";
-      box.innerHTML=`
+      <div class="admin">
         <input id="c${p.id}" placeholder="Conductor">
         <input type="date" id="f${p.id}">
         <input type="time" id="h${p.id}">
         <input id="calles${p.id}" placeholder="Calle">
         <input id="inter${p.id}" placeholder="Intersección">
         <textarea id="o${p.id}" placeholder="Observación"></textarea>
-        <button data-id="${p.id}">✅ Asignar</button>
-      `;
-      card.appendChild(box);
-    }
-
+        <button data-id="${p.id}">✅ Asignar salida</button>
+      </div>
+    `;
     lista.appendChild(card);
   });
 
@@ -80,14 +73,20 @@ function render(){
     btn.onclick = async ()=>{
       const id=btn.dataset.id;
       const p=pendientes.find(x=>x.id===id);
+
       const c=document.getElementById("c"+id).value.trim();
       const f=document.getElementById("f"+id).value;
       const h=document.getElementById("h"+id).value;
       const calle=document.getElementById("calles"+id).value.trim();
       const inter=document.getElementById("inter"+id).value.trim();
       const o=document.getElementById("o"+id).value.trim();
-      if(!c||!f||!h||!calle||!inter){ alert("Faltan datos"); return; }
 
+      if(!c||!f||!h||!calle||!inter){
+        alert("Completa todos los campos.");
+        return;
+      }
+
+      // CREAR SALIDA
       await push(salidasRef,{
         territorio:p.territorio,
         pendientes:p.pendientes||[],
@@ -100,12 +99,16 @@ function render(){
         creado:Date.now()
       });
 
-      await remove(ref(db,"pendientes/"+id));
+      // BORRAR PENDIENTE
+      await remove(dbRef(db,"pendientes/"+id));
+
+      // IR A PRÓXIMAS SALIDAS
       location.replace("proximas.html");
     };
   });
 }
 
+// LEER PENDIENTES
 onValue(pendientesRef,s=>{
   pendientes=[];
   s.forEach(x=>{
@@ -116,5 +119,6 @@ onValue(pendientesRef,s=>{
   render();
 });
 </script>
+
 </body>
 </html>
