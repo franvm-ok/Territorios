@@ -42,7 +42,6 @@ button{cursor:pointer}
 
 <div class="container">
 
-  <!-- FORMULARIO CREAR NUEVA SALIDA -->
   <div class="formulario">
     <h3>➕ Crear Nueva Salida</h3>
     <input type="date" id="fecha">
@@ -55,7 +54,6 @@ button{cursor:pointer}
     <button class="btn-crear" id="crearSalida">Crear Salida</button>
   </div>
 
-  <!-- LISTA DE SALIDAS -->
   <div id="lista"></div>
 
 </div>
@@ -68,7 +66,6 @@ import { db, ref, onValue, push, remove } from "./firebase.js";
 const lista = document.getElementById("lista");
 const salidasRef = ref(db, "salidas_asignadas");
 
-// Formatear fecha
 const formatearFecha = fecha =>
   new Date(fecha).toLocaleDateString("es-AR", {
     weekday: "long",
@@ -76,7 +73,6 @@ const formatearFecha = fecha =>
     month: "long"
   }).toUpperCase();
 
-// Timestamp de fecha + hora
 const timestamp = (fecha, hora) => {
   const [h, m] = hora.split(":");
   const d = new Date(fecha);
@@ -84,7 +80,6 @@ const timestamp = (fecha, hora) => {
   return d.getTime();
 };
 
-// Crear tarjeta de salida
 const crearCard = salida => {
   const card = document.createElement("div");
   card.className = "card";
@@ -97,7 +92,6 @@ const crearCard = salida => {
     ${salida.observaciones ? `<div class="linea">✍ ${salida.observaciones}</div>` : ""}
     <button class="btn-eliminar" data-key="${salida.key}">Eliminar</button>
   `;
-  // Evento eliminar
   card.querySelector(".btn-eliminar").addEventListener("click", () => {
     if (confirm("¿Eliminar esta salida?")) {
       remove(ref(db, "salidas_asignadas/" + salida.key));
@@ -106,7 +100,6 @@ const crearCard = salida => {
   return card;
 };
 
-// Escuchar cambios en Firebase
 onValue(salidasRef, snapshot => {
   lista.innerHTML = "";
   if (!snapshot.exists()) {
@@ -122,14 +115,10 @@ onValue(salidasRef, snapshot => {
     }
   });
 
-  // Ordenar por fecha y hora
   salidas.sort((a, b) => a.ts - b.ts);
-
-  // Renderizar tarjetas
   salidas.forEach(o => lista.appendChild(crearCard(o)));
 });
 
-// --- CREAR NUEVA SALIDA ---
 const crearBtn = document.getElementById("crearSalida");
 if (crearBtn) {
   crearBtn.addEventListener("click", () => {
@@ -156,7 +145,6 @@ if (crearBtn) {
       observaciones,
       pendientes: []
     }).then(() => {
-      // Limpiar formulario
       document.getElementById("fecha").value = "";
       document.getElementById("hora").value = "";
       document.getElementById("territorio").value = "";
