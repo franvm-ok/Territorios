@@ -40,6 +40,7 @@ header{background:var(--verde);color:white;padding:18px;text-align:center;font-s
   border:none;
   padding:10px 14px;
   border-radius:10px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -47,20 +48,30 @@ header{background:var(--verde);color:white;padding:18px;text-align:center;font-s
 <body>
 
 <header>📅 Próximas Salidas</header>
+
 <div class="container" id="lista"></div>
+
 <button class="back" onclick="location.href='index.html'">⬅ Inicio</button>
 
 <script type="module">
-import { db, ref, onValue } from "./firebase.js";
+import { db, ref as dbRef, onValue } from "./firebase.js";
 
 const lista = document.getElementById("lista");
-const salidasRef = ref(db,"salidas_asignadas");
+const salidasRef = dbRef(db,"salidas_asignadas");
 
-// Formato fecha
-const formatearFecha = f =>
-  new Date(f).toLocaleDateString("es-AR",{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+/* =========================
+   FORMATEAR FECHA
+========================= */
+const formatearFecha = fecha =>
+  new Date(fecha).toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  }).toUpperCase();
 
-// Timestamp fecha + hora
+/* =========================
+   TIMESTAMP
+========================= */
 function timestamp(fecha,hora){
   const [h,m] = hora.split(":");
   const d = new Date(fecha);
@@ -68,40 +79,66 @@ function timestamp(fecha,hora){
   return d.getTime();
 }
 
-// Escuchar salidas
-onValue(salidasRef,s=>{
+/* =========================
+   ESCUCHAR FIREBASE
+========================= */
+onValue(salidasRef, snap => {
+
   lista.innerHTML="";
 
-  if(!s.exists()){
+  if(!snap.exists()){
     lista.innerHTML="<p align='center'>No hay salidas asignadas</p>";
     return;
   }
 
   let salidas = [];
 
-  s.forEach(x=>{
+  snap.forEach(x=>{
     const o = x.val();
     const ts = timestamp(o.fecha,o.hora);
-    if(ts > Date.now()){ 
-      salidas.push({...o, ts});
-    }
+
+    salidas.push({
+      ...o,
+      ts: ts
+    });
   });
 
+  /* =========================
+     ORDENAR
+  ========================= */
   salidas.sort((a,b)=>a.ts - b.ts);
 
+  /* =========================
+     FILTRAR FUTURAS
+  ========================= */
+  salidas = salidas.filter(o => o.ts >= Date.now() - 60000);
+
+  if(salidas.length === 0){
+    lista.innerHTML="<p align='center'>No hay salidas futuras</p>";
+    return;
+  }
+
+  /* =========================
+     RENDER TARJETAS
+  ========================= */
   salidas.forEach(o=>{
+
     const card=document.createElement("div");
     card.className="card";
+
     card.innerHTML=`
       <div class="fecha">🕒 ${formatearFecha(o.fecha)} - ${o.hora}</div>
       <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>
       <div class="linea">👤 Conductor: ${o.conductor}</div>
       <div class="linea">📌 Dirección: ${o.calle} y ${o.interseccion}</div>
-      <div class="linea">🧱 Faltan: ${(o.pendientes||[]).join(", ") || "Nadie"}</div>
-      ${o.observaciones?`<div class="linea">✍ ${o.observaciones}</div>`:""}
+      <div class="linea">🧱 Faltan: ${(o.pendientes || []).join(", ") || "Nadie"}</div>
+      ${o.observaciones ? `<div class="linea">✍ ${o.observaciones}</div>` : ""}
     `;
+
     lista.appendChild(card);
+
   });
+
 });
 </script>
 
