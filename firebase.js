@@ -1,34 +1,25 @@
-// firebase.js (VERSIÓN ESTABLE PARA GITHUB PAGES)
+// firebase.js DEFINITIVO PARA GITHUB PAGES (ESTABLE)
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-/* =============================
-   REALTIME DATABASE
-   ============================= */
-import { 
+import {
   getDatabase,
-  ref as dbRef,
+  ref,
   set,
   push,
   update,
-  onValue,
-  remove
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+  remove,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* =============================
-   STORAGE
-   ============================= */
-import { 
+import {
   getStorage,
-  ref as storageRef,
+  ref as sRef,
   uploadBytes,
   getDownloadURL,
-  listAll 
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
+  listAll
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-/* =============================
-   CONFIGURACIÓN
-   ============================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
   authDomain: "territorio-3c28d.firebaseapp.com",
@@ -39,30 +30,20 @@ const firebaseConfig = {
   appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed"
 };
 
-/* =============================
-   INICIALIZAR APP
-   ============================= */
 const app = initializeApp(firebaseConfig);
-
-/* =============================
-   SERVICIOS
-   ============================= */
 const db = getDatabase(app);
 const storage = getStorage(app);
 
-/* =============================
-   EXPORTAR
-   ============================= */
-export { 
-  db, 
-  dbRef as ref,
-  set, 
-  push, 
+export {
+  db,
+  ref,
+  set,
+  push,
   update,
   remove,
   onValue,
   storage,
-  storageRef as sRef,
+  sRef,
   uploadBytes,
   getDownloadURL,
   listAll
