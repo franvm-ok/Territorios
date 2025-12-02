@@ -1,69 +1,172 @@
-// firebase.js (VERSIÓN ESTABLE PARA GITHUB PAGES)
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Próximas Salidas - Admin</title>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+<style>
+:root{--verde:#1a4b27;--bg:#f4f4f4}
+body{margin:0;font-family:Arial;background:var(--bg)}
+header{background:var(--verde);color:white;padding:18px;text-align:center;font-size:20px}
+.container{max-width:900px;margin:auto;padding:15px}
+.card{
+  background:white;padding:16px;border-radius:14px;margin-bottom:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);border-left:8px solid var(--verde)
+}
+.fecha{font-size:22px;font-weight:bold;margin-bottom:6px}
+.linea{font-size:17px;margin:4px 0}
+.back{
+  position:fixed;bottom:15px;left:15px;
+  background:var(--verde);color:white;border:none;
+  padding:10px 14px;border-radius:10px
+}
+.formulario{
+  background:white;padding:14px;border-radius:12px;margin-bottom:20px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1)
+}
+input, select{padding:6px;margin:4px 0;width:100%;box-sizing:border-box;border-radius:6px;border:1px solid #ccc}
+button{cursor:pointer}
+.btn-eliminar{
+  background:#b83b3b;color:white;border:none;padding:6px 10px;border-radius:6px;margin-top:6px;
+}
+.btn-crear{
+  background:var(--verde);color:white;border:none;padding:8px 14px;border-radius:8px;margin-top:8px;
+}
+</style>
+</head>
 
-/* =============================
-   REALTIME DATABASE
-   ============================= */
-import { 
-  getDatabase,
-  ref as dbRef,
-  set,
-  push,
-  update,
-  onValue,
-  remove
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+<body>
 
-/* =============================
-   STORAGE
-   ============================= */
-import { 
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-  listAll 
-} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
+<header>📅 Próximas Salidas - Admin</header>
 
-/* =============================
-   CONFIGURACIÓN
-   ============================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
-  authDomain: "territorio-3c28d.firebaseapp.com",
-  databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com",
-  projectId: "territorio-3c28d",
-  storageBucket: "territorio-3c28d.appspot.com",
-  messagingSenderId: "170925082008",
-  appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed"
+<div class="container">
+
+  <!-- FORMULARIO CREAR NUEVA SALIDA -->
+  <div class="formulario">
+    <h3>➕ Crear Nueva Salida</h3>
+    <input type="date" id="fecha">
+    <input type="time" id="hora">
+    <input type="text" id="territorio" placeholder="Territorio">
+    <input type="text" id="conductor" placeholder="Conductor">
+    <input type="text" id="calle" placeholder="Calle">
+    <input type="text" id="interseccion" placeholder="Intersección">
+    <input type="text" id="observaciones" placeholder="Observaciones (opcional)">
+    <button class="btn-crear" id="crearSalida">Crear Salida</button>
+  </div>
+
+  <!-- LISTA DE SALIDAS -->
+  <div id="lista"></div>
+
+</div>
+
+<button class="back" onclick="location.href='index.html'">⬅ Inicio</button>
+
+<script type="module">
+import { db, ref, push, onValue, remove } from "./firebase.js";
+
+const lista = document.getElementById("lista");
+const salidasRef = ref(db, "salidas_asignadas");
+
+// Formatear fecha
+const formatearFecha = fecha =>
+  new Date(fecha).toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  }).toUpperCase();
+
+// Timestamp de fecha + hora
+const timestamp = (fecha, hora) => {
+  const [h, m] = hora.split(":");
+  const d = new Date(fecha);
+  d.setHours(h, m, 0, 0);
+  return d.getTime();
 };
 
-/* =============================
-   INICIALIZAR APP
-   ============================= */
-const app = initializeApp(firebaseConfig);
-
-/* =============================
-   SERVICIOS
-   ============================= */
-const db = getDatabase(app);
-const storage = getStorage(app);
-
-/* =============================
-   EXPORTAR
-   ============================= */
-export { 
-  db, 
-  dbRef as ref,
-  set, 
-  push, 
-  update,
-  remove,
-  onValue,
-  storage,
-  storageRef as sRef,
-  uploadBytes,
-  getDownloadURL,
-  listAll
+// Crear tarjeta de salida
+const crearCard = salida => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="fecha">🕒 ${formatearFecha(salida.fecha)} - ${salida.hora}</div>
+    <div class="linea">📍 Territorio: <b>${salida.territorio}</b></div>
+    <div class="linea">👤 Conductor: ${salida.conductor}</div>
+    <div class="linea">📌 Dirección: ${salida.calle} y ${salida.interseccion}</div>
+    <div class="linea">🧱 Faltan: ${(salida.pendientes || []).join(", ") || "Nadie"}</div>
+    ${salida.observaciones ? `<div class="linea">✍ ${salida.observaciones}</div>` : ""}
+    <button class="btn-eliminar" data-key="${salida.key}">Eliminar</button>
+  `;
+  // Evento eliminar
+  card.querySelector(".btn-eliminar").addEventListener("click", () => {
+    if (confirm("¿Eliminar esta salida?")) {
+      remove(ref(db, "salidas_asignadas/" + salida.key));
+    }
+  });
+  return card;
 };
+
+// Escuchar cambios en Firebase
+onValue(salidasRef, snapshot => {
+  lista.innerHTML = "";
+  if (!snapshot.exists()) {
+    lista.innerHTML = "<p align='center'>No hay salidas asignadas</p>";
+    return;
+  }
+
+  const salidas = [];
+  snapshot.forEach(x => {
+    const o = x.val();
+    if (timestamp(o.fecha, o.hora) > Date.now()) {
+      salidas.push({ ...o, key: x.key, ts: timestamp(o.fecha, o.hora) });
+    }
+  });
+
+  // Ordenar por fecha y hora
+  salidas.sort((a, b) => a.ts - b.ts);
+
+  // Renderizar tarjetas
+  salidas.forEach(o => lista.appendChild(crearCard(o)));
+});
+
+// --- CREAR NUEVA SALIDA ---
+const crearBtn = document.getElementById("crearSalida");
+if (crearBtn) {
+  crearBtn.addEventListener("click", () => {
+    const fecha = document.getElementById("fecha").value;
+    const hora = document.getElementById("hora").value;
+    const territorio = document.getElementById("territorio").value.trim();
+    const conductor = document.getElementById("conductor").value.trim();
+    const calle = document.getElementById("calle").value.trim();
+    const interseccion = document.getElementById("interseccion").value.trim();
+    const observaciones = document.getElementById("observaciones").value.trim();
+
+    if (!fecha || !hora || !territorio || !conductor || !calle || !interseccion) {
+      alert("Completa todos los campos obligatorios.");
+      return;
+    }
+
+    push(salidasRef, {
+      fecha,
+      hora,
+      territorio,
+      conductor,
+      calle,
+      interseccion,
+      observaciones,
+      pendientes: []
+    }).then(() => {
+      document.getElementById("fecha").value = "";
+      document.getElementById("hora").value = "";
+      document.getElementById("territorio").value = "";
+      document.getElementById("conductor").value = "";
+      document.getElementById("calle").value = "";
+      document.getElementById("interseccion").value = "";
+      document.getElementById("observaciones").value = "";
+    });
+  });
+}
+</script>
+
+</body>
+</html>
