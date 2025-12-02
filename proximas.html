@@ -1,88 +1,193 @@
-<!DOCTYPE html>  
-<html lang="es">  
-<head>  
-<meta charset="utf-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1">  
-<title>Próximas Salidas</title>  
-  
-<style>  
-:root{--verde:#1a4b27;--bg:#f4f4f4}  
-body{margin:0;font-family:Arial;background:var(--bg)}  
-header{background:var(--verde);color:white;padding:18px;text-align:center;font-size:20px}  
-.container{max-width:900px;margin:auto;padding:15px}  
-  
-.card{  
-  background:white;  
-  padding:16px;  
-  border-radius:14px;  
-  margin-bottom:14px;  
-  box-shadow:0 2px 8px rgba(0,0,0,.1);  
-  border-left:8px solid var(--verde);  
-}  
-  
-.fecha{  
-  font-size:22px;  
-  font-weight:bold;  
-  margin-bottom:6px;  
-}  
-  
-.linea{  
-  font-size:17px;  
-  margin:4px 0;  
-}  
-  
-.back{  
-  position:fixed;  
-  bottom:15px;  
-  left:15px;  
-  background:var(--verde);  
-  color:white;  
-  border:none;  
-  padding:10px 14px;  
-  border-radius:10px;  
-}  
-</style>  
-</head>  
-  
-<body>  
-  
-<header>📅 Próximas Salidas</header>  
-<div class="container" id="lista"></div>  
-<button class="back" onclick="location.href='index.html'">⬅ Inicio</button>  
-  
-<script type="module">  
-import { db, ref, onValue } from "./firebase.js";  
-const lista=document.getElementById("lista");  
-const salidasRef=ref(db,"salidas_asignadas");  
-  
-const formatear=(f)=>{  
-  const d=new Date(f);  
-  return d.toLocaleDateString("es-AR",{weekday:'long',day:'numeric',month:'long'}).toUpperCase();  
-};  
-  
-onValue(salidasRef,s=>{  
-  lista.innerHTML="";  
-  if(!s.exists()){  
-    lista.innerHTML="<p align='center'>No hay salidas asignadas</p>";  
-    return;  
-  }  
-  
-  s.forEach(x=>{  
-    const o=x.val();  
-    const card=document.createElement("div");  
-    card.className="card";  
-    card.innerHTML=`  
-      <div class="fecha">🕒 ${formatear(o.fecha)} - ${o.hora}</div>  
-      <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>  
-      <div class="linea">👤 Conductor: ${o.conductor}</div>  
-      <div class="linea">📌 Dirección: ${o.calle} y ${o.interseccion}</div>  
-      <div class="linea">🧱 Faltan: ${(o.pendientes||[]).join(", ")}</div>  
-      ${o.observaciones?`<div class="linea">✍ ${o.observaciones}</div>`:""}  
-    `;  
-    lista.appendChild(card);  
-  });  
-});  
-</script>  
-  
-</body>  
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Próximas Salidas</title>
+
+<style>
+:root{--verde:#1a4b27;--bg:#f4f4f4}
+body{margin:0;font-family:Arial;background:var(--bg)}
+header{background:var(--verde);color:white;padding:18px;text-align:center;font-size:20px}
+.container{max-width:900px;margin:auto;padding:15px}
+
+.card{
+  background:white;padding:16px;border-radius:14px;margin-bottom:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);border-left:8px solid var(--verde)
+}
+
+.fecha{font-size:22px;font-weight:bold;margin-bottom:6px}
+.linea{font-size:17px;margin:4px 0}
+
+.back{
+  position:fixed;bottom:15px;left:15px;
+  background:var(--verde);color:white;border:none;
+  padding:10px 14px;border-radius:10px
+}
+
+.formulario{
+  background:white;padding:16px;border-radius:12px;margin-bottom:20px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1)
+}
+
+input{
+  width:100%;padding:8px;margin-bottom:6px;
+  border-radius:6px;border:1px solid #ccc
+}
+
+button{cursor:pointer}
+
+.btn-crear{
+  background:var(--verde);color:white;border:none;
+  padding:10px;border-radius:8px;margin-top:5px
+}
+
+.btn-eliminar{
+  background:#b63434;color:white;
+  padding:6px 10px;border:none;border-radius:6px;margin-top:6px
+}
+</style>
+</head>
+
+
+
+<body>
+
+<header>📅 Próximas Salidas</header>
+
+<div class="container">
+
+  <!-- SOLO ADMIN -->
+  <div id="adminPanel" class="formulario" style="display:none">
+    <h3>➕ Crear nueva salida</h3>
+    <input type="date" id="fecha">
+    <input type="time" id="hora">
+    <input type="text" id="territorio" placeholder="Territorio">
+    <input type="text" id="conductor" placeholder="Conductor">
+    <input type="text" id="calle" placeholder="Calle">
+    <input type="text" id="interseccion" placeholder="Intersección">
+    <input type="text" id="observaciones" placeholder="Observaciones (opcional)">
+    <button class="btn-crear" id="crearSalida">Crear salida</button>
+  </div>
+
+  <div id="lista"></div>
+
+</div>
+
+<button class="back" onclick="location.href='index.html'">⬅ Inicio</button>
+
+
+
+<script type="module">
+import { db, ref as dbRef, onValue, push, remove } from "./firebase.js";
+
+const lista = document.getElementById("lista");
+const salidasRef = dbRef(db,"salidas_asignadas");
+const adminPanel = document.getElementById("adminPanel");
+
+/* =============================
+   ROL DESDE LOCALSTORAGE
+   ============================= */
+const rol = localStorage.getItem("rol") || "invitado";
+if(rol==="admin") adminPanel.style.display="block";
+
+/* =============================
+   FECHA Y HORA
+   ============================= */
+const formatearFecha = f =>
+  new Date(f).toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"}).toUpperCase();
+
+const timestamp=(fecha,hora)=>{
+  const [h,m]=hora.split(":");
+  const d=new Date(fecha);
+  d.setHours(h,m,0,0);
+  return d.getTime();
+};
+
+/* =============================
+   CREAR TARJETA
+   ============================= */
+function crearCard(o){
+  const card=document.createElement("div");
+  card.className="card";
+  card.innerHTML=`
+    <div class="fecha">🕒 ${formatearFecha(o.fecha)} - ${o.hora}</div>
+    <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>
+    <div class="linea">👤 Conductor: ${o.conductor}</div>
+    <div class="linea">📌 Dirección: ${o.calle} y ${o.interseccion}</div>
+    <div class="linea">🧱 Faltan: ${(o.pendientes||[]).join(", ") || "Nadie"}</div>
+    ${o.observaciones ? `<div class="linea">✍ ${o.observaciones}</div>` : ""}
+  `;
+
+  if(rol==="admin"){
+    const btn=document.createElement("button");
+    btn.textContent="Eliminar";
+    btn.className="btn-eliminar";
+    btn.onclick=()=> {
+      if(confirm("¿Eliminar esta salida?")){
+        remove(dbRef(db,"salidas_asignadas/"+o.key));
+      }
+    };
+    card.appendChild(btn);
+  }
+
+  return card;
+}
+
+/* =============================
+   CARGAR SALIDAS
+   ============================= */
+onValue(salidasRef,snap=>{
+  lista.innerHTML="";
+  if(!snap.exists()){
+    lista.innerHTML="<p align='center'>No hay salidas futuras</p>";
+    return;
+  }
+
+  const salidas=[];
+  snap.forEach(x=>{
+    const o=x.val();
+    const ts=timestamp(o.fecha,o.hora);
+    if(ts>=Date.now()){
+      salidas.push({...o,key:x.key,ts});
+    }
+  });
+
+  salidas.sort((a,b)=>a.ts-b.ts);
+  salidas.forEach(o=>lista.appendChild(crearCard(o)));
+});
+
+/* =============================
+   CREAR NUEVA SALIDA (ADMIN)
+   ============================= */
+const btnCrear=document.getElementById("crearSalida");
+if(btnCrear){
+  btnCrear.addEventListener("click",()=>{
+
+    const data={
+      fecha:fecha.value,
+      hora:hora.value,
+      territorio:territorio.value.trim(),
+      conductor:conductor.value.trim(),
+      calle:calle.value.trim(),
+      interseccion:interseccion.value.trim(),
+      observaciones:observaciones.value.trim(),
+      pendientes:[]
+    };
+
+    if(!data.fecha||!data.hora||!data.territorio||!data.conductor||!data.calle||!data.interseccion){
+      alert("Completa todos los campos.");
+      return;
+    }
+
+    push(salidasRef,data).then(()=>{
+      fecha.value="";hora.value="";territorio.value="";conductor.value="";
+      calle.value="";interseccion.value="";observaciones.value="";
+    });
+
+  });
+}
+</script>
+
+</body>
 </html>
