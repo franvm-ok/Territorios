@@ -59,29 +59,16 @@ import { db, ref as dbRef, onValue } from "./firebase.js";
 const lista = document.getElementById("lista");
 const salidasRef = dbRef(db,"salidas_asignadas");
 
-/* =========================
-   FORMATEAR FECHA
-========================= */
-const formatearFecha = fecha =>
-  new Date(fecha).toLocaleDateString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long"
-  }).toUpperCase();
-
-/* =========================
-   TIMESTAMP
-========================= */
-function timestamp(fecha,hora){
-  const [h,m] = hora.split(":");
-  const d = new Date(fecha);
-  d.setHours(h,m,0,0);
-  return d.getTime();
+// FORMATO FECHA SIMPLE
+function mostrarFecha(fecha){
+  try{
+    return new Date(fecha).toLocaleDateString("es-AR",{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+  }catch{
+    return fecha;
+  }
 }
 
-/* =========================
-   ESCUCHAR FIREBASE
-========================= */
+// ESCUCHAR FIREBASE SIN FILTROS
 onValue(salidasRef, snap => {
 
   lista.innerHTML="";
@@ -94,43 +81,27 @@ onValue(salidasRef, snap => {
   let salidas = [];
 
   snap.forEach(x=>{
-    const o = x.val();
-    const ts = timestamp(o.fecha,o.hora);
-
     salidas.push({
-      ...o,
-      ts: ts
+      id: x.key,
+      ...x.val()
     });
   });
 
-  /* =========================
-     ORDENAR
-  ========================= */
-  salidas.sort((a,b)=>a.ts - b.ts);
+  // ORDENAR POR FECHA TEXTO (NO FALLA)
+  salidas.sort((a,b)=>{
+    return String(a.fecha).localeCompare(String(b.fecha));
+  });
 
-  /* =========================
-     FILTRAR FUTURAS
-  ========================= */
-  salidas = salidas.filter(o => o.ts >= Date.now() - 60000);
-
-  if(salidas.length === 0){
-    lista.innerHTML="<p align='center'>No hay salidas futuras</p>";
-    return;
-  }
-
-  /* =========================
-     RENDER TARJETAS
-  ========================= */
   salidas.forEach(o=>{
 
     const card=document.createElement("div");
     card.className="card";
 
     card.innerHTML=`
-      <div class="fecha">🕒 ${formatearFecha(o.fecha)} - ${o.hora}</div>
+      <div class="fecha">🕒 ${mostrarFecha(o.fecha)} - ${o.hora || "—"}</div>
       <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>
-      <div class="linea">👤 Conductor: ${o.conductor}</div>
-      <div class="linea">📌 Dirección: ${o.calle} y ${o.interseccion}</div>
+      <div class="linea">👤 Conductor: ${o.conductor || "—"}</div>
+      <div class="linea">📌 Dirección: ${o.calle || "—"} y ${o.interseccion || "—"}</div>
       <div class="linea">🧱 Faltan: ${(o.pendientes || []).join(", ") || "Nadie"}</div>
       ${o.observaciones ? `<div class="linea">✍ ${o.observaciones}</div>` : ""}
     `;
