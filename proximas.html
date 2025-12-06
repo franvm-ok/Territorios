@@ -1,90 +1,5 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Próximas Salidas</title>
-
-<style>
-:root{--verde:#1a4b27;--bg:#f4f4f4}
-body{margin:0;font-family:Arial;background:var(--bg)}
-header{background:var(--verde);color:white;padding:18px;text-align:center;font-size:20px}
-.container{max-width:900px;margin:auto;padding:15px}
-
-.filtros{
-  display:flex;
-  gap:8px;
-  justify-content:center;
-  margin-bottom:15px;
-}
-
-.filtros button{
-  padding:8px 12px;
-  border-radius:20px;
-  border:none;
-  background:#ccc;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.filtros button.activo{
-  background:var(--verde);
-  color:white;
-}
-
-.card{
-  background:white;
-  padding:16px;
-  border-radius:14px;
-  margin-bottom:14px;
-  box-shadow:0 2px 8px rgba(0,0,0,.1);
-  border-left:8px solid var(--verde);
-}
-
-.fecha{
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:6px;
-}
-
-.linea{
-  font-size:17px;
-  margin:4px 0;
-}
-
-.back{
-  position:fixed;
-  bottom:15px;
-  left:15px;
-  background:var(--verde);
-  color:white;
-  border:none;
-  padding:10px 14px;
-  border-radius:10px;
-}
-</style>
-</head>
-
-<body>
-
-<header>📅 Próximas Salidas</header>
-
-<div class="container">
-
-  <div class="filtros">
-    <button id="hoy" class="activo">Hoy</button>
-    <button id="siete">7 días</button>
-    <button id="todos">Todos</button>
-  </div>
-
-  <div id="lista"></div>
-
-</div>
-
-<button class="back" onclick="location.href='index.html'">⬅ Inicio</button>
-
 <script type="module">
-import { db, ref as dbRef, onValue } from "./firebase.js";
+import { db, ref as dbRef, onValue, remove } from "./firebase.js";
 
 const lista = document.getElementById("lista");
 const salidasRef = dbRef(db,"salidas_asignadas");
@@ -99,9 +14,25 @@ let cache = [];
 /* ===== FECHA ===== */
 function fechaTexto(fecha){
   try{
-    return new Date(fecha).toLocaleDateString("es-AR",{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+    return new Date(fecha + "T00:00:00").toLocaleDateString("es-AR",{
+      weekday:'long',
+      day:'numeric',
+      month:'long'
+    }).toUpperCase();
   }catch{
     return fecha;
+  }
+}
+
+/* ===== FORMATO 24 HS ===== */
+function horaTexto(h){
+  try{
+    const [hor,min] = h.split(":");
+    const d = new Date();
+    d.setHours(hor, min, 0, 0);
+    return d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hour12:false});
+  }catch{
+    return h || "—";
   }
 }
 
@@ -109,7 +40,7 @@ function fechaTexto(fecha){
 function tiempo(fecha,hora){
   try{
     const [h,m] = (hora||"00:00").split(":");
-    const d = new Date(fecha);
+    const d = new Date(fecha + "T00:00:00");
     d.setHours(h,m,0,0);
     return d.getTime();
   }catch{
@@ -123,23 +54,9 @@ function activar(btn){
   btn.classList.add("activo");
 }
 
-btnHoy.onclick=()=>{
-  filtro="hoy";
-  activar(btnHoy);
-  mostrar();
-};
-
-btn7.onclick=()=>{
-  filtro="7";
-  activar(btn7);
-  mostrar();
-};
-
-btnTodos.onclick=()=>{
-  filtro="todos";
-  activar(btnTodos);
-  mostrar();
-};
+btnHoy.onclick = ()=>{ filtro="hoy"; activar(btnHoy); mostrar(); };
+btn7.onclick  = ()=>{ filtro="7"; activar(btn7); mostrar(); };
+btnTodos.onclick = ()=>{ filtro="todos"; activar(btnTodos); mostrar(); };
 
 /* ===== MOSTRAR ===== */
 function mostrar(){
@@ -189,7 +106,7 @@ function mostrar(){
     const card = document.createElement("div");
     card.className="card";
     card.innerHTML=`
-      <div class="fecha">🕒 ${fechaTexto(o.fecha)} - ${o.hora || "—"}</div>
+      <div class="fecha">🕒 ${fechaTexto(o.fecha)} - ${horaTexto(o.hora || "00:00")}</div>
       <div class="linea">📍 Territorio: <b>${o.territorio}</b></div>
       <div class="linea">👤 Conductor: ${o.conductor||"—"}</div>
       <div class="linea">📌 Dirección: ${o.calle||"-"} y ${o.interseccion||"-"}</div>
@@ -201,10 +118,26 @@ function mostrar(){
 
 }
 
+/* ===== ELIMINACIÓN AUTOMÁTICA DE SALIDAS PASADAS ===== */
+function limpiarSalidasViejas(){
+
+  const ahora = Date.now();
+  const vencimiento = 24 * 60 * 60 * 1000; // 24 hs luego de realizada
+
+  cache.forEach(o=>{
+    const ts = tiempo(o.fecha, o.hora);
+
+    if(ts + vencimiento < ahora){
+      // borrar en Firebase
+      remove(dbRef(db, "salidas_asignadas/" + o.id));
+    }
+  });
+}
+
 /* ===== LEER FIREBASE ===== */
 onValue(salidasRef, snap=>{
 
-  cache=[];
+  cache = [];
 
   snap.forEach(x=>{
     cache.push({
@@ -213,10 +146,8 @@ onValue(salidasRef, snap=>{
     });
   });
 
+  limpiarSalidasViejas();
   mostrar();
 
 });
 </script>
-
-</body>
-</html>
