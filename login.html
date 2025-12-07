@@ -9,7 +9,19 @@
   .wrap{max-width:420px;margin:80px auto;padding:20px}
   .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.08)}
   h1{text-align:center;color:#1a4b27}
-  input{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:12px;box-sizing:border-box}
+  .input-wrap{position:relative;width:100%;margin-bottom:12px}
+  input{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box}
+  .toggle-pass{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-size:16px;
+    color:#666;
+    background:none;
+    border:none;
+  }
   .btn{padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
   .btn-login{background:#1a4b27;color:#fff;width:100%}
   .small{font-size:13px;color:#666;text-align:center;margin-top:8px;line-height:1.4}
@@ -22,15 +34,19 @@
   <div class="card">
     <h1>Iniciar sesión</h1>
 
-    <input id="user" placeholder="Usuario" />
-    <input id="pass" placeholder="Contraseña" type="password"/>
+    <div class="input-wrap">
+      <input id="user" placeholder="Usuario" />
+    </div>
+
+    <div class="input-wrap">
+      <input id="pass" placeholder="Contraseña" type="password"/>
+      <button class="toggle-pass" id="togglePass">👁️</button>
+    </div>
 
     <button class="btn btn-login" id="loginBtn">Entrar</button>
 
     <div class="small">
-      Admin: <b>admin / 1234</b><br>
-      Conductor: <b>conductor / Brasil643</b><br>
-      Invitado: escribir solo <b>invitado</b>
+      Conductor: <b>conductor / conductor</b>
     </div>
   </div>
 </div>
@@ -38,10 +54,19 @@
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script>
+const togglePassBtn = document.getElementById('togglePass');
+const passInput = document.getElementById('pass');
+const userInput = document.getElementById('user');
+
+// Mostrar/ocultar contraseña
+togglePassBtn.addEventListener('click', ()=>{
+  passInput.type = (passInput.type === 'password') ? 'text' : 'password';
+});
+
 document.getElementById('loginBtn').addEventListener('click', ()=>{
 
-  const user = document.getElementById('user').value.trim();
-  const pass = document.getElementById('pass').value.trim();
+  const user = userInput.value.trim().toLowerCase(); // Ignora mayúsculas/minúsculas
+  const pass = passInput.value.trim();
 
   if(!user){
     alert('Ingrese usuario');
@@ -56,7 +81,7 @@ document.getElementById('loginBtn').addEventListener('click', ()=>{
   }
 
   // CONDUCTOR
-  if(user === 'conductor' && pass === 'Brasil643'){
+  if(user === 'conductor' && pass === 'conductor'){
     guardarSesion('conductor', user);
     location.href="index.html";
     return;
@@ -78,8 +103,6 @@ function guardarSesion(rol, nombre){
     nombre,
     fecha: Date.now()
   };
-
-  // ✅ ESTO ES LO QUE FALTABA
   localStorage.setItem("rol", rol);
   localStorage.setItem("sesion", JSON.stringify(sesion));
 }
