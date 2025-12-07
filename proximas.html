@@ -35,11 +35,15 @@ const pendientesRef = dbRef(db,"pendientes");
 
 /* ============================
    VALIDAR ROL
+   Invitado → permitido (como conductor)
 ============================ */
 const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
-const rol = (sesion.rol || "invitado").toLowerCase();
-if (rol !== "admin" && rol !== "conductor") location.href="index.html";
+let rol = (sesion.rol || "invitado").toLowerCase();
 
+/* Invitado debe ver igual que Conductor */
+if(rol === "invitado") rol = "conductor";
+
+/* ÚNICO rol restringido = ninguno → todos pueden entrar */
 let salidas = [];
 
 /* ============================
@@ -88,7 +92,7 @@ function render(){
   });
 
   /* ============================
-     GUARDAR EDICIÓN
+     GUARDAR EDICIÓN (ADMIN)
   ============================ */
   document.querySelectorAll("[data-edit]").forEach(btn=>{
     btn.onclick = async ()=>{
@@ -116,7 +120,7 @@ function render(){
   });
 
   /* ============================
-     DESHACER ⇒ VOLVER A PENDIENTES
+     DESHACER ⇒ VOLVER A PENDIENTES (ADMIN)
   ============================ */
   document.querySelectorAll("[data-undo]").forEach(btn=>{
     btn.onclick = async ()=>{
@@ -125,7 +129,6 @@ function render(){
 
       if(!confirm("¿Seguro que querés deshacer esta salida?")) return;
 
-      /* Mantengo exactamente el campo pendientes original */
       await push(pendientesRef,{
         territorio: p.territorio,
         pendientes: p.pendientes || [],
@@ -151,7 +154,7 @@ onValue(salidasRef,s=>{
     salidas.push(o);
   });
 
-  // Ordenar por fecha/hora más próximas primero
+  // Ordenar por fecha/hora
   salidas.sort((a,b)=> (a.fecha+a.hora).localeCompare(b.fecha+b.hora));
 
   render();
