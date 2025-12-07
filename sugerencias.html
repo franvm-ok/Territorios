@@ -7,40 +7,84 @@
 <style>
   :root{--verde:#1a4b27;--bg:#f4f4f4}
   body{margin:0;font-family:Arial;background:var(--bg);color:#222}
-  header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:20px;font-weight:700}
+  header{background:var(--verde);color:#fff;padding:18px;text-align:center;font-size:22px;font-weight:700}
   .container{padding:18px;max-width:980px;margin:0 auto}
-  textarea{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;min-height:120px}
-  .btn{padding:10px 14px;border-radius:8px;border:none;background:var(--verde);color:#fff;font-weight:700;cursor:pointer;margin-top:10px}
+  textarea{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;min-height:120px;font-size:16px}
+  .btn{padding:12px 16px;border-radius:8px;border:none;background:var(--verde);color:#fff;font-weight:700;cursor:pointer;margin-top:10px;width:100%;font-size:16px}
   .back-btn{position:fixed;left:16px;bottom:18px;background:var(--verde);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+  
+  /* Estilo tarjetas */
+  .sug-card{
+    background:#fff;border-radius:10px;padding:15px;margin-top:15px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);font-size:16px;line-height:1.4;
+  }
+  .sug-fecha{color:#555;font-size:14px;margin-top:6px;}
 </style>
 </head>
 <body>
+
 <header>Sugerencias</header>
+
 <div class="container">
   <textarea id="sugText" placeholder="Escriba su sugerencia..."></textarea>
   <button id="sendSug" class="btn">Enviar sugerencia</button>
-  <div id="msg" style="margin-top:12px;color:#666"></div>
+  <div id="msg" style="margin-top:12px;color:#666;font-size:16px"></div>
+
+  <!-- Aquí se mostrarán las sugerencias -->
+  <div id="sugList"></div>
 </div>
+
 <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
 
 <script type="module">
-import { db, ref, push, set } from "./firebase.js";
+import { db, ref, push, set, onValue } from "./firebase.js";
+
 const txt = document.getElementById('sugText');
 const btn = document.getElementById('sendSug');
 const msg = document.getElementById('msg');
+const sugList = document.getElementById('sugList');
 
+/* ENVIAR SUGERENCIA */
 btn.addEventListener('click', async ()=>{
   const v = txt.value.trim();
-  if(!v){ msg.textContent = 'Escriba una sugerencia.'; return; }
+  if(!v){
+    msg.textContent = 'Por favor escriba una sugerencia.';
+    return;
+  }
   try{
     const p = push(ref(db, 'sugerencias'));
     await set(p, { text: v, ts: Date.now() });
     txt.value = '';
     msg.textContent = 'Sugerencia enviada. Gracias.';
   }catch(e){
-    console.error(e); msg.textContent = 'Error enviando. Mirá consola.';
+    console.error(e);
+    msg.textContent = 'Error enviando. Mirá consola.';
   }
 });
+
+/* MOSTRAR SUGERENCIAS EN TIEMPO REAL */
+onValue(ref(db, 'sugerencias'), snap => {
+  sugList.innerHTML = ''; // limpiar lista
+  if(!snap.exists()){
+    sugList.innerHTML = '<p style="color:#555;margin-top:10px;">No hay sugerencias aún.</p>';
+    return;
+  }
+
+  const data = snap.val();
+  const keys = Object.keys(data).sort((a,b)=> data[b].ts - data[a].ts); // más recientes primero
+
+  keys.forEach(id=>{
+    const s = data[id];
+    const card = document.createElement('div');
+    card.className = 'sug-card';
+    card.innerHTML = `
+      <div>${s.text}</div>
+      <div class="sug-fecha">${new Date(s.ts).toLocaleString()}</div>
+    `;
+    sugList.appendChild(card);
+  });
+});
 </script>
+
 </body>
 </html>
