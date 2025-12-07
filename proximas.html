@@ -1,165 +1,499 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Próximas Salidas</title>
-
 <style>
-:root{--verde:#1a4b27;--bg:#f4f4f4}
-body{margin:0;font-family:Arial;background:var(--bg)}
-header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
-.container{max-width:900px;margin:auto;padding:15px}
-.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
-.etiqueta{background:#c3f3c0;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
-input,textarea{width:100%;margin-bottom:6px;padding:8px;border-radius:6px;border:1px solid #ccc}
-button{background:var(--verde);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
-.small-btn{padding:5px 8px;font-size:13px;margin-right:5px}
-.back{position:fixed;left:15px;bottom:15px}
+  :root{
+    --verde:#1a4b27;
+    --bg:#f2f6f4;
+    --card:#ffffff;
+    --muted:#6b6b6b;
+    --danger:#b91c1c;
+    --glass: rgba(255,255,255,0.9);
+    --font: 18px;
+    --radius: 20px;
+  }
+
+  /* Reset / body */
+  html,body{height:100%;margin:0;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(180deg,#f7fbfa, #eef7f2); color:#0b0b0b;font-size:var(--font)}
+  header{
+    background:var(--glass);
+    backdrop-filter: blur(6px);
+    padding:18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow: 0 8px 20px rgba(20,40,30,0.06);
+    border-bottom-left-radius:0;
+    border-bottom-right-radius:0;
+  }
+  header h1{margin:0;font-size:20px;font-weight:700;color:var(--verde)}
+  header .sub{font-size:14px;color:var(--muted);margin-top:4px}
+
+  .wrap{max-width:960px;margin:14px auto;padding:12px}
+  .list{display:flex;flex-direction:column;gap:14px;padding-bottom:80px}
+
+  /* Card estilo iOS */
+  .card{
+    background:var(--card);
+    border-radius:calc(var(--radius) + 6px);
+    padding:16px;
+    box-shadow: 0 6px 18px rgba(20,40,30,0.06);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    position:relative;
+  }
+
+  .topline{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .territorio{font-weight:800;font-size:20px;color:#0b3b23}
+  .meta{font-size:15px;color:var(--muted)}
+
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .big{font-size:17px;font-weight:700;color:#0b3b23}
+  .small{font-size:15px;color:var(--muted)}
+
+  .direccion{font-size:15px;color:#234}
+
+  /* etiqueta */
+  .etiqueta{
+    display:inline-block;
+    background:#e8f8ec;
+    color:var(--verde);
+    padding:6px 10px;
+    border-radius:12px;
+    font-weight:700;
+    font-size:13px;
+  }
+
+  /* botón 3 puntos admin */
+  .more-btn{
+    background:transparent;border:none;padding:8px;border-radius:10px;cursor:pointer;font-size:22px;color:var(--muted);
+  }
+  .more-btn:focus{outline:3px solid #ffed9d;border-radius:12px}
+
+  /* MENU pequeño */
+  .menu{
+    position:absolute;
+    right:14px;
+    top:52px;
+    background:white;
+    border-radius:12px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.15);
+    padding:8px;
+    min-width:160px;
+    display:none;
+    flex-direction:column;
+    gap:6px;
+    z-index:60;
+  }
+  .menu button{background:transparent;border:none;text-align:left;padding:10px;border-radius:8px;cursor:pointer;font-weight:700}
+  .menu button:hover{background:#f4f4f4}
+
+  /* BOTONES grandes */
+  .btn{
+    padding:10px 14px;border-radius:12px;border:none;cursor:pointer;font-weight:800;font-size:16px;
+  }
+  .btn.primary{background:var(--verde);color:white}
+  .btn.ghost{background:transparent;border:1px solid #e6e6e6;color:#333}
+  .btn.danger{background:var(--danger);color:white}
+
+  /* modal (editar) */
+  #modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:90;padding:18px}
+  #modalBox{width:100%;max-width:540px;background:white;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+  #modalBox h2{margin:0 0 8px 0;font-size:18px;color:var(--verde)}
+  .field{margin:8px 0}
+  label{display:block;font-weight:800;margin-bottom:6px;font-size:15px}
+  input[type="text"], input[type="date"], input[type="time"], textarea{
+    width:100%;padding:12px;border-radius:10px;border:1px solid #d0d0d0;font-size:16px;box-sizing:border-box
+  }
+  textarea{min-height:90px;resize:vertical}
+
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+
+  /* mensajes vacíos */
+  .empty{text-align:center;padding:40px;background:white;border-radius:12px;color:var(--muted);box-shadow:0 4px 14px rgba(0,0,0,0.06)}
+
+  /* accesibilidad focus */
+  button:focus, input:focus, textarea:focus{outline:3px solid #ffef9a;outline-offset:3px;border-radius:10px}
+
+  /* responsive */
+  @media (max-width:600px){
+    :root{--font:16px}
+    header h1{font-size:18px}
+    .territorio{font-size:18px}
+    #modalBox{padding:14px}
+  }
+
 </style>
 </head>
-
 <body>
 
-<header>🚗 Próximas Salidas</header>
-<div class="container" id="lista"></div>
+<header>
+  <div>
+    <div style="display:flex;flex-direction:column">
+      <span style="font-weight:900;color:var(--verde);font-size:20px">🚗 Próximas Salidas</span>
+      <span class="sub">Información clara y sencilla para todos</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="btn ghost" onclick="location.href='index.html'">⬅ Volver</button>
+  </div>
+</header>
 
-<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
+<main class="wrap">
+  <div id="lista" class="list">
+    <div class="empty">Cargando salidas…</div>
+  </div>
+</main>
+
+<!-- MODAL EDICIÓN (ADMIN) -->
+<div id="modal" role="dialog" aria-modal="true">
+  <div id="modalBox" role="document">
+    <h2>Editar salida</h2>
+
+    <div class="field">
+      <label for="e_territorio">Territorio</label>
+      <input id="e_territorio" type="text" />
+    </div>
+
+    <div class="field">
+      <label for="e_manzanas">Manzanas (separadas por comas)</label>
+      <input id="e_manzanas" type="text" />
+    </div>
+
+    <div class="field">
+      <label for="e_conductor">Conductor</label>
+      <input id="e_conductor" type="text" />
+    </div>
+
+    <div class="field" style="display:flex;gap:8px;">
+      <div style="flex:1">
+        <label for="e_fecha">Fecha</label>
+        <input id="e_fecha" type="date" />
+      </div>
+      <div style="flex:1">
+        <label for="e_hora">Hora</label>
+        <input id="e_hora" type="time" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="e_calle">Calle</label>
+      <input id="e_calle" type="text" />
+    </div>
+
+    <div class="field">
+      <label for="e_inter">Intersección</label>
+      <input id="e_inter" type="text" />
+    </div>
+
+    <div class="field">
+      <label for="e_obs">Observaciones</label>
+      <textarea id="e_obs"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button id="cancelEdit" class="btn ghost">Cancelar</button>
+      <button id="saveEdit" class="btn primary">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
 import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
 
+/* -------------------------
+   ELEMENTOS
+--------------------------*/
 const lista = document.getElementById("lista");
-const salidasRef = dbRef(db,"salidas_asignadas");
-const pendientesRef = dbRef(db,"pendientes");
+const salidasRef = dbRef(db, "salidas_asignadas");
+const pendientesRef = dbRef(db, "pendientes");
 
-/* ============================
-   VALIDAR ROL
-   Invitado → permitido (como conductor)
-============================ */
 const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 let rol = (sesion.rol || "invitado").toLowerCase();
+/* Invitado ve igual que conductor */
+if (rol === "invitado") rol = "conductor";
 
-/* Invitado debe ver igual que Conductor */
-if(rol === "invitado") rol = "conductor";
-
-/* ÚNICO rol restringido = ninguno → todos pueden entrar */
+/* -------------------------
+   DATOS
+--------------------------*/
 let salidas = [];
+let activeMenuId = null;
+let editingId = null;
 
-/* ============================
+/* -------------------------
+   MODAL ELEMENTS
+--------------------------*/
+const modal = document.getElementById("modal");
+const e_territorio = document.getElementById("e_territorio");
+const e_manzanas = document.getElementById("e_manzanas");
+const e_conductor = document.getElementById("e_conductor");
+const e_fecha = document.getElementById("e_fecha");
+const e_hora = document.getElementById("e_hora");
+const e_calle = document.getElementById("e_calle");
+const e_inter = document.getElementById("e_inter");
+const e_obs = document.getElementById("e_obs");
+const saveEdit = document.getElementById("saveEdit");
+const cancelEdit = document.getElementById("cancelEdit");
+
+/* -------------------------
+   UTILIDADES
+--------------------------*/
+function hoyISO(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+function horaNow(){
+  const d = new Date();
+  d.setSeconds(0); d.setMilliseconds(0);
+  return d.toTimeString().slice(0,5);
+}
+function escapeHtml(s){
+  if(!s) return "";
+  return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+function unescapeHtml(s){
+  if(!s) return s||"";
+  return String(s).replaceAll("&amp;","&").replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&quot;",'"');
+}
+
+/* -------------------------
    RENDER
-============================ */
+--------------------------*/
 function render(){
-  lista.innerHTML="";
-  if(salidas.length===0){
-    lista.innerHTML="<p align='center'>No hay salidas asignadas</p>";
+  lista.innerHTML = "";
+
+  if(!salidas || salidas.length === 0){
+    lista.innerHTML = `<div class="empty">No hay salidas asignadas</div>`;
     return;
   }
 
-  salidas.forEach(p=>{
-    const card=document.createElement("div");
-    card.className="card";
+  salidas.forEach(sal => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.id = sal.id;
 
+    // build inner HTML (all visible)
     card.innerHTML = `
-      <span class="etiqueta">ASIGNADA</span>
-      <b>Territorio ${p.territorio}</b>
-      <div>👤 Conductor: <b>${p.conductor}</b></div>
-      <div>📅 Fecha: <b>${p.fecha}</b></div>
-      <div>⏰ Hora: <b>${p.hora}</b></div>
-      <div>📍 ${p.calle} y ${p.interseccion}</div>
-      <div>📝 ${p.observaciones || "—"}</div>
-      <br>
-
-      ${rol==="admin" ? `
-      <details>
-        <summary style="cursor:pointer;font-weight:bold;color:#1a4b27">✏ Editar / Deshacer</summary>
-        <div style="margin-top:10px">
-          <input id="c${p.id}" value="${p.conductor}">
-          <input type="date" id="f${p.id}" value="${p.fecha}">
-          <input type="time" id="h${p.id}" value="${p.hora}">
-          <input id="calles${p.id}" value="${p.calle}">
-          <input id="inter${p.id}" value="${p.interseccion}">
-          <textarea id="o${p.id}">${p.observaciones||""}</textarea>
-
-          <button class="small-btn" data-edit="${p.id}">💾 Guardar cambios</button>
-          <button class="small-btn" data-undo="${p.id}" style="background:#b91c1c">⮌ Deshacer (volver a pendientes)</button>
+      <div class="topline">
+        <div>
+          <div class="territorio">Territorio ${escapeHtml(sal.territorio)}</div>
+          <div class="meta">${escapeHtml(sal.observaciones || "Sin observaciones")}</div>
         </div>
-      </details>
-      ` : ""}
+
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="etiqueta">ASIGNADA</div>
+          ${ rol === "admin" ? `<button class="more-btn" aria-label="Más opciones" data-id="${sal.id}">⋯</button>` : '' }
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="flex:1">
+          <div class="big">👤 ${escapeHtml(sal.conductor || "—")}</div>
+          <div class="small">Conductor</div>
+        </div>
+
+        <div style="flex:1">
+          <div class="big">📅 ${escapeHtml(sal.fecha || "—")}</div>
+          <div class="small">Fecha</div>
+        </div>
+
+        <div style="flex:1">
+          <div class="big">⏰ ${escapeHtml(sal.hora || "—")}</div>
+          <div class="small">Hora</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:6px">
+        <div style="flex:1">
+          <div class="direccion">📍 ${escapeHtml(sal.calle || "")} ${sal.interseccion ? "y " + escapeHtml(sal.interseccion) : ""}</div>
+        </div>
+        <div style="flex:1">
+          <div class="small">Manzanas: <b>${escapeHtml((sal.pendientes||[]).join(", ") || "—")}</b></div>
+        </div>
+      </div>
+
+      ${ rol === "admin" ? `
+        <div class="menu" id="menu-${sal.id}">
+          <button data-action="edit" data-id="${sal.id}">✎ Editar</button>
+          <button data-action="undo" data-id="${sal.id}">⮌ Deshacer (volver a pendientes)</button>
+          <button data-action="delete" data-id="${sal.id}" style="color:${'#b91c1c'}">🗑️ Eliminar</button>
+        </div>
+      ` : ''}
     `;
 
     lista.appendChild(card);
   });
 
-  /* ============================
-     GUARDAR EDICIÓN (ADMIN)
-  ============================ */
-  document.querySelectorAll("[data-edit]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      const id = btn.dataset.edit;
-      const p = salidas.find(x=>x.id===id);
+  // after DOM built, wire up admin buttons
+  if(rol === "admin"){
+    // more buttons
+    document.querySelectorAll(".more-btn").forEach(btn=>{
+      btn.onclick = (e)=>{
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        toggleMenu(id);
+      };
+      btn.onblur = ()=> {
+        // slight delay so click on menu works
+        setTimeout(()=>closeMenu(), 150);
+      };
+    });
 
-      const conductor = document.getElementById("c"+id).value.trim();
-      const fecha = document.getElementById("f"+id).value;
-      const hora = document.getElementById("h"+id).value;
-      const calle = document.getElementById("calles"+id).value.trim();
-      const inter = document.getElementById("inter"+id).value.trim();
-      const obs = document.getElementById("o"+id).value.trim();
-
-      if(!conductor || !fecha || !hora || !calle || !inter){
-        alert("Completa todos los campos.");
-        return;
-      }
-
-      await update(dbRef(db,"salidas_asignadas/"+id),{
-        conductor,fecha,hora,calle,interseccion:inter,observaciones:obs
-      });
-
-      alert("Cambios guardados");
-    };
-  });
-
-  /* ============================
-     DESHACER ⇒ VOLVER A PENDIENTES (ADMIN)
-  ============================ */
-  document.querySelectorAll("[data-undo]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      const id = btn.dataset.undo;
-      const p = salidas.find(x=>x.id===id);
-
-      if(!confirm("¿Seguro que querés deshacer esta salida?")) return;
-
-      await push(pendientesRef,{
-        territorio: p.territorio,
-        pendientes: p.pendientes || [],
-        conductor: p.conductor || "",
-        ultimo: Date.now()
-      });
-
-      await remove(dbRef(db,"salidas_asignadas/"+id));
-
-      alert("Salida devuelta a pendientes.");
-    };
-  });
+    // menu actions
+    document.querySelectorAll(".menu button").forEach(mbtn=>{
+      mbtn.onclick = (e)=>{
+        const id = mbtn.dataset.id;
+        const action = mbtn.dataset.action;
+        closeMenu();
+        if(action === "edit") openEditModal(id);
+        if(action === "undo") undoToPendientes(id);
+        if(action === "delete") deleteSalida(id);
+      };
+    });
+  }
 }
 
-/* ============================
-   ESCUCHAR DB
-============================ */
-onValue(salidasRef,s=>{
-  salidas=[];
-  s.forEach(x=>{
-    let o=x.val();
-    o.id=x.key;
+/* -------------------------
+   MENÚ helpers
+--------------------------*/
+function toggleMenu(id){
+  // close previous
+  closeMenu();
+  const menu = document.getElementById("menu-"+id);
+  if(menu){
+    menu.style.display = "flex";
+    activeMenuId = id;
+  }
+}
+function closeMenu(){
+  if(activeMenuId){
+    const prev = document.getElementById("menu-"+activeMenuId);
+    if(prev) prev.style.display = "none";
+    activeMenuId = null;
+  }
+}
+
+/* -------------------------
+   EDIT / DESHACER / DELETE
+--------------------------*/
+async function openEditModal(id){
+  const s = salidas.find(x=>x.id === id);
+  if(!s) return alert("No se encontró la salida.");
+
+  editingId = id;
+  // poblar campos
+  e_territorio.value = s.territorio || "";
+  e_manzanas.value = (s.pendientes||[]).join(", ");
+  e_conductor.value = s.conductor || "";
+  e_fecha.value = s.fecha || hoyISO();
+  e_hora.value = s.hora || horaNow();
+  e_calle.value = s.calle || "";
+  e_inter.value = s.interseccion || "";
+  e_obs.value = s.observaciones || "";
+
+  modal.style.display = "flex";
+  e_territorio.focus();
+}
+
+cancelEdit.onclick = ()=> { modal.style.display = "none"; editingId = null; };
+
+saveEdit.onclick = async ()=>{
+  if(!editingId) return;
+  // read values
+  const territorio = e_territorio.value.trim();
+  const manzanas = e_manzanas.value.trim();
+  const conductor = e_conductor.value.trim();
+  const fecha = e_fecha.value;
+  const hora = e_hora.value;
+  const calle = e_calle.value.trim();
+  const inter = e_inter.value.trim();
+  const obs = e_obs.value.trim();
+
+  if(!territorio || !conductor || !fecha || !hora){
+    alert("Completa territorio, conductor, fecha y hora.");
+    return;
+  }
+
+  // actualizar en firebase
+  await update(dbRef(db, "salidas_asignadas/" + editingId), {
+    territorio,
+    pendientes: manzanas.split(",").map(x=>x.trim()).filter(Boolean),
+    conductor,
+    fecha,
+    hora,
+    calle,
+    interseccion: inter,
+    observaciones: obs
+  });
+
+  alert("Salida actualizada.");
+  modal.style.display = "none";
+  editingId = null;
+};
+
+/* Deshacer: mover a pendientes y eliminar salida */
+async function undoToPendientes(id){
+  const s = salidas.find(x=>x.id === id);
+  if(!s) return;
+  if(!confirm("¿Querés devolver esta salida a Pendientes?")) return;
+
+  await push(pendientesRef, {
+    territorio: s.territorio,
+    pendientes: s.pendientes || [],
+    conductor: s.conductor || "",
+    ultimo: Date.now()
+  });
+
+  await remove(dbRef(db, "salidas_asignadas/" + id));
+  alert("Salida devuelta a pendientes.");
+}
+
+/* Eliminar salida */
+async function deleteSalida(id){
+  if(!confirm("¿Eliminar esta salida? Esta acción no tiene vuelta atrás.")) return;
+  await remove(dbRef(db, "salidas_asignadas/" + id));
+  alert("Salida eliminada.");
+}
+
+/* -------------------------
+   ESCUCHAR FIREBASE
+--------------------------*/
+onValue(salidasRef, snap=>{
+  salidas = [];
+  snap.forEach(x=>{
+    let o = x.val();
+    o.id = x.key;
+    // ensure arrays
+    if(!Array.isArray(o.pendientes)) o.pendientes = [];
     salidas.push(o);
   });
 
-  // Ordenar por fecha/hora
-  salidas.sort((a,b)=> (a.fecha+a.hora).localeCompare(b.fecha+b.hora));
+  // ordenar: próximas primero (por fecha+hora)
+  salidas.sort((a,b)=> (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
 
   render();
 });
-</script>
 
+/* -------------------------
+   CLOSE modal when clicking outside or ESC
+--------------------------*/
+modal.addEventListener("click", (e)=>{
+  if(e.target === modal){
+    modal.style.display = "none";
+    editingId = null;
+  }
+});
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape"){
+    if(modal.style.display === "flex") { modal.style.display = "none"; editingId = null; }
+    closeMenu();
+  }
+});
+
+</script>
 </body>
 </html>
