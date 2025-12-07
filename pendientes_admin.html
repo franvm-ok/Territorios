@@ -4,27 +4,81 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pendientes - Admin</title>
+
 <style>
-:root{--verde:#1a4b27;--bg:#f4f4f4}
-body{margin:0;font-family:Arial;background:var(--bg)}
-header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
-.container{max-width:900px;margin:auto;padding:15px}
-.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
-.pendiente{border-left:6px solid #c1121f}
-.completado{border-left:6px solid #ccc;opacity:0.7}
-.etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
-.admin input,.admin textarea{width:100%;margin-bottom:6px;padding:8px;border-radius:6px;border:1px solid #ccc}
-button{background:var(--verde);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
-.back{position:fixed;left:15px;bottom:15px}
+  body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+  }
+
+  header{
+    background:#1a4b27;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+  }
+
+  #lista{
+    padding:15px;
+  }
+
+  .card{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  .pendiente{border-left:5px solid #d9534f;}
+  .completado{border-left:5px solid #5cb85c;}
+
+  .etiqueta{
+    display:inline-block;
+    padding:3px 8px;
+    font-size:12px;
+    border-radius:5px;
+    margin-bottom:8px;
+    background:#ddd;
+  }
+
+  .admin{
+    margin-top:10px;
+    border-top:1px solid #ccc;
+    padding-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  input,textarea{
+    padding:8px;
+    width:100%;
+    border:1px solid #aaa;
+    border-radius:6px;
+  }
+  textarea{height:60px;resize:none;}
+
+  button{
+    padding:10px;
+    background:#1a4b27;
+    color:white;
+    border:none;
+    border-radius:6px;
+    font-size:16px;
+  }
 </style>
 </head>
-
 <body>
 
-<header>🧱 Pendientes - Asignar Salidas</header>
-<div class="container" id="lista"></div>
-<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
+<header>Pendientes - Admin</header>
 
+<div id="lista">Cargando...</div>
+
+<!-- 🔥 SCRIPT PRINCIPAL -->
 <script type="module">
 import { db, ref as dbRef, onValue, push, remove } from "./firebase.js";
 
@@ -40,6 +94,20 @@ const rol = (sesion.rol || "invitado").toLowerCase();
 if (rol !== "admin") location.href="index.html";
 
 let pendientes = [];
+
+/* ============================
+   FECHA Y HORA DEFAULT
+============================ */
+function hoy(){
+  const d=new Date();
+  return d.toISOString().slice(0,10);
+}
+function horaAhora(){
+  const d=new Date();
+  d.setSeconds(0);
+  d.setMilliseconds(0);
+  return d.toTimeString().slice(0,5); // formato 24h
+}
 
 /* ============================
    RENDER
@@ -67,10 +135,11 @@ function render(){
     if(tiene){
       const admin=document.createElement("div");
       admin.className="admin";
+
       admin.innerHTML=`
-        <input id="c${p.id}" placeholder="Conductor">
-        <input type="date" id="f${p.id}">
-        <input type="time" id="h${p.id}">
+        <input id="c${p.id}" placeholder="Conductor" value="${p.conductor||""}">
+        <input type="date" id="f${p.id}" value="${hoy()}">
+        <input type="time" id="h${p.id}" value="${horaAhora()}">
         <input id="calles${p.id}" placeholder="Calle">
         <input id="inter${p.id}" placeholder="Intersección">
         <textarea id="o${p.id}" placeholder="Observación"></textarea>
@@ -107,7 +176,7 @@ function render(){
       ============================ */
       await push(salidasRef,{
         territorio:p.territorio,
-        pendientes:p.pendientes||[],
+        pendientes:Array.isArray(p.pendientes)?p.pendientes:[],
         conductor:c,
         fecha:f,
         hora:h,
@@ -138,6 +207,9 @@ onValue(pendientesRef,s=>{
   s.forEach(x=>{
     let o = x.val();
     o.id = x.key;
+
+    if(!Array.isArray(o.pendientes)) o.pendientes = [];
+
     pendientes.push(o);
   });
   render();
