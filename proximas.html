@@ -1,3 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Próximas Salidas</title>
+
+<style>
+    body{
+        margin:0;background:#f3f3f3;font-family:Arial, sans-serif;
+    }
+    header{
+        background:#1a4b27;color:white;padding:18px;font-size:20px;
+        text-align:center;font-weight:bold;
+    }
+    #lista{
+        padding:15px;
+        display:flex;
+        flex-direction:column;
+        gap:18px;
+    }
+    .card{
+        background:white;
+        border-radius:15px;
+        padding:15px;
+        box-shadow:0 4px 10px rgba(0,0,0,0.12);
+    }
+    .top-fecha{
+        font-size:20px;
+        font-weight:bold;
+        color:#1a4b27;
+        margin-bottom:10px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+    }
+    .direccion{
+        font-size:16px;
+        margin-bottom:12px;
+    }
+    .row{
+        display:flex;
+        gap:12px;
+        margin-bottom:5px;
+    }
+    .row div{ flex:1; }
+    .label{
+        font-size:12px;color:#777;
+    }
+    .value{
+        font-size:17px;font-weight:bold;
+    }
+    .menu{
+        display:none;
+        flex-direction:column;
+        margin-top:12px;
+        border-top:1px solid #ddd;
+        padding-top:10px;
+        gap:6px;
+    }
+    .menu button{
+        background:#eee;border:none;padding:10px;
+        border-radius:8px;font-size:15px;text-align:left;cursor:pointer;
+    }
+    .more-btn{
+        border:none;background:none;font-size:24px;
+        cursor:pointer;padding:4px;
+    }
+    .empty{
+        padding:30px;text-align:center;color:#555;font-size:18px;
+    }
+
+    /* MODAL */
+    #modal{
+        display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+        background:rgba(0,0,0,0.55);justify-content:center;align-items:center;
+        padding:20px;z-index:20;
+    }
+    .modal-box{
+        background:white;padding:20px;border-radius:12px;width:100%;
+        max-width:420px;display:flex;flex-direction:column;gap:12px;
+    }
+    .modal-box input, .modal-box textarea{
+        width:100%;padding:10px;border:1px solid #ccc;
+        border-radius:8px;font-size:16px;
+    }
+    .modal-btns{
+        display:flex;gap:10px;margin-top:8px;
+    }
+    .modal-btns button{
+        flex:1;padding:12px;font-size:16px;border:none;border-radius:8px;
+        cursor:pointer;font-weight:bold;
+    }
+    .save{ background:#1a4b27;color:white; }
+    .cancel{ background:#ccc; }
+</style>
+</head>
+
+<body>
+
+<header>Próximas Salidas</header>
+
+<div id="lista"></div>
+
+<!-- MODAL -->
+<div id="modal">
+    <div class="modal-box">
+        <h3>Editar salida</h3>
+
+        <input id="e_fecha" type="date">
+        <input id="e_hora" type="time">
+        <input id="e_calle" placeholder="Calle">
+        <input id="e_inter" placeholder="Intersección">
+        <input id="e_territorio" placeholder="Territorio">
+        <input id="e_manzanas" placeholder="Manzanas separadas por coma">
+        <input id="e_conductor" placeholder="Conductor">
+        <textarea id="e_obs" rows="2" placeholder="Observaciones"></textarea>
+
+        <div class="modal-btns">
+            <button id="cancelEdit" class="cancel">Cancelar</button>
+            <button id="saveEdit" class="save">Guardar</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
 import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
 
@@ -10,15 +135,7 @@ const pendientesRef = dbRef(db, "pendientes");
 
 const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 let rol = (sesion.rol || "invitado").toLowerCase();
-/* Invitado ve igual que conductor */
 if (rol === "invitado") rol = "conductor";
-
-/* -------------------------
-   DATOS
---------------------------*/
-let salidas = [];
-let activeMenuId = null;
-let editingId = null;
 
 /* -------------------------
    MODAL ELEMENTS
@@ -32,251 +149,221 @@ const e_hora = document.getElementById("e_hora");
 const e_calle = document.getElementById("e_calle");
 const e_inter = document.getElementById("e_inter");
 const e_obs = document.getElementById("e_obs");
+
 const saveEdit = document.getElementById("saveEdit");
 const cancelEdit = document.getElementById("cancelEdit");
 
 /* -------------------------
-   UTILIDADES
+   VARIABLES
 --------------------------*/
-function hoyISO(){
-  const d = new Date();
-  return d.toISOString().slice(0,10);
-}
-function horaNow(){
-  const d = new Date();
-  d.setSeconds(0); d.setMilliseconds(0);
-  return d.toTimeString().slice(0,5);
-}
-function escapeHtml(s){
-  if(!s) return "";
-  return String(s).replaceAll("&","&amp;")
-                  .replaceAll("<","&lt;")
-                  .replaceAll(">","&gt;")
-                  .replaceAll('"',"&quot;");
-}
-function unescapeHtml(s){
-  if(!s) return s||"";
-  return String(s).replaceAll("&amp;","&")
-                  .replaceAll("&lt;","<")
-                  .replaceAll("&gt;",">")
-                  .replaceAll("&quot;",'"');
+let salidas = [];
+let activeMenuId = null;
+let editingId = null;
+
+/* -------------------------
+   UTILS
+--------------------------*/
+function ddmmaa(fechaISO){
+    if(!fechaISO) return "";
+    const [y,m,d] = fechaISO.split("-");
+    return `${d}/${m}/${String(y).slice(2)}`;
 }
 
 /* -------------------------
    RENDER
 --------------------------*/
 function render(){
-  lista.innerHTML = "";
+    lista.innerHTML = "";
 
-  if(!salidas || salidas.length === 0){
-    lista.innerHTML = `<div class="empty">No hay salidas asignadas</div>`;
-    return;
-  }
+    if(salidas.length === 0){
+        lista.innerHTML = `<div class="empty">No hay salidas asignadas</div>`;
+        return;
+    }
 
-  salidas.forEach(sal => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.dataset.id = sal.id;
+    salidas.forEach(sal=>{
+        const card = document.createElement("div");
+        card.className = "card";
 
-    card.innerHTML = `
-      <div class="topline">
-        <div>
-          <div class="territorio">Territorio ${escapeHtml(sal.territorio)}</div>
-          <div class="meta">${escapeHtml(sal.observaciones || "Sin observaciones")}</div>
-        </div>
+        card.innerHTML = `
+            <div class="top-fecha">
+                <span>📅 ${ddmmaa(sal.fecha||"")}</span>
+                ${rol==="admin" ? `<button class="more-btn" data-id="${sal.id}">⋯</button>` : ""}
+            </div>
 
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="etiqueta">ASIGNADA</div>
-          ${ rol === "admin" ? `<button class="more-btn" aria-label="Más opciones" data-id="${sal.id}">⋯</button>` : '' }
-        </div>
-      </div>
+            <div class="direccion">
+                📍 ${sal.calle||""} ${sal.interseccion? "y "+sal.interseccion:""}
+            </div>
 
-      <div class="row">
-        <div style="flex:1">
-          <div class="big">👤 ${escapeHtml(sal.conductor || "—")}</div>
-          <div class="small">Conductor</div>
-        </div>
+            <div class="row">
+                <div>
+                    <div class="label">Hora</div>
+                    <div class="value">${sal.hora||"—"}</div>
+                </div>
+                <div>
+                    <div class="label">Conductor</div>
+                    <div class="value">${sal.conductor||"—"}</div>
+                </div>
+            </div>
 
-        <div style="flex:1">
-          <div class="big">📅 ${escapeHtml(sal.fecha || "—")}</div>
-          <div class="small">Fecha</div>
-        </div>
+            <div class="row">
+                <div>
+                    <div class="label">Territorio</div>
+                    <div class="value">${sal.territorio||"—"}</div>
+                </div>
+                <div>
+                    <div class="label">Manzanas</div>
+                    <div class="value">${(sal.pendientes||[]).join(", ")}</div>
+                </div>
+            </div>
 
-        <div style="flex:1">
-          <div class="big">⏰ ${escapeHtml(sal.hora || "—")}</div>
-          <div class="small">Hora</div>
-        </div>
-      </div>
+            <div class="row">
+                <div>
+                    <div class="label">Observación</div>
+                    <div class="value">${sal.observaciones||"—"}</div>
+                </div>
+            </div>
 
-      <div class="row" style="margin-top:6px">
-        <div style="flex:1">
-          <div class="direccion">📍 ${escapeHtml(sal.calle || "")} ${sal.interseccion ? "y " + escapeHtml(sal.interseccion) : ""}</div>
-        </div>
-        <div style="flex:1">
-          <div class="small">Manzanas: <b>${escapeHtml((sal.pendientes||[]).join(", ") || "—")}</b></div>
-        </div>
-      </div>
+            ${rol==="admin" ? `
+                <div class="menu" id="menu-${sal.id}">
+                    <button data-action="edit" data-id="${sal.id}">✎ Editar</button>
+                    <button data-action="undo" data-id="${sal.id}">⮌ Deshacer</button>
+                    <button data-action="delete" data-id="${sal.id}" style="color:#b91c1c">🗑️ Eliminar</button>
+                </div>
+            ` : ""}
+        `;
 
-      ${ rol === "admin" ? `
-        <div class="menu" id="menu-${sal.id}">
-          <button data-action="edit" data-id="${sal.id}">✎ Editar</button>
-          <button data-action="undo" data-id="${sal.id}">⮌ Deshacer (volver a pendientes)</button>
-          <button data-action="delete" data-id="${sal.id}" style="color:#b91c1c">🗑️ Eliminar</button>
-        </div>
-      ` : ''}
-    `;
-
-    lista.appendChild(card);
-  });
-
-  /* ADMIN: eventos */
-  if(rol === "admin"){
-    document.querySelectorAll(".more-btn").forEach(btn=>{
-      btn.onclick = (e)=>{
-        e.stopPropagation();
-        toggleMenu(btn.dataset.id);
-      };
-      btn.onblur = ()=> {
-        setTimeout(()=>closeMenu(), 150);
-      };
+        lista.appendChild(card);
     });
 
-    document.querySelectorAll(".menu button").forEach(mbtn=>{
-      mbtn.onclick = ()=>{
-        const id = mbtn.dataset.id;
-        const action = mbtn.dataset.action;
-        closeMenu();
+    if(rol==="admin"){
+        document.querySelectorAll(".more-btn").forEach(btn=>{
+            btn.onclick = e=>{
+                e.stopPropagation();
+                toggleMenu(btn.dataset.id);
+            };
+        });
 
-        if(action === "edit") openEditModal(id);
-        if(action === "undo") undoToPendientes(id);
-        if(action === "delete") deleteSalida(id);
-      };
-    });
-  }
+        document.querySelectorAll(".menu button").forEach(b=>{
+            b.onclick = ()=>{
+                const id = b.dataset.id;
+                const action = b.dataset.action;
+                closeMenu();
+
+                if(action==="edit") openEditModal(id);
+                if(action==="undo") undoToPendientes(id);
+                if(action==="delete") deleteSalida(id);
+            };
+        });
+    }
 }
 
 /* -------------------------
-   MENÚ
+   MENU
 --------------------------*/
 function toggleMenu(id){
-  closeMenu();
-  const m = document.getElementById("menu-"+id);
-  if(m){
-    m.style.display = "flex";
-    activeMenuId = id;
-  }
+    closeMenu();
+    const m = document.getElementById("menu-"+id);
+    if(m){ m.style.display="flex"; activeMenuId=id; }
 }
 function closeMenu(){
-  if(activeMenuId){
-    const m = document.getElementById("menu-"+activeMenuId);
-    if(m) m.style.display = "none";
-    activeMenuId = null;
-  }
+    if(activeMenuId){
+        const m = document.getElementById("menu-"+activeMenuId);
+        if(m) m.style.display="none";
+        activeMenuId=null;
+    }
 }
 
 /* -------------------------
    EDITAR
 --------------------------*/
-async function openEditModal(id){
-  const s = salidas.find(x=>x.id === id);
-  if(!s) return;
+function openEditModal(id){
+    const s = salidas.find(x=>x.id===id);
+    if(!s) return;
 
-  editingId = id;
+    editingId = id;
 
-  e_territorio.value = s.territorio || "";
-  e_manzanas.value = (s.pendientes||[]).join(", ");
-  e_conductor.value = s.conductor || "";
-  e_fecha.value = s.fecha || hoyISO();
-  e_hora.value = s.hora || horaNow();
-  e_calle.value = s.calle || "";
-  e_inter.value = s.interseccion || "";
-  e_obs.value = s.observaciones || "";
+    e_fecha.value = s.fecha || "";
+    e_hora.value = s.hora || "";
+    e_calle.value = s.calle || "";
+    e_inter.value = s.interseccion || "";
+    e_territorio.value = s.territorio || "";
+    e_manzanas.value = (s.pendientes||[]).join(", ");
+    e_conductor.value = s.conductor || "";
+    e_obs.value = s.observaciones || "";
 
-  modal.style.display = "flex";
-  e_territorio.focus();
+    modal.style.display = "flex";
 }
 
-cancelEdit.onclick = ()=> {
-  modal.style.display = "none";
-  editingId = null;
+cancelEdit.onclick = ()=>{
+    modal.style.display="none";
+    editingId=null;
 };
 
 saveEdit.onclick = async ()=>{
-  if(!editingId) return;
+    if(!editingId) return;
 
-  const territorio = e_territorio.value.trim();
-  const manzanas = e_manzanas.value.trim();
-  const conductor = e_conductor.value.trim();
-  const fecha = e_fecha.value;
-  const hora = e_hora.value;
-  const calle = e_calle.value.trim();
-  const inter = e_inter.value.trim();
-  const obs = e_obs.value.trim();
+    const manArr = e_manzanas.value.trim()
+                   ? e_manzanas.value.split(",").map(x=>x.trim()).filter(x=>x)
+                   : [];
 
-  if(!territorio || !fecha || !hora){
-    alert("Territorio, fecha y hora son obligatorios.");
-    return;
-  }
+    await update(dbRef(db,"salidas_asignadas/"+editingId),{
+        fecha: e_fecha.value,
+        hora: e_hora.value,
+        calle: e_calle.value.trim(),
+        interseccion: e_inter.value.trim(),
+        territorio: e_territorio.value.trim(),
+        pendientes: manArr,
+        conductor: e_conductor.value.trim(),
+        observaciones: e_obs.value.trim()
+    });
 
-  const manzArr = manzanas ? manzanas.split(",").map(x=>x.trim()).filter(x=>x) : [];
-
-  await update(dbRef(db, "salidas_asignadas/" + editingId), {
-    territorio,
-    pendientes: manzArr,
-    conductor,
-    fecha,
-    hora,
-    calle,
-    interseccion: inter,
-    observaciones: obs
-  });
-
-  modal.style.display = "none";
-  editingId = null;
+    modal.style.display="none";
+    editingId=null;
 };
 
 /* -------------------------
-   DESHACER → vuelve a pendientes
+   DESHACER
 --------------------------*/
 async function undoToPendientes(id){
-  const s = salidas.find(x=>x.id === id);
-  if(!s) return;
+    const s = salidas.find(x=>x.id===id);
+    if(!s) return;
 
-  const nuevo = {
-    territorio: s.territorio,
-    pendientes: s.pendientes || [],
-    calle: s.calle || "",
-    interseccion: s.interseccion || "",
-    observaciones: s.observaciones || ""
-  };
+    await push(pendientesRef,{
+        territorio:s.territorio,
+        pendientes:s.pendientes||[],
+        calle:s.calle||"",
+        interseccion:s.interseccion||"",
+        observaciones:s.observaciones||""
+    });
 
-  await push(pendientesRef, nuevo);
-  await remove(dbRef(db, "salidas_asignadas/" + id));
+    await remove(dbRef(db,"salidas_asignadas/"+id));
 }
 
 /* -------------------------
    ELIMINAR
 --------------------------*/
 async function deleteSalida(id){
-  if(confirm("¿Eliminar esta salida?")){
-    await remove(dbRef(db, "salidas_asignadas/" + id));
-  }
+    if(confirm("¿Eliminar esta salida?")){
+        await remove(dbRef(db,"salidas_asignadas/"+id));
+    }
 }
 
 /* -------------------------
-   CARGAR EN TIEMPO REAL
+   REALTIME LOAD
 --------------------------*/
 onValue(salidasRef, snap=>{
-  const data = snap.val() || {};
-  salidas = Object.keys(data).map(id=>({id, ...data[id]}));
+    const data = snap.val() || {};
+    salidas = Object.keys(data).map(id=>({id,...data[id]}));
 
-  /* ordenar por fecha y hora */
-  salidas.sort((a,b)=>{
-    const fa = (a.fecha || "") + " " + (a.hora || "");
-    const fb = (b.fecha || "") + " " + (b.hora || "");
-    return fa.localeCompare(fb);
-  });
+    salidas.sort((a,b)=>{
+        const fa = (a.fecha||"") + " " + (a.hora||"");
+        const fb = (b.fecha||"") + " " + (b.hora||"");
+        return fa.localeCompare(fb);
+    });
 
-  render();
+    render();
 });
 </script>
+
+</body>
+</html>
