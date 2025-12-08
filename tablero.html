@@ -24,38 +24,38 @@ body {
 header {
   background: var(--verde);
   color: #fff;
-  padding: 20px;
+  padding: 15px;
   text-align: center;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: bold;
 }
 
-/* SECCIÓN DE SUBIDA */
+/* SUBIDA */
 .top {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
   padding: 15px;
-  max-width: 500px;
+  max-width: 450px;
   margin: auto;
 }
 
 select, input[type=file] {
-  padding: 14px;
-  border-radius: 12px;
+  padding: 10px;
+  border-radius: 10px;
   border: 1px solid #aaa;
   width: 100%;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 button {
   background: var(--btn);
   color: var(--btn-text);
   border: none;
-  padding: 14px 18px;
-  border-radius: 12px;
+  padding: 12px;
+  border-radius: 10px;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -63,47 +63,41 @@ button:hover {
   background: var(--btn-hover);
 }
 
+/* LISTA */
 .container {
-  padding: 20px;
-  max-width: 980px;
+  padding: 15px;
+  max-width: 800px;
   margin: auto;
 }
 
-/* CARDS MÁS GRANDES Y LEGIBLES */
 .card {
-  background: #fff;
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 15px;
-  font-size: 20px;
-  border-left: 8px solid var(--verde);
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-left: 6px solid var(--verde);
+  font-size: 17px;
 }
 
 .tipo {
-  color: green;
+  color: var(--verde);
   font-weight: bold;
-  font-size: 22px;
+  font-size: 18px;
 }
 
 .nombre {
   font-weight: bold;
-  margin-bottom: 10px;
+  margin: 6px 0;
 }
 
-.card .action-btn {
+.card button {
   width: 100%;
-  margin-top: 8px;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
+  margin-top: 6px;
+  padding: 10px;
+  font-size: 15px;
 }
 
-.card .action-btn.view { background: #ddd; color: #111; }
-.card .action-btn.download { background: var(--verde); color: white; }
-
-/* MODAL DE VISTA PREVIA */
+/* MODAL */
 .modal {
   position: fixed;
   inset: 0;
@@ -116,10 +110,10 @@ button:hover {
 
 .modal-box {
   background: #fff;
-  width: 95%;
-  max-width: 850px;
-  height: 90%;
-  border-radius: 12px;
+  width: 92%;
+  max-width: 800px;
+  height: 85%;
+  border-radius: 10px;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -133,30 +127,21 @@ iframe, img {
 
 .close {
   background: red;
-  color: white;
-  padding: 14px;
+  color: #fff;
+  padding: 12px;
   border: none;
   margin-bottom: 10px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
 }
 
+/* VOLVER */
 .back {
   position: fixed;
   left: 15px;
   bottom: 15px;
-  font-size: 20px;
-  padding: 12px;
-}
-.error-banner {
-  max-width:980px;
-  margin:12px auto;
-  padding:10px 14px;
-  border-radius:8px;
-  background:#fff3f3;
-  color:#900;
-  font-weight:700;
-  display:none;
+  font-size: 16px;
+  padding: 10px 12px;
 }
 </style>
 </head>
@@ -165,248 +150,136 @@ iframe, img {
 
 <header>📌 Tablero de Anuncios</header>
 
-<div id="errorBanner" class="error-banner"></div>
+<!-- SUBIDA SOLO ADMIN -->
+<div class="top" id="uploadSection">
 
-<!-- SUBIDA DE ARCHIVOS (SOLO ADMIN) -->
-<div class="top" id="uploadSection" aria-hidden="true">
-  <select id="tipo" aria-label="Seleccionar tipo">
+  <select id="tipo">
     <option value="">Seleccionar tipo</option>
     <option>Vida Cristiana</option>
-    <option>Limpieza</option>
     <option>Cartas</option>
+    <option>Limpieza</option>
+    <option>Conferencias</option>
+    <option>Lectores Atalaya</option>
+    <option>Otros</option>
   </select>
 
-  <input type="file" id="archivo" accept=".pdf,image/*" aria-label="Seleccionar archivo">
+  <input type="file" id="archivo" accept=".pdf,image/*">
 
-  <button id="btnSubir">📤 Subir archivo</button>
+  <button onclick="subir()">📤 Subir anuncio</button>
 </div>
 
-<!-- LISTA DE ARCHIVOS -->
+<!-- LISTA -->
 <div class="container" id="lista"></div>
 
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <!-- MODAL -->
-<div class="modal" id="visor" role="dialog" aria-modal="true">
+<div class="modal" id="visor">
   <div class="modal-box">
-    <button class="close" id="btnCerrar">Cerrar</button>
+    <button class="close" onclick="cerrar()">Cerrar</button>
     <div id="contenido" style="flex:1;"></div>
   </div>
 </div>
 
 <script type="module">
-/* Envolvemos en try/catch para evitar que un error deje la pantalla en blanco */
-try {
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-  import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
-    authDomain: "territorio-3c28d.firebaseapp.com",
-    databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com",
-    projectId: "territorio-3c28d",
-    storageBucket: "territorio-3c28d.appspot.com",
-    messagingSenderId: "170925082008",
-    appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
+  authDomain: "territorio-3c28d.firebaseapp.com",
+  databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com",
+  projectId: "territorio-3c28d",
+  storageBucket: "territorio-3c28d.appspot.com",
+  messagingSenderId: "170925082008",
+  appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const storage = getStorage(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const storage = getStorage(app);
 
-  const tipo = document.getElementById("tipo");
-  const archivo = document.getElementById("archivo");
-  const lista = document.getElementById("lista");
-  const visor = document.getElementById("visor");
-  const cont = document.getElementById("contenido");
-  const uploadSection = document.getElementById("uploadSection");
-  const btnSubir = document.getElementById("btnSubir");
-  const btnCerrar = document.getElementById("btnCerrar");
-  const errorBanner = document.getElementById("errorBanner");
+const tipo = document.getElementById("tipo");
+const archivo = document.getElementById("archivo");
+const lista = document.getElementById("lista");
+const visor = document.getElementById("visor");
+const cont = document.getElementById("contenido");
+const uploadSection = document.getElementById("uploadSection");
 
-  /* -------- PERMISOS: solo admin -------- */
-  let sesion;
-  try {
-    sesion = JSON.parse(localStorage.getItem("sesion"));
-  } catch (e) {
-    sesion = null;
-  }
-  // Soporta sesion.perfil o sesion.rol, fallback a 'invitado'
-  const perfil = (sesion && (sesion.perfil || sesion.rol)) ? (sesion.perfil || sesion.rol) : "invitado";
+/* PERMISOS: Solo admin sube */
+let sesion = JSON.parse(localStorage.getItem("sesion"));
+if (!sesion) sesion = { perfil: "invitado" };
 
-  const permitidos = ["admin"]; // <-- SOLO admin
-  if (!permitidos.includes(perfil)) {
-    uploadSection.style.display = "none";
-    uploadSection.setAttribute("aria-hidden", "true");
-  } else {
-    uploadSection.style.display = "flex";
-    uploadSection.setAttribute("aria-hidden", "false");
-  }
-
-  /* -------- SUBIR ARCHIVO -------- */
-  btnSubir.addEventListener('click', async () => {
-    errorBanner.style.display = 'none';
-    if (!tipo.value || !archivo.files[0]) {
-      alert("Seleccione tipo y archivo.");
-      return;
-    }
-
-    const f = archivo.files[0];
-    const ext = (f.name.split('.').pop() || '').toLowerCase();
-    if (!["pdf", "jpg", "jpeg", "png"].includes(ext)) {
-      alert("Solo se permiten PDF o imágenes (JPG/PNG)");
-      return;
-    }
-
-    btnSubir.disabled = true;
-    btnSubir.textContent = 'Subiendo...';
-
-    try {
-      const safeName = f.name.replace(/\s+/g, '_');
-      const ruta = "tablero/" + Date.now() + "_" + safeName;
-      const refS = sRef(storage, ruta);
-
-      await uploadBytes(refS, f, { contentType: f.type });
-      const url = await getDownloadURL(refS);
-
-      await set(push(ref(db, "tablero")), {
-        tipo: tipo.value,
-        nombre: f.name,
-        url,
-        tipoArchivo: f.type,
-        ts: Date.now()
-      });
-
-      tipo.value = "";
-      archivo.value = "";
-      alert("Archivo subido correctamente");
-    } catch (err) {
-      console.error(err);
-      errorBanner.style.display = 'block';
-      errorBanner.textContent = 'Error al subir/guardar el archivo. Revise la consola.';
-    } finally {
-      btnSubir.disabled = false;
-      btnSubir.textContent = '📤 Subir archivo';
-    }
-  });
-
-  /* -------- LISTAR ARCHIVOS -------- */
-  onValue(ref(db, "tablero"), snap => {
-    lista.innerHTML = "";
-    const datos = [];
-
-    snap.forEach(x => datos.push(x.val()));
-
-    datos.sort((a, b) => (b.ts || 0) - (a.ts || 0));
-
-    if (datos.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'card';
-      empty.innerHTML = `<div style="font-size:20px;font-weight:700">No hay anuncios aún</div>
-                         <div style="margin-top:8px;color:#555">Cuando un admin suba archivos, van a aparecer aquí.</div>`;
-      lista.appendChild(empty);
-      return;
-    }
-
-    datos.forEach(d => {
-      const div = document.createElement("div");
-      div.className = "card";
-
-      const tipoEl = document.createElement('div');
-      tipoEl.className = 'tipo';
-      tipoEl.textContent = d.tipo || 'Sin categoría';
-
-      const nombreEl = document.createElement('div');
-      nombreEl.className = 'nombre';
-      nombreEl.textContent = d.nombre || 'Sin nombre';
-
-      const btnView = document.createElement('button');
-      btnView.className = 'action-btn view';
-      btnView.textContent = '👁 Ver';
-      btnView.type = 'button';
-
-      const btnDownload = document.createElement('button');
-      btnDownload.className = 'action-btn download';
-      btnDownload.textContent = '⬇ Descargar';
-      btnDownload.type = 'button';
-
-      // listeners seguros (evitan inyección por comillas en URL)
-      btnView.addEventListener('click', () => {
-        try {
-          cont.innerHTML = '';
-          if (d.tipoArchivo && d.tipoArchivo.toLowerCase().includes('pdf')) {
-            const ifr = document.createElement('iframe');
-            ifr.src = d.url;
-            cont.appendChild(ifr);
-          } else {
-            const img = document.createElement('img');
-            img.src = d.url;
-            img.alt = d.nombre || 'Imagen';
-            cont.appendChild(img);
-          }
-          visor.style.display = 'flex';
-        } catch (e) {
-          console.error(e);
-          alert('No se pudo abrir la vista previa.');
-        }
-      });
-
-      btnDownload.addEventListener('click', () => {
-        try {
-          const a = document.createElement('a');
-          a.href = d.url;
-          // some browsers ignore download for cross-origin, but it's fine to provide
-          a.download = d.nombre || '';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        } catch (e) {
-          console.error(e);
-          window.open(d.url, '_blank');
-        }
-      });
-
-      div.appendChild(tipoEl);
-      div.appendChild(nombreEl);
-      div.appendChild(btnView);
-      div.appendChild(btnDownload);
-
-      lista.appendChild(div);
-    });
-  }, err => {
-    console.error('Firebase onValue error:', err);
-    errorBanner.style.display = 'block';
-    errorBanner.textContent = 'Error leyendo anuncios. Revise permisos en Firebase o la consola.';
-  });
-
-  /* -------- VISOR -------- */
-  btnCerrar.addEventListener('click', () => {
-    visor.style.display = 'none';
-  });
-
-  // cerrar modal si hacen click afuera
-  visor.addEventListener('click', (e) => {
-    if (e.target === visor) visor.style.display = 'none';
-  });
-
-  // cerrar con ESC
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      visor.style.display = 'none';
-    }
-  });
-
-} catch (outerErr) {
-  console.error('Error inicializando Tablero:', outerErr);
-  const b = document.getElementById('errorBanner');
-  if (b) {
-    b.style.display = 'block';
-    b.textContent = 'Error inicializando la pantalla. Revise la consola del navegador.';
-  } else {
-    alert('Error inicializando la pantalla. Revise la consola del navegador.');
-  }
+if (sesion.perfil !== "admin") {
+  uploadSection.style.display = "none";
 }
+
+/* SUBIR */
+window.subir = async () => {
+  if (!tipo.value || !archivo.files[0]) {
+    alert("Seleccione tipo y archivo.");
+    return;
+  }
+
+  const f = archivo.files[0];
+  const ruta = "tablero/" + Date.now() + "_" + f.name;
+  const refS = sRef(storage, ruta);
+
+  await uploadBytes(refS, f);
+  const url = await getDownloadURL(refS);
+
+  await set(push(ref(db, "tablero")), {
+    tipo: tipo.value,
+    nombre: f.name,
+    url,
+    tipoArchivo: f.type,
+    ts: Date.now()
+  });
+
+  tipo.value = "";
+  archivo.value = "";
+  alert("Archivo subido correctamente");
+};
+
+/* LISTAR */
+onValue(ref(db, "tablero"), snap => {
+  lista.innerHTML = "";
+  const datos = [];
+
+  snap.forEach(x => datos.push(x.val()));
+  datos.sort((a, b) => b.ts - a.ts);
+
+  datos.forEach(d => {
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <div class="tipo">${d.tipo}</div>
+      <div class="nombre">${d.nombre}</div>
+      <button onclick="ver('${d.url}','${d.tipoArchivo}')">👁 Ver</button>
+      <button onclick="descargar('${d.url}','${d.nombre}')">⬇ Descargar</button>
+    `;
+
+    lista.appendChild(div);
+  });
+});
+
+window.ver = (url, t) => {
+  cont.innerHTML = t === "application/pdf"
+    ? `<iframe src="${url}"></iframe>`
+    : `<img src="${url}">`;
+  visor.style.display = "flex";
+};
+
+window.cerrar = () => visor.style.display = "none";
+
+window.descargar = (url, nombre) => {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  a.click();
+};
 </script>
 
 </body>
