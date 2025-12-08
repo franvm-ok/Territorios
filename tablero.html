@@ -1,499 +1,215 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tablero de Anuncios</title>
+
 <style>
-:root{
-  --verde: #1a4b27;
-  --bg: #f6faf6;
-  --card: #ffffff;
-  --muted:#666;
-  --chip-bg:#ffffff;
-  --chip-active: #0d7a2a;
-  --radius:10px;
-  --gap:12px;
-  --max-width:980px;
-}
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+  }
 
-/* Reset simple */
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:var(--bg); color:#111; -webkit-font-smoothing:antialiased}
+  #contenedor {
+    max-width: 480px;
+    margin: auto;
+  }
 
-/* Header */
-header{
-  background:var(--verde);
-  color:white;
-  padding:14px 16px;
-  text-align:center;
-  font-size:20px;
-  font-weight:700;
-}
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #1a4b27;
+  }
 
-/* Container */
-.wrapper{max-width:var(--max-width);margin:14px auto;padding:10px;}
+  button, select, input {
+    font-size: 15px;
+  }
 
-/* Top bar: add button + filters row */
-.top-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:6px}
-.add-btn{
-  background:var(--verde);color:white;border:none;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer;font-size:15px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.08);
-}
-.add-btn[aria-hidden="true"]{display:none}
+  #btnAgregar {
+    width: 100%;
+    padding: 12px;
+    background: #1a4b27;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
 
-/* Filters */
-.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.chip{
-  background:var(--chip-bg);
-  border:1px solid #e6efe6;
-  padding:8px 12px;border-radius:999px;font-weight:700;font-size:14px;color:var(--verde);cursor:pointer;
-}
-.chip.active{background:var(--chip-active);color:#fff;border-color:var(--chip-active)}
+  #formulario {
+    display: none;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 5px #ccc;
+    margin-bottom: 20px;
+  }
 
-/* Select filter for small screens */
-.filter-select{margin-left:auto;padding:8px;border-radius:10px;border:1px solid #ddd;font-size:14px}
+  #formulario label {
+    font-size: 14px;
+    font-weight: bold;
+  }
 
-/* Main list */
-.lista{display:flex;flex-direction:column;gap:12px;margin-top:10px;padding:6px}
+  #formulario input, #formulario select {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
 
-/* Card */
-.card{
-  background:var(--card);
-  border-radius:var(--radius);
-  padding:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.06);
-  border-left:6px solid var(--verde);
-}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tipo{color:var(--verde);font-weight:800;font-size:16px}
-.nombre{font-weight:700;font-size:15px;margin-top:6px}
-.meta{font-size:13px;color:var(--muted);margin-top:6px}
+  #subir {
+    width: 100%;
+    padding: 10px;
+    background: #1a4b27;
+    color: white;
+    border: none;
+    border-radius: 8px;
+  }
 
-/* Card actions (vertical on narrow screens) */
-.actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.btn{
-  padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:14px;
-}
-.btn.view{background:#f0f0f0;color:#111}
-.btn.download{background:var(--verde);color:white}
+  .categoriaBox {
+    background: white;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 4px #ccc;
+  }
 
-/* Modal (preview) */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:1100}
-.modal-box{background:white;border-radius:12px;width:95%;max-width:900px;height:86%;display:flex;flex-direction:column;overflow:hidden}
-.modal-toolbar{display:flex;gap:8px;padding:8px;background:#fafafa;align-items:center}
-.modal-toolbar .close{margin-left:auto;background:#d33;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-.modal-content{flex:1;display:block}
+  .itemFila {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin: 6px 0;
+  }
 
-/* Upload modal */
-.upload-modal .modal-box{max-width:460px;height:auto;padding:14px}
-.form-row{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.form-row label{font-weight:700;font-size:14px}
-.input,select{padding:10px;border-radius:8px;border:1px solid #ccc;font-size:15px}
-
-/* Small notice / error */
-.notice{padding:8px;border-radius:8px;background:#fff;border:1px solid #fee8e8;color:#900;font-weight:700;margin-bottom:10px;display:none}
-
-/* Empty state */
-.empty{padding:18px;background:white;border-radius:12px;text-align:center;color:var(--muted);font-weight:700}
-
-/* Back button */
-.back{position:fixed;left:12px;bottom:12px;background:#fff;padding:8px 10px;border-radius:10px;border:1px solid #ddd;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-
-/* Responsive tweaks */
-@media (max-width:700px){
-  header{font-size:18px;padding:12px}
-  .add-btn{padding:8px 10px;font-size:14px}
-  .chip{padding:7px 10px;font-size:13px}
-  .filter-select{font-size:13px;padding:7px}
-  .card{padding:10px}
-}
+  a {
+    text-decoration: none;
+    color: #1a4b27;
+  }
 </style>
+
 </head>
 <body>
-<header>📌 Tablero de Anuncios</header>
 
-<div class="wrapper">
-  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+<div id="contenedor">
 
-  <div class="top-row">
-    <button id="btnAdd" class="add-btn" aria-hidden="true" type="button">➕ Agregar anuncio</button>
+  <h2>Anuncios</h2>
 
-    <div class="filters" id="filterChips" aria-hidden="false">
-      <!-- chips serán inyectados por JS -->
-    </div>
+  <button id="btnAgregar">➕ Agregar anuncio</button>
 
-    <select id="filterSelect" class="filter-select" aria-label="Filtrar por categoría">
-      <!-- opciones inyectadas por JS -->
-    </select>
-  </div>
-
-  <div id="lista" class="lista" aria-live="polite">
-    <!-- tarjetas -->
-  </div>
-</div>
-
-<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
-
-<!-- PREVIEW MODAL -->
-<div id="previewModal" class="modal" aria-hidden="true">
-  <div class="modal-box">
-    <div class="modal-toolbar">
-      <div id="previewTitle" style="font-weight:800"></div>
-      <button id="closePreview" class="close" type="button">Cerrar</button>
-    </div>
-    <div id="previewContent" class="modal-content"></div>
-  </div>
-</div>
-
-<!-- UPLOAD MODAL (option A) -->
-<div id="uploadModal" class="modal upload-modal" aria-hidden="true">
-  <div class="modal-box">
-    <h3 style="margin:0;text-align:center">Agregar anuncio</h3>
-    <div class="form-row">
-      <label for="catSelect">Categoría</label>
-      <select id="catSelect" class="input" aria-label="Seleccionar categoría">
-        <option value="">-- Seleccione categoría --</option>
-        <option>Vida Cristiana</option>
-        <option>Cartas</option>
-        <option>Limpieza</option>
-        <option>Conferencias</option>
-        <option>Lectores Atalaya</option>
-        <option>Otros</option>
+  <div id="formulario">
+      <label>Categoría:</label>
+      <select id="categoria">
+        <option value="vida">Vida cristiana</option>
+        <option value="cartas">Cartas</option>
+        <option value="limpieza">Limpieza</option>
+        <option value="conferencias">Conferencias</option>
+        <option value="atalaya">Lectores Atalaya</option>
+        <option value="otros">Otros</option>
       </select>
 
-      <label for="fileInput">Archivo (PDF / JPG / PNG)</label>
-      <input id="fileInput" class="input" type="file" accept=".pdf,image/*" aria-label="Seleccionar archivo">
+      <label>Nombre del archivo:</label>
+      <input type="text" id="nombreArchivo" placeholder="Ej: Programa semana 10">
 
-      <button id="uploadBtn" class="btn download" type="button">📤 Subir anuncio</button>
-      <button id="cancelUpload" class="btn view" type="button">Cancelar</button>
-    </div>
+      <label>Link público de Google Drive:</label>
+      <input type="text" id="urlArchivo" placeholder="Pegá aquí el enlace">
+
+      <button id="subir">Guardar anuncio</button>
+
+      <p id="estado" style="font-size:14px; color:#444;"></p>
   </div>
+
+  <div id="lista"></div>
+
 </div>
 
+
 <script type="module">
-/*
-  Tablero de Anuncios - un solo archivo
-  - Solo ADMIN puede subir (opción A)
-  - Categorías fijas (6)
-  - Filters chips + dropdown
-  - Preview modal + Upload modal
-  - Robust localStorage parsing
-  - Firebase Realtime + Storage usage (CDN)
-*/
+import { db, ref, set, push, onValue } from "./firebase.js";
 
-/* ---------------- FIREBASE IMPORTS ---------------- */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+/* ===== VALIDAR ADMIN ===== */
+const sesion = JSON.parse(localStorage.getItem("sesion"));
+const esAdmin = sesion && sesion.rol === "admin";
 
-/* ---------------- FIREBASE CONFIG ---------------- */
-/* (usa tu config real; este ejemplo utiliza el config que ya venías usando) */
-const firebaseConfig = {
-  apiKey: "AIzaSyBQdOIpv75AblS5i61eIq2YBBDEO-YfVuk",
-  authDomain: "territorio-3c28d.firebaseapp.com",
-  databaseURL: "https://territorio-3c28d-default-rtdb.firebaseio.com",
-  projectId: "territorio-3c28d",
-  storageBucket: "territorio-3c28d.appspot.com",
-  messagingSenderId: "170925082008",
-  appId: "1:170925082008:web:edccd36a72b5b2d3bd57ed"
+if (!esAdmin) {
+  document.getElementById("btnAgregar").style.display = "none";
+}
+
+/* ELEMENTOS */
+const btnAgregar = document.getElementById("btnAgregar");
+const formulario = document.getElementById("formulario");
+const subir = document.getElementById("subir");
+const lista = document.getElementById("lista");
+const estado = document.getElementById("estado");
+
+/* MOSTRAR/OCULTAR FORM */
+btnAgregar.onclick = () => {
+  formulario.style.display = formulario.style.display === "none" ? "block" : "none";
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const storage = getStorage(app);
+/* GUARDAR DATOS */
+subir.onclick = async () => {
+  const categoria = document.getElementById("categoria").value;
+  const nombre = document.getElementById("nombreArchivo").value.trim();
+  const url = document.getElementById("urlArchivo").value.trim();
 
-/* ---------------- UI ELEMENTS ---------------- */
-const btnAdd = document.getElementById('btnAdd');
-const filterChips = document.getElementById('filterChips');
-const filterSelect = document.getElementById('filterSelect');
-const lista = document.getElementById('lista');
-const notice = document.getElementById('notice');
+  if (!nombre || !url) {
+    estado.textContent = "Debe completar todos los campos.";
+    return;
+  }
 
-const previewModal = document.getElementById('previewModal');
-const previewContent = document.getElementById('previewContent');
-const previewTitle = document.getElementById('previewTitle');
-const closePreview = document.getElementById('closePreview');
+  estado.textContent = "Guardando...";
 
-const uploadModal = document.getElementById('uploadModal');
-const catSelect = document.getElementById('catSelect');
-const fileInput = document.getElementById('fileInput');
-const uploadBtn = document.getElementById('uploadBtn');
-const cancelUpload = document.getElementById('cancelUpload');
+  try {
+    const nuevo = push(ref(db, "anuncios/" + categoria));
+    await set(nuevo, { nombre, url });
 
-/* ---------------- CATEGORIES ---------------- */
-const CATS = ['Todos','Vida Cristiana','Cartas','Limpieza','Conferencias','Lectores Atalaya','Otros'];
-let currentFilter = 'Todos';
+    estado.textContent = "Guardado ✔️";
+    setTimeout(() => {
+      formulario.style.display = "none";
+      estado.textContent = "";
+    }, 1000);
 
-/* render filter chips and select options */
-function renderFilters(){
-  filterChips.innerHTML = '';
-  CATS.forEach(cat=>{
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'chip' + (cat === currentFilter ? ' active' : '');
-    b.textContent = cat;
-    b.dataset.cat = cat;
-    b.addEventListener('click', ()=> {
-      currentFilter = cat;
-      renderFilters();
-      renderList(lastData);
-      // sync select
-      filterSelect.value = cat;
+  } catch (e) {
+    estado.textContent = "Error: " + e;
+  }
+};
+
+/* LISTAR */
+function cargarAnuncios() {
+  onValue(ref(db, "anuncios"), (snap) => {
+    lista.innerHTML = "";
+    if (!snap.exists()) return;
+
+    const data = snap.val();
+
+    Object.keys(data).forEach(cat => {
+      const box = document.createElement("div");
+      box.className = "categoriaBox";
+      box.innerHTML = `<h4>${cat.toUpperCase()}</h4>`;
+
+      Object.values(data[cat]).forEach(item => {
+        const fila = document.createElement("div");
+        fila.className = "itemFila";
+        fila.innerHTML = `
+          <span>${item.nombre}</span>
+          <span>
+            <a href="${item.url}" target="_blank">👁️ Ver</a> |
+            <a href="${item.url}" download>⬇️</a>
+          </span>
+        `;
+        box.appendChild(fila);
+      });
+
+      lista.appendChild(box);
     });
-    filterChips.appendChild(b);
-  });
-
-  // populate dropdown
-  filterSelect.innerHTML = '';
-  CATS.forEach(cat=>{
-    const o = document.createElement('option');
-    o.value = cat;
-    o.textContent = cat === 'Todos' ? 'Filtrar por categoría' : cat;
-    filterSelect.appendChild(o);
-  });
-  filterSelect.value = currentFilter;
-}
-renderFilters();
-
-/* ---------------- SESSION / PERMISSIONS ---------------- */
-/* soporta sesion.perfil o sesion.rol */
-let sessionRaw = null;
-try{ sessionRaw = JSON.parse(localStorage.getItem('sesion')); } catch(e) { sessionRaw = null; }
-const role = (sessionRaw && (sessionRaw.perfil || sessionRaw.rol)) ? (sessionRaw.perfil || sessionRaw.rol) : 'invitado';
-
-/* Only admin can upload (option A) */
-if(role === 'admin'){
-  btnAdd.style.display = 'inline-block';
-  btnAdd.setAttribute('aria-hidden','false');
-} else {
-  btnAdd.style.display = 'none';
-  btnAdd.setAttribute('aria-hidden','true');
-}
-
-/* ---------------- EVENT LISTENERS: filters ---------------- */
-filterSelect.addEventListener('change', ()=>{
-  const val = filterSelect.value || 'Todos';
-  currentFilter = val;
-  renderFilters();
-  renderList(lastData);
-});
-
-/* ---------------- UPLOAD MODAL HANDLERS ---------------- */
-btnAdd.addEventListener('click', ()=> {
-  // reset modal
-  catSelect.value = '';
-  fileInput.value = '';
-  uploadModal.style.display = 'flex';
-  uploadModal.setAttribute('aria-hidden','false');
-});
-
-cancelUpload.addEventListener('click', ()=> {
-  uploadModal.style.display = 'none';
-  uploadModal.setAttribute('aria-hidden','true');
-});
-
-/* close preview */
-closePreview.addEventListener('click', ()=> {
-  previewModal.style.display = 'none';
-  previewModal.setAttribute('aria-hidden','true');
-});
-
-/* click outside to close modals */
-[previewModal, uploadModal].forEach(m=>{
-  m.addEventListener('click', (e)=>{
-    if(e.target === m){
-      m.style.display = 'none';
-      m.setAttribute('aria-hidden','true');
-    }
-  });
-});
-
-/* ESC to close */
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape'){
-    if(previewModal.style.display === 'flex'){ previewModal.style.display = 'none'; previewModal.setAttribute('aria-hidden','true'); }
-    if(uploadModal.style.display === 'flex'){ uploadModal.style.display = 'none'; uploadModal.setAttribute('aria-hidden','true'); }
-  }
-});
-
-/* ---------------- UPLOAD ACTION ---------------- */
-uploadBtn.addEventListener('click', async ()=>{
-  notice.style.display = 'none';
-  const categoria = (catSelect.value || '').trim();
-  const file = fileInput.files[0];
-  if(!categoria){
-    alert('Seleccione una categoría.');
-    return;
-  }
-  if(!file){
-    alert('Seleccione un archivo (PDF o imagen).');
-    return;
-  }
-  const ext = (file.name.split('.').pop() || '').toLowerCase();
-  if(!['pdf','jpg','jpeg','png'].includes(ext)){
-    alert('Tipo de archivo no permitido. PDF o imágenes (JPG/PNG) solamente.');
-    return;
-  }
-
-  uploadBtn.disabled = true;
-  uploadBtn.textContent = 'Subiendo...';
-
-  try{
-    const safeName = file.name.replace(/\s+/g,'_');
-    const path = `tablero/${Date.now()}_${safeName}`;
-    const sRef = storageRef(storage, path);
-    await uploadBytes(sRef, file, { contentType: file.type });
-    const url = await getDownloadURL(sRef);
-
-    // push to realtime DB under 'tablero'
-    await set(push(ref(db, 'tablero')), {
-      tipo: categoria,
-      nombre: file.name,
-      url,
-      tipoArchivo: file.type,
-      ts: Date.now()
-    });
-
-    uploadModal.style.display = 'none';
-    uploadModal.setAttribute('aria-hidden','true');
-    catSelect.value = '';
-    fileInput.value = '';
-    alert('Anuncio subido correctamente.');
-  } catch(err){
-    console.error('Upload error', err);
-    notice.style.display = 'block';
-    notice.textContent = 'Error al subir el archivo. Revise la consola o la conexión.';
-  } finally {
-    uploadBtn.disabled = false;
-    uploadBtn.textContent = '📤 Subir anuncio';
-  }
-});
-
-/* ---------------- LISTEN REaltime DB ---------------- */
-let lastData = [];
-const tableroRef = ref(db, 'tablero');
-
-onValue(tableroRef, snap=>{
-  const arr = [];
-  snap.forEach(ch=>{
-    const v = ch.val();
-    // ensure ts for sorting
-    arr.push(v);
-  });
-  // sort desc by ts
-  arr.sort((a,b)=> (b.ts || 0) - (a.ts || 0));
-  lastData = arr;
-  renderList(lastData);
-}, err=>{
-  console.error('Firebase read error', err);
-  notice.style.display = 'block';
-  notice.textContent = 'Error leyendo anuncios. Revise permisos de la base.';
-});
-
-/* ---------------- RENDER LIST ---------------- */
-function formatDate(ts){
-  try{ return new Date(ts).toLocaleString(); } catch(e){ return ''; }
-}
-
-function renderList(data){
-  lista.innerHTML = '';
-
-  const filtered = data.filter(item=>{
-    if(!item) return false;
-    if(currentFilter === 'Todos') return true;
-    return (item.tipo || '').toLowerCase() === currentFilter.toLowerCase();
-  });
-
-  if(filtered.length === 0){
-    const emp = document.createElement('div');
-    emp.className = 'empty';
-    emp.textContent = 'No hay anuncios en esta categoría.';
-    lista.appendChild(emp);
-    return;
-  }
-
-  filtered.forEach(item=>{
-    const card = document.createElement('div');
-    card.className = 'card';
-
-    const tipoEl = document.createElement('div');
-    tipoEl.className = 'tipo';
-    tipoEl.textContent = item.tipo || 'Sin categoría';
-
-    const nombreEl = document.createElement('div');
-    nombreEl.className = 'nombre';
-    nombreEl.textContent = item.nombre || 'Sin nombre';
-
-    const metaEl = document.createElement('div');
-    metaEl.className = 'meta';
-    metaEl.textContent = formatDate(item.ts) + (item.tipoArchivo ? ` • ${item.tipoArchivo}` : '');
-
-    const actions = document.createElement('div');
-    actions.className = 'actions';
-
-    const previewBtn = document.createElement('button');
-    previewBtn.className = 'btn view';
-    previewBtn.type = 'button';
-    previewBtn.textContent = '👁 Vista previa';
-    previewBtn.addEventListener('click', ()=> openPreview(item));
-
-    const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'btn download';
-    downloadBtn.type = 'button';
-    downloadBtn.textContent = '⬇ Descargar';
-    downloadBtn.addEventListener('click', ()=> downloadFile(item));
-
-    actions.appendChild(previewBtn);
-    actions.appendChild(downloadBtn);
-
-    card.appendChild(tipoEl);
-    card.appendChild(nombreEl);
-    card.appendChild(metaEl);
-    card.appendChild(actions);
-
-    lista.appendChild(card);
   });
 }
-
-/* ---------------- PREVIEW ---------------- */
-function openPreview(item){
-  previewContent.innerHTML = '';
-  previewTitle.textContent = item.nombre || '';
-  if(item.tipoArchivo && item.tipoArchivo.toLowerCase().includes('pdf')){
-    const ifr = document.createElement('iframe');
-    // set sandboxing not to break; some browsers block google viewers etc.
-    ifr.src = item.url;
-    previewContent.appendChild(ifr);
-  } else {
-    const img = document.createElement('img');
-    img.src = item.url;
-    img.alt = item.nombre || 'Imagen';
-    img.style.maxHeight = '100%';
-    previewContent.appendChild(img);
-  }
-  previewModal.style.display = 'flex';
-  previewModal.setAttribute('aria-hidden','false');
-}
-
-/* ---------------- DOWNLOAD ---------------- */
-function downloadFile(item){
-  try{
-    const a = document.createElement('a');
-    a.href = item.url;
-    a.download = item.nombre || '';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  } catch(e){
-    // fallback: open in new tab
-    window.open(item.url, '_blank');
-  }
-}
-
-/* initial render filters (already called earlier) */
-renderFilters();
+cargarAnuncios();
 
 </script>
+
 </body>
 </html>
