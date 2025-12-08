@@ -4,19 +4,116 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Mapa interactivo</title>
+
 <style>
-  body{margin:0;font-family:Arial;background:#f4f4f4}
-  header{background:#1a4b27;color:#fff;padding:18px;text-align:center;font-weight:700}
-  .container{padding:18px;max-width:980px;margin:0 auto}
-  .back-btn{position:fixed;left:16px;bottom:18px;background:#1a4b27;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
-  .map-placeholder{background:#fff;border-radius:12px;padding:30px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+  body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f4f4f4;
+    color:#333;
+  }
+  header{
+    background:#1a4b27;
+    color:#fff;
+    padding:18px;
+    text-align:center;
+    font-weight:700;
+    font-size:20px;
+  }
+  .container{
+    padding:18px;
+    max-width:980px;
+    margin:0 auto;
+  }
+  .map-box{
+    background:#fff;
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    min-height:380px;
+  }
+
+  /* ====== CUADRADOS (manzanas) ====== */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2, 130px);
+    gap:16px;
+    justify-content:center;
+    margin-top:20px;
+  }
+  .manzana{
+    width:130px;
+    height:130px;
+    background:#dcdcdc;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    font-weight:700;
+    cursor:pointer;
+    transition:0.2s;
+    user-select:none;
+  }
+  .manzana:hover{
+    transform:scale(1.03);
+  }
+
+  /* Colores por estado */
+  .rojo{ background:#d9534f; color:#fff; }
+  .amarillo{ background:#f0ad4e; color:#fff; }
+  .verde{ background:#5cb85c; color:#fff; }
+
+  /* Botón volver */
+  .back-btn{
+    position:fixed;
+    left:16px;
+    bottom:18px;
+    background:#1a4b27;
+    color:#fff;
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+  }
 </style>
 </head>
+
 <body>
+
 <header>Mapa interactivo</header>
+
 <div class="container">
-  <div class="map-placeholder">Aquí se puede integrar Google Maps o mapa interactivo. (Si querés lo integro después).</div>
+
+  <div class="map-box">
+    <h3 style="margin-top:0;text-align:center;">Territorios 1 y 2</h3>
+
+    <!-- GRID DE MANZANAS -->
+    <div class="grid">
+      <!-- Territorio 1: 4 manzanas -->
+      <div class="manzana rojo" onclick="mostrarInfo('Territorio 1 - Manzana 1')">1-1</div>
+      <div class="manzana amarillo" onclick="mostrarInfo('Territorio 1 - Manzana 2')">1-2</div>
+      <div class="manzana verde" onclick="mostrarInfo('Territorio 1 - Manzana 3')">1-3</div>
+      <div class="manzana rojo" onclick="mostrarInfo('Territorio 1 - Manzana 4')">1-4</div>
+
+      <!-- Territorio 2: 4 manzanas -->
+      <div class="manzana verde" onclick="mostrarInfo('Territorio 2 - Manzana 1')">2-1</div>
+      <div class="manzana amarillo" onclick="mostrarInfo('Territorio 2 - Manzana 2')">2-2</div>
+      <div class="manzana rojo" onclick="mostrarInfo('Territorio 2 - Manzana 3')">2-3</div>
+      <div class="manzana verde" onclick="mostrarInfo('Territorio 2 - Manzana 4')">2-4</div>
+    </div>
+  </div>
+
 </div>
+
 <button class="back-btn" onclick="location.href='index.html'">⬅ Volver</button>
+
+<script>
+  function mostrarInfo(nombre){
+    alert("Información de: " + nombre + "\n(Aquí después pondremos la lista de casas y detalles).");
+  }
+</script>
+
 </body>
 </html>
