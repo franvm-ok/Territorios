@@ -1,136 +1,486 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Tablero</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tablero de Anuncios</title>
 
 <style>
-  body { margin:0; font-family:Arial; background:#f4f4f4; color:#333; }
+:root{
+  --verde:#1a4b27;
+  --muted:#6b6b6b;
+  --bg:#f6f9f6;
+  --card:#ffffff;
+  --accent:#0d7a2a;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
+header{background:var(--verde);color:#fff;padding:14px 16px;text-align:center;font-size:20px;font-weight:700}
+.wrapper{max-width:1100px;margin:14px auto;padding:12px}
 
-  header {
-    background:#1a4b27;
-    color:#fff;
-    padding:16px;
-    text-align:center;
-    font-size:20px;
-    font-weight:bold;
-  }
+/* top controls */
+.topbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.back{background:#fff;border:1px solid #ddd;padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:700}
+.add-float{position:fixed;right:18px;bottom:18px;background:var(--verde);color:#fff;border:none;border-radius:999px;padding:12px 14px;font-size:20px;box-shadow:0 6px 18px rgba(0,0,0,.12);cursor:pointer;z-index:1200}
+.add-float[aria-hidden="true"]{display:none}
 
-  .top-buttons {
-    display:flex;
-    justify-content:space-between;
-    padding:10px;
-    background:#e8e8e8;
-    gap:6px;
-    flex-wrap:wrap;
-  }
+/* filters */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{padding:8px 12px;border-radius:999px;background:var(--card);border:1px solid #e6efe6;font-weight:700;color:var(--verde);cursor:pointer}
+.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.select-filter{margin-left:auto;padding:8px;border-radius:8px;border:1px solid #ddd}
 
-  .btn {
-    background:#1a4b27;
-    color:white;
-    padding:8px 12px;
-    border-radius:7px;
-    text-decoration:none;
-    font-size:14px;
-    cursor:pointer;
-    border:none;
-  }
-  .btn:hover { opacity:0.9; }
+/* search + sort + mode */
+.controls{display:flex;gap:8px;align-items:center;margin-top:8px;margin-bottom:12px;flex-wrap:wrap}
+.search{flex:1;min-width:200px;padding:8px;border-radius:8px;border:1px solid #ddd}
+.sort-btn, .mode-btn{padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
 
-  .container { padding:16px; }
+/* layout list */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.card{background:var(--card);border-radius:var(--radius);padding:12px;border-left:6px solid var(--verde);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.card .tipo{color:var(--verde);font-weight:800;font-size:15px}
+.card .nombre{font-weight:700;margin-top:6px;font-size:15px}
+.card .meta{font-size:13px;color:var(--muted);margin-top:8px}
+.card .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+.btn.view{background:#f0f0f0;color:#111}
+.btn.download{background:var(--verde);color:#fff}
+.btn.edit{background:#ffd966;color:#111}
+.btn.delete{background:#ff6b6b;color:#fff}
+.btn.share{background:#25D366;color:#fff}
 
-  .item {
-    background:white;
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:10px;
-    box-shadow:0 2px 4px rgba(0,0,0,0.1);
-    font-size:14px;
-  }
+/* comfortable mode */
+.comfy body, .comfy .card { font-size:1.05rem }
+.comfy .add-float{transform:scale(1.05)}
+
+/* empty */
+.empty{padding:18px;background:var(--card);border-radius:10px;text-align:center;color:var(--muted);font-weight:700}
+
+/* modals */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1300}
+.modal .box{background:#fff;border-radius:12px;width:92%;max-width:760px;max-height:90%;overflow:auto;padding:12px}
+.form-row{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+label{font-weight:700;font-size:14px}
+.input, select, textarea{padding:10px;border-radius:8px;border:1px solid #ccc;font-size:14px}
+.textarea{min-height:100px;resize:vertical}
+.footer-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+/* small screens */
+@media (max-width:480px){
+  header{font-size:18px;padding:12px}
+  .card .nombre{font-size:14px}
+}
+.notice{max-width:1100px;margin:8px auto;padding:10px;border-radius:8px;background:#fff3e6;color:#6b3a00;font-weight:700;display:none}
 </style>
-
-<script type="module">
-/* =============================
-      FIREBASE
-============================= */
-import { db, ref as dbRef, push, onValue } from "./firebase.js";
-
-const pendientesRef = dbRef(db,"pendientes");
-
-/* =============================
-      LISTAR
-============================= */
-const lista = document.getElementById("lista");
-
-onValue(pendientesRef, snap => {
-    lista.innerHTML = "";
-    snap.forEach(child => {
-        const d = child.val();
-        const div = document.createElement("div");
-        div.className = "item";
-
-        div.innerHTML = `
-            <b>${d.titulo || "Sin título"}</b><br>
-            ${d.descripcion || ""}<br><br>
-            ${d.archivoURL ? `<a href="${d.archivoURL}" target="_blank">📎 Ver archivo</a>` : ""}
-        `;
-
-        lista.appendChild(div);
-    });
-});
-
-/* =============================
-      AGREGAR PENDIENTE
-============================= */
-window.agregarPendiente = function () {
-    const titulo = prompt("Título del pendiente:");
-    if (!titulo) return;
-
-    const descripcion = prompt("Descripción:");
-
-    push(pendientesRef, {
-        titulo,
-        descripcion,
-        fecha: new Date().toISOString()
-    });
-};
-
-/* =============================
-      AGREGAR ARCHIVO (LINK)
-============================= */
-window.agregarArchivo = function () {
-    const titulo = prompt("Título:");
-    if (!titulo) return;
-
-    const descripcion = prompt("Descripción:");
-    const link = prompt("Pegá el link del archivo (Drive, imagen, PDF, etc):");
-
-    push(pendientesRef, {
-        titulo,
-        descripcion,
-        archivoURL: link,
-        fecha: new Date().toISOString()
-    });
-};
-</script>
-
 </head>
-
 <body>
 
-<header>Tablero</header>
+<header>📌 Tablero de Anuncios</header>
 
-<div class="top-buttons">
-  <a href="index.html" class="btn">⬅ Volver</a>
-  <button class="btn" onclick="agregarPendiente()">+ Pendiente</button>
-  <button class="btn" onclick="agregarArchivo()">📎 Archivo (link)</button>
+<div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+<div class="wrapper">
+
+  <div class="topbar" role="region" aria-label="Controles">
+    <button class="back" id="btnBack">⬅ Menú</button>
+
+    <div class="filters" id="filterChips" aria-hidden="false" role="toolbar" aria-label="Filtros de categoría">
+      <!-- chips inyectadas -->
+    </div>
+
+    <select id="filterSelect" class="select-filter" aria-label="Filtrar por categoría">
+      <!-- options inyectadas -->
+    </select>
+  </div>
+
+  <div class="controls">
+    <input id="searchInput" class="search" placeholder="Buscar por título o descripción..." aria-label="Buscar">
+    <button id="sortBtn" class="sort-btn" title="Ordenar por fecha">Orden: <span id="sortLabel">Más nuevo</span></button>
+    <button id="modeBtn" class="mode-btn" title="Modo cómodo">Modo cómodo</button>
+  </div>
+
+  <div id="listContainer" class="grid" aria-live="polite"></div>
+
 </div>
 
-<div class="container">
-  <h3>Pendientes</h3>
-  <div id="lista"></div>
+<button id="addFloat" class="add-float" title="Agregar anuncio">＋</button>
+
+<!-- PREVIEW MODAL -->
+<div id="previewModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="box">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div id="previewTitle" style="font-weight:800"></div>
+      <button id="closePreview" class="btn" style="background:#d33;color:#fff">Cerrar</button>
+    </div>
+    <div id="previewContent" style="margin-top:10px;height:70vh;display:flex;align-items:center;justify-content:center"></div>
+  </div>
 </div>
+
+<!-- ADD / EDIT MODAL -->
+<div id="editModal" class="modal" aria-hidden="true">
+  <div class="box">
+    <h3 id="editHeading">Agregar anuncio</h3>
+    <div class="form-row">
+      <label for="tipoInput">Categoría</label>
+      <select id="tipoInput">
+        <option value="">-- Seleccionar --</option>
+        <option>Vida Cristiana</option>
+        <option>Cartas</option>
+        <option>Limpieza</option>
+        <option>Conferencias</option>
+        <option>Lectores Atalaya</option>
+        <option>Otros</option>
+      </select>
+
+      <label for="nombreInput">Título</label>
+      <input id="nombreInput" class="input" placeholder="Ej: Programa semana 10">
+
+      <label for="descInput">Descripción (opcional)</label>
+      <textarea id="descInput" class="textarea"></textarea>
+
+      <label for="urlInput">Link público (Google Drive, Dropbox, direct link)</label>
+      <input id="urlInput" class="input" placeholder="https://drive.google.com/...">
+
+      <div class="footer-actions">
+        <button id="cancelEdit" class="btn view">Cancelar</button>
+        <button id="saveEdit" class="btn download">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* ------------------- Usamos tu firebase.js (no modificar) ------------------- */
+import { db, ref, push, set, onValue, update, remove } from "./firebase.js";
+
+/* ------------------- Estado y configuración ------------------- */
+const CATS = ['Todos','Vida Cristiana','Cartas','Limpieza','Conferencias','Lectores Atalaya','Otros'];
+let currentFilter = 'Todos';
+let sortNewest = true; // por defecto: más nuevo primero
+let comfyMode = false;
+let lastData = []; // lista en memoria con campos y _key
+
+/* ------------------- Elementos UI ------------------- */
+const filterChips = document.getElementById('filterChips');
+const filterSelect = document.getElementById('filterSelect');
+const listContainer = document.getElementById('listContainer');
+const searchInput = document.getElementById('searchInput');
+const sortBtn = document.getElementById('sortBtn');
+const sortLabel = document.getElementById('sortLabel');
+const modeBtn = document.getElementById('modeBtn');
+const addFloat = document.getElementById('addFloat');
+const previewModal = document.getElementById('previewModal');
+const previewContent = document.getElementById('previewContent');
+const previewTitle = document.getElementById('previewTitle');
+const closePreview = document.getElementById('closePreview');
+const editModal = document.getElementById('editModal');
+const editHeading = document.getElementById('editHeading');
+const tipoInput = document.getElementById('tipoInput');
+const nombreInput = document.getElementById('nombreInput');
+const descInput = document.getElementById('descInput');
+const urlInput = document.getElementById('urlInput');
+const cancelEdit = document.getElementById('cancelEdit');
+const saveEdit = document.getElementById('saveEdit');
+const btnBack = document.getElementById('btnBack');
+const notice = document.getElementById('notice');
+
+/* ------------------- Sesión / permisos ------------------- */
+let sessionRaw = null;
+try { sessionRaw = JSON.parse(localStorage.getItem('sesion')); } catch(e){ sessionRaw = null; }
+const role = (sessionRaw && (sessionRaw.perfil || sessionRaw.rol)) ? (sessionRaw.perfil || sessionRaw.rol) : 'invitado';
+const isAdmin = role === 'admin';
+
+/* mostrar/ocultar botón agregar solo admin */
+if (!isAdmin) {
+  addFloat.setAttribute('aria-hidden','true');
+  addFloat.style.display = 'none';
+} else {
+  addFloat.setAttribute('aria-hidden','false');
+}
+
+/* back */
+btnBack.addEventListener('click', ()=> { location.href='index.html'; });
+
+/* ------------------- Helpers ------------------- */
+function safeText(s){ return String(s||''); }
+function formatDate(ts){ try{ return new Date(ts).toLocaleString(); }catch(e){return '';} }
+
+/* Detecta y convierte enlaces de Google Drive para vista previa */
+function drivePreviewLink(url){
+  if(!url) return url;
+  try{
+    const u = new URL(url);
+    // drive file view patterns
+    if(u.hostname.endsWith('drive.google.com')){
+      // /file/d/ID/view or /open?id=ID
+      const p = u.pathname;
+      const m = p.match(/\/file\/d\/([^\/]+)\//);
+      if(m && m[1]) return `https://drive.google.com/file/d/${m[1]}/preview`;
+      if(u.searchParams.has('id')) return `https://drive.google.com/file/d/${u.searchParams.get('id')}/preview`;
+      // fallback to original
+      return url;
+    }
+    return url;
+  }catch(e){ return url; }
+}
+
+/* Simple validation for URL */
+function looksLikeUrl(s){
+  try{ new URL(s); return true; } catch(e){ return false; }
+}
+
+/* ------------------- Render filtros ------------------- */
+function renderFilters(){
+  filterChips.innerHTML = '';
+  CATS.forEach(cat=>{
+    const b = document.createElement('button');
+    b.className = 'chip' + (cat === currentFilter ? ' active' : '');
+    b.type = 'button';
+    b.textContent = cat;
+    b.dataset.cat = cat;
+    b.addEventListener('click', ()=> {
+      currentFilter = cat;
+      filterSelect.value = cat;
+      renderFilters();
+      renderList(lastData);
+    });
+    filterChips.appendChild(b);
+  });
+
+  filterSelect.innerHTML = '';
+  CATS.forEach(cat=>{
+    const o = document.createElement('option');
+    o.value = cat;
+    o.textContent = cat === 'Todos' ? 'Filtrar por categoría' : cat;
+    filterSelect.appendChild(o);
+  });
+  filterSelect.value = currentFilter;
+}
+renderFilters();
+
+/* ------------------- Eventos UI ------------------- */
+filterSelect.addEventListener('change', ()=> {
+  currentFilter = filterSelect.value || 'Todos';
+  renderFilters();
+  renderList(lastData);
+});
+searchInput.addEventListener('input', ()=> renderList(lastData));
+sortBtn.addEventListener('click', ()=> {
+  sortNewest = !sortNewest;
+  sortLabel.textContent = sortNewest ? 'Más nuevo' : 'Más viejo';
+  renderList(lastData);
+});
+modeBtn.addEventListener('click', ()=> {
+  comfyMode = !comfyMode;
+  document.body.classList.toggle('comfy', comfyMode);
+  modeBtn.textContent = comfyMode ? 'Modo cómodo ✓' : 'Modo cómodo';
+});
+
+/* ------------------- Modales ------------------- */
+function openPreview(title, el){
+  previewTitle.textContent = title || '';
+  previewContent.innerHTML = '';
+  previewContent.appendChild(el);
+  previewModal.style.display = 'flex';
+  previewModal.setAttribute('aria-hidden','false');
+}
+closePreview.addEventListener('click', ()=> {
+  previewModal.style.display = 'none';
+  previewModal.setAttribute('aria-hidden','true');
+});
+[previewModal, editModal].forEach(m=>{
+  m.addEventListener('click', (e)=> { if(e.target === m){ m.style.display='none'; m.setAttribute('aria-hidden','true'); }});
+});
+document.addEventListener('keydown', (e)=> { if(e.key === 'Escape'){ previewModal.style.display='none'; editModal.style.display='none'; } });
+
+/* ------------------- Add / Edit flow ------------------- */
+let editingKey = null;
+function openEditModal(item){
+  editingKey = item ? item._key : null;
+  editHeading.textContent = editingKey ? 'Editar anuncio' : 'Agregar anuncio';
+  tipoInput.value = item ? item.tipo : '';
+  nombreInput.value = item ? item.nombre : '';
+  descInput.value = item ? (item.desc || '') : '';
+  urlInput.value = item ? (item.url || '') : '';
+  editModal.style.display = 'flex';
+  editModal.setAttribute('aria-hidden','false');
+}
+document.getElementById('addFloat').addEventListener('click', ()=> openEditModal(null));
+cancelEdit.addEventListener('click', ()=> { editModal.style.display='none'; editModal.setAttribute('aria-hidden','true'); });
+
+/* ------------------- Save (create/update) ------------------- */
+saveEdit.addEventListener('click', async ()=> {
+  if(!isAdmin) { alert('Solo admin puede agregar o editar.'); return; }
+
+  const tipo = (tipoInput.value||'').trim();
+  const nombre = (nombreInput.value||'').trim();
+  const desc = (descInput.value||'').trim();
+  const url = (urlInput.value||'').trim();
+
+  if(!tipo || !nombre || !url){
+    alert('Completar categoría, título y link público.');
+    return;
+  }
+  if(!looksLikeUrl(url)){
+    alert('El link no parece una URL válida.');
+    return;
+  }
+
+  saveEdit.disabled = true;
+  saveEdit.textContent = 'Guardando...';
+
+  try {
+    const ts = Date.now();
+    if(editingKey){
+      await update(ref(db, `tablero/${editingKey}`), { tipo, nombre, desc, url, ts });
+    } else {
+      const n = push(ref(db, 'tablero'));
+      await set(n, { tipo, nombre, desc, url, ts });
+    }
+    editModal.style.display = 'none';
+  } catch(err){
+    console.error(err);
+    alert('Error guardando el anuncio.');
+  } finally {
+    saveEdit.disabled = false;
+    saveEdit.textContent = 'Guardar';
+  }
+});
+
+/* ------------------- Delete (admin only) ------------------- */
+async function handleDelete(key){
+  if(!isAdmin) return alert('Solo admin puede eliminar.');
+  if(!confirm('¿Eliminar este anuncio?')) return;
+  try{
+    await remove(ref(db, `tablero/${key}`));
+  }catch(e){ console.error(e); alert('No se pudo eliminar'); }
+}
+
+/* ------------------- Share WhatsApp ------------------- */
+function shareWhatsApp(item){
+  const text = encodeURIComponent(`${item.nombre}\n${item.desc || ''}\n${item.url}`);
+  window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+/* ------------------- Favorites (local) ------------------- */
+function toggleFavorite(key){
+  const favs = JSON.parse(localStorage.getItem('tab_favs')||'{}');
+  if(favs[key]) delete favs[key]; else favs[key]=true;
+  localStorage.setItem('tab_favs', JSON.stringify(favs));
+  renderList(lastData);
+}
+function isFav(key){ const favs = JSON.parse(localStorage.getItem('tab_favs')||'{}'); return !!favs[key]; }
+
+/* ------------------- Render list ------------------- */
+function renderList(data){
+  listContainer.innerHTML = '';
+  if(!Array.isArray(data)) return;
+
+  // filter
+  const q = (searchInput.value||'').trim().toLowerCase();
+  let filtered = data.filter(it=>{
+    if(!it) return false;
+    if(currentFilter !== 'Todos' && (it.tipo||'').toLowerCase() !== currentFilter.toLowerCase()) return false;
+    if(!q) return true;
+    return ((it.nombre||'').toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q) || (it.tipo||'').toLowerCase().includes(q));
+  });
+
+  // sort
+  filtered.sort((a,b)=> sortNewest ? (b.ts||0)-(a.ts||0) : (a.ts||0)-(b.ts||0));
+
+  if(filtered.length === 0){
+    const e = document.createElement('div'); e.className='empty'; e.textContent='No hay anuncios para mostrar';
+    listContainer.appendChild(e); return;
+  }
+
+  filtered.forEach(item=>{
+    const card = document.createElement('div'); card.className='card';
+    const key = item._key;
+
+    const tipoEl = document.createElement('div'); tipoEl.className='tipo'; tipoEl.textContent = item.tipo || 'Sin categoría';
+    const nombreEl = document.createElement('div'); nombreEl.className='nombre'; nombreEl.textContent = item.nombre || '';
+    const metaEl = document.createElement('div'); metaEl.className='meta'; metaEl.textContent = formatDate(item.ts) + (item.desc ? ' • ' + item.desc : '');
+
+    const actions = document.createElement('div'); actions.className='actions';
+
+    // Vista previa
+    const viewBtn = document.createElement('button'); viewBtn.className='btn view'; viewBtn.textContent='👁 Vista previa';
+    viewBtn.addEventListener('click', ()=> {
+      const url = item.url;
+      const previewUrl = drivePreviewLink(url);
+      if(previewUrl && previewUrl.toLowerCase().includes('.pdf')) {
+        const ifr = document.createElement('iframe'); ifr.src = previewUrl; ifr.style.width='100%'; ifr.style.height='100%';
+        openPreview(item.nombre, ifr);
+      } else if(previewUrl && (previewUrl.match(/\.(jpeg|jpg|png|gif)$/i) || previewUrl.includes('drive.google.com'))) {
+        const img = document.createElement('img'); img.src = previewUrl; img.alt = item.nombre || 'Imagen'; img.style.maxWidth='100%'; img.style.maxHeight='100%';
+        openPreview(item.nombre, img);
+      } else {
+        // fallback: open new tab
+        window.open(url,'_blank');
+      }
+    });
+
+    const downloadBtn = document.createElement('button'); downloadBtn.className='btn download'; downloadBtn.textContent='⬇ Descargar';
+    downloadBtn.addEventListener('click', ()=> {
+      try { const a = document.createElement('a'); a.href = item.url; a.download = item.nombre || ''; document.body.appendChild(a); a.click(); document.body.removeChild(a); } catch(e){ window.open(item.url,'_blank'); }
+    });
+
+    const shareBtn = document.createElement('button'); shareBtn.className='btn share'; shareBtn.textContent='📤 WhatsApp';
+    shareBtn.addEventListener('click', ()=> shareWhatsApp(item));
+
+    const favBtn = document.createElement('button'); favBtn.className='btn view'; favBtn.textContent = isFav(key) ? '★ Favorito' : '☆ Favorito';
+    favBtn.addEventListener('click', ()=> toggleFavorite(key));
+
+    actions.appendChild(viewBtn);
+    actions.appendChild(downloadBtn);
+    actions.appendChild(shareBtn);
+    actions.appendChild(favBtn);
+
+    if(isAdmin){
+      const editBtn = document.createElement('button'); editBtn.className='btn edit'; editBtn.textContent='✏️ Editar';
+      editBtn.addEventListener('click', ()=> openEditModal(item));
+      const delBtn = document.createElement('button'); delBtn.className='btn delete'; delBtn.textContent='🗑 Eliminar';
+      delBtn.addEventListener('click', ()=> handleDelete(key));
+      actions.appendChild(editBtn); actions.appendChild(delBtn);
+    }
+
+    card.appendChild(tipoEl);
+    card.appendChild(nombreEl);
+    card.appendChild(metaEl);
+    card.appendChild(actions);
+
+    if(isFav(key)) card.style.boxShadow = '0 4px 18px rgba(13,122,42,0.12)';
+
+    listContainer.appendChild(card);
+  });
+}
+
+/* ------------------- DB listener ------------------- */
+const tableroRef = ref(db, 'tablero');
+onValue(tableroRef, snap=>{
+  const arr = [];
+  snap.forEach(ch=>{
+    const v = ch.val();
+    v._key = ch.key;
+    arr.push(v);
+  });
+  lastData = arr;
+  renderList(lastData);
+}, err=>{
+  console.error('DB read error', err);
+  notice.style.display = 'block';
+  notice.textContent = 'Error leyendo anuncios. Revise permisos en la base.';
+});
+
+/* ------------------- Expose add function to Add button (admin only) ------------------- */
+document.getElementById('addFloat').addEventListener('click', ()=>{
+  if(!isAdmin) return alert('Solo admin puede agregar anuncios.');
+  openEditModal(null);
+});
+
+/* ------------------- END ------------------- */
+</script>
 
 </body>
 </html>
