@@ -1,277 +1,136 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Tablero de Anuncios</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tablero</title>
 
 <style>
-:root {
-  --verde: #1a4b27;
-  --gris: #f4f4f4;
-  --blanco: #fff;
-  --btn: #1a4b27;
-  --btn-hover: #14521c;
-}
+  body { margin:0; font-family:Arial; background:#f4f4f4; color:#333; }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: var(--gris);
-}
+  header {
+    background:#1a4b27;
+    color:#fff;
+    padding:16px;
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+  }
 
-/* ENCABEZADO */
-header {
-  background: var(--verde);
-  color: var(--blanco);
-  padding: 15px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-}
+  .top-buttons {
+    display:flex;
+    justify-content:space-between;
+    padding:10px;
+    background:#e8e8e8;
+    gap:6px;
+    flex-wrap:wrap;
+  }
 
-/* BOTÓN VOLVER */
-.volver {
-  background: var(--verde);
-  color: white;
-  border: none;
-  padding: 12px 18px;
-  border-radius: 10px;
-  margin: 10px;
-  display: inline-block;
-  font-size: 16px;
-  cursor: pointer;
-}
-.volver:hover {
-  background: var(--btn-hover);
-}
+  .btn {
+    background:#1a4b27;
+    color:white;
+    padding:8px 12px;
+    border-radius:7px;
+    text-decoration:none;
+    font-size:14px;
+    cursor:pointer;
+    border:none;
+  }
+  .btn:hover { opacity:0.9; }
 
-/* ÁREA DE SUBIDA */
-.top {
-  max-width: 480px;
-  margin: auto;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+  .container { padding:16px; }
 
-select, input[type=file] {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #aaa;
-  font-size: 16px;
-  width: 100%;
-}
-
-button {
-  background: var(--btn);
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-}
-button:hover {
-  background: var(--btn-hover);
-}
-
-/* LISTA */
-.container {
-  padding: 15px;
-  max-width: 900px;
-  margin: auto;
-}
-
-.card {
-  background: var(--blanco);
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  border-left: 6px solid var(--verde);
-}
-
-.tipo {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--verde);
-}
-
-.nombre {
-  font-size: 16px;
-  margin: 8px 0;
-}
-
-/* MODAL */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.modal-box {
-  background: white;
-  width: 95%;
-  max-width: 800px;
-  height: 85%;
-  border-radius: 10px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-}
-
-iframe, img {
-  flex: 1;
-  width: 100%;
-  border-radius: 6px;
-  object-fit: contain;
-}
-
-.close {
-  background: red;
-  padding: 10px;
-  color: white;
-  border: none;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
+  .item {
+    background:white;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    font-size:14px;
+  }
 </style>
+
+<script type="module">
+/* =============================
+      FIREBASE
+============================= */
+import { db, ref as dbRef, push, onValue } from "./firebase.js";
+
+const pendientesRef = dbRef(db,"pendientes");
+
+/* =============================
+      LISTAR
+============================= */
+const lista = document.getElementById("lista");
+
+onValue(pendientesRef, snap => {
+    lista.innerHTML = "";
+    snap.forEach(child => {
+        const d = child.val();
+        const div = document.createElement("div");
+        div.className = "item";
+
+        div.innerHTML = `
+            <b>${d.titulo || "Sin título"}</b><br>
+            ${d.descripcion || ""}<br><br>
+            ${d.archivoURL ? `<a href="${d.archivoURL}" target="_blank">📎 Ver archivo</a>` : ""}
+        `;
+
+        lista.appendChild(div);
+    });
+});
+
+/* =============================
+      AGREGAR PENDIENTE
+============================= */
+window.agregarPendiente = function () {
+    const titulo = prompt("Título del pendiente:");
+    if (!titulo) return;
+
+    const descripcion = prompt("Descripción:");
+
+    push(pendientesRef, {
+        titulo,
+        descripcion,
+        fecha: new Date().toISOString()
+    });
+};
+
+/* =============================
+      AGREGAR ARCHIVO (LINK)
+============================= */
+window.agregarArchivo = function () {
+    const titulo = prompt("Título:");
+    if (!titulo) return;
+
+    const descripcion = prompt("Descripción:");
+    const link = prompt("Pegá el link del archivo (Drive, imagen, PDF, etc):");
+
+    push(pendientesRef, {
+        titulo,
+        descripcion,
+        archivoURL: link,
+        fecha: new Date().toISOString()
+    });
+};
+</script>
+
 </head>
 
 <body>
 
-<!-- BOTÓN VOLVER -->
-<button class="volver" onclick="location.href='index.html'">⬅ Volver al Menú</button>
+<header>Tablero</header>
 
-<header>📌 Tablero de Anuncios</header>
-
-<!-- SUBIDA (solo admin) -->
-<div class="top" id="uploadSection">
-  <select id="tipo">
-    <option value="">Seleccionar categoría</option>
-    <option>Vida Cristiana</option>
-    <option>Cartas</option>
-    <option>Limpieza</option>
-    <option>Conferencias</option>
-    <option>Lectores Atalaya</option>
-    <option>Otros</option>
-  </select>
-
-  <input type="file" id="archivo" accept=".pdf,image/*">
-  <button onclick="subir()">📤 Agregar anuncio</button>
+<div class="top-buttons">
+  <a href="index.html" class="btn">⬅ Volver</a>
+  <button class="btn" onclick="agregarPendiente()">+ Pendiente</button>
+  <button class="btn" onclick="agregarArchivo()">📎 Archivo (link)</button>
 </div>
 
-<!-- LISTA -->
-<div class="container" id="lista"></div>
-
-<!-- MODAL -->
-<div class="modal" id="visor">
-  <div class="modal-box">
-    <button class="close" onclick="cerrar()">Cerrar</button>
-    <div id="contenido" style="flex:1;"></div>
-  </div>
+<div class="container">
+  <h3>Pendientes</h3>
+  <div id="lista"></div>
 </div>
-
-
-<script type="module">
-import {
-  db, ref, set, push, onValue,
-  storage, sRef, uploadBytes, getDownloadURL
-} from "./firebase.js";
-
-const tipo = document.getElementById("tipo");
-const archivo = document.getElementById("archivo");
-const lista = document.getElementById("lista");
-const visor = document.getElementById("visor");
-const cont = document.getElementById("contenido");
-const uploadSection = document.getElementById("uploadSection");
-
-/* PERMISOS */
-let sesion = JSON.parse(localStorage.getItem("sesion")) || { perfil: "invitado" };
-const permitidos = ["admin"];
-if (!permitidos.includes(sesion.perfil)) {
-  uploadSection.style.display = "none";
-}
-
-/* SUBIR ARCHIVO */
-window.subir = async () => {
-  if (!tipo.value || !archivo.files[0]) {
-    alert("Seleccione categoría y archivo.");
-    return;
-  }
-
-  const f = archivo.files[0];
-  const ruta = "tablero/" + Date.now() + "_" + f.name;
-  const refS = sRef(storage, ruta);
-
-  try {
-    await uploadBytes(refS, f);
-    const url = await getDownloadURL(refS);
-
-    await set(push(ref(db, "tablero")), {
-      tipo: tipo.value,
-      nombre: f.name,
-      url,
-      tipoArchivo: f.type,
-      ts: Date.now()
-    });
-
-    tipo.value = "";
-    archivo.value = "";
-    alert("Archivo subido correctamente.");
-  } catch (e) {
-    alert("Error subiendo archivo.");
-    console.error(e);
-  }
-};
-
-/* LISTAR ARCHIVOS */
-onValue(ref(db, "tablero"), snap => {
-  lista.innerHTML = "";
-  if (!snap.exists()) return;
-
-  const datos = [];
-  snap.forEach(x => datos.push(x.val()));
-  datos.sort((a, b) => b.ts - a.ts);
-
-  datos.forEach(d => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <div class="tipo">${d.tipo}</div>
-      <div class="nombre">${d.nombre}</div>
-      <button onclick="ver('${d.url}','${d.tipoArchivo}')">👁 Ver</button>
-      <button onclick="descargar('${d.url}','${d.nombre}')">⬇ Descargar</button>
-    `;
-    lista.appendChild(div);
-  });
-});
-
-/* VER */
-window.ver = (url, t) => {
-  cont.innerHTML = t === "application/pdf"
-    ? `<iframe src="${url}"></iframe>`
-    : `<img src="${url}">`;
-  visor.style.display = "flex";
-};
-
-/* CERRAR */
-window.cerrar = () => visor.style.display = "none";
-
-/* DESCARGAR */
-window.descargar = (url, nombre) => {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = nombre;
-  a.click();
-};
-</script>
 
 </body>
 </html>
