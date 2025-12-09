@@ -1,365 +1,472 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8">
-  <title>Tablero de Anuncios</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tablero de Anuncios</title>
+<style>
+:root{
+  --verde:#1a4b27;
+  --bg:#f6f9f6;
+  --card:#fff;
+  --muted:#666;
+  --accent:#0d7a2a;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:#111}
+header{background:var(--verde);color:white;padding:14px;text-align:center;font-weight:700}
+.wrapper{max-width:1000px;margin:12px auto;padding:12px}
 
-  <style>
-    :root {
-      --verde: #1a4b27;
-      --bg: #f2f2f2;
-      --blanco: #ffffff;
-      --gris: #dcdcdc;
-    }
+/* volver */
+.volver{position:fixed;left:12px;bottom:12px;background:var(--verde);color:#fff;padding:10px 12px;border-radius:10px;border:none;cursor:pointer}
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-    }
+/* formulario */
+.formulario{background:var(--card);padding:12px;border-radius:10px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.form-row{display:flex;flex-direction:column;gap:8px}
+select,input[type="text"]{padding:10px;border-radius:8px;border:1px solid #ddd;font-size:15px;width:100%}
+.btn-guardar{background:var(--verde);color:#fff;padding:10px;border-radius:8px;border:none;font-weight:700;cursor:pointer}
 
-    header {
-      background: var(--verde);
-      color: white;
-      padding: 18px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-    }
+/* controls */
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search{flex:1;min-width:160px;padding:10px;border-radius:8px;border:1px solid #ddd}
 
-    .volver {
-      position: fixed;
-      left: 12px;
-      bottom: 12px;
-      background: var(--verde);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 16px;
-      border: none;
-    }
+/* lista cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.card{background:var(--card);padding:12px;border-radius:10px;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.thumb{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:8px}
+.tipo{color:var(--verde);font-weight:800}
+.titulo{font-weight:700;margin-top:6px;margin-bottom:6px}
+.meta{font-size:13px;color:var(--muted);margin-bottom:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+.btn.view{background:#0b65c2;color:#fff}
+.btn.download{background:#444;color:#fff}
+.btn.wa{background:#25D366;color:#fff}
 
-    /* FORMULARIO */
-    .formulario {
-      background: var(--blanco);
-      padding: 15px;
-      margin: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 6px rgba(0, 0, 0, .1);
-    }
+/* estrella fav */
+.star{position:absolute;right:12px;top:12px;font-size:20px;color:#bbb;cursor:pointer}
+.star.active{color:#f5c518}
 
-    select,
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 1px solid var(--gris);
-    }
+/* admin menu 3 puntos */
+.admin-menu{position:absolute;left:12px;top:12px;font-size:20px;cursor:pointer}
+.menu-box{position:absolute;left:12px;top:36px;background:#fff;border:1px solid #eee;border-radius:8px;padding:6px;display:none;z-index:50}
+.menu-option{padding:6px 10px;font-size:14px;cursor:pointer}
+.menu-option:hover{background:#f2f2f2}
 
-    .btn-guardar {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      background: var(--verde);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-weight: bold;
-    }
+/* modal preview */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:200}
+.modal-box{background:#fff;border-radius:10px;width:95%;max-width:900px;height:90%;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{display:flex;justify-content:flex-end;padding:8px;background:#fafafa}
+.modal-close{background:#d33;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+.modal-body{flex:1;padding:8px;display:flex;align-items:center;justify-content:center}
+.modal-body iframe, .modal-body img{width:100%;height:100%;object-fit:contain;border-radius:6px}
 
-    /* LISTA */
-    .lista {
-      padding: 15px;
-    }
+/* empty / notice */
+.notice{max-width:1000px;margin:8px auto;padding:10px;background:#fff3e0;border-radius:8px;color:#6b3a00;display:none}
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 0 6px rgba(0, 0, 0, .1);
-      position: relative;
-    }
-
-    .miniatura {
-      width: 100%;
-      max-height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-
-    .tipo {
-      font-size: 15px;
-      font-weight: bold;
-      color: var(--verde);
-    }
-
-    .titulo {
-      font-size: 18px;
-      font-weight: bold;
-      margin-top: 5px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      font-size: 15px;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      cursor: pointer;
-    }
-
-    .ver {
-      background: #0b65c2;
-    }
-
-    .descargar {
-      background: #444;
-    }
-
-    .wa {
-      background: #25D366;
-    }
-
-    /* ESTRELLA FAVORITOS */
-    .estrella {
-      position: absolute;
-      right: 12px;
-      top: 12px;
-      font-size: 24px;
-      cursor: pointer;
-      color: #bbb;
-    }
-
-    .estrella.activa {
-      color: #f5c518;
-    }
-
-    /* 3 PUNTITOS SOLO ADMIN */
-    .menu-admin {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      font-size: 22px;
-      cursor: pointer;
-    }
-
-    .menu-opciones {
-      position: absolute;
-      left: 12px;
-      top: 40px;
-      background: white;
-      border: 1px solid var(--gris);
-      border-radius: 10px;
-      padding: 8px;
-      display: none;
-      z-index: 20;
-    }
-
-    .menu-opciones div {
-      padding: 6px 10px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .menu-opciones div:hover {
-      background: #eee;
-    }
-
-    /* MODAL PREVIEW */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-    }
-
-    .modal-box {
-      background: white;
-      width: 95%;
-      max-width: 900px;
-      height: 90%;
-      border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .cerrar {
-      background: red;
-      color: white;
-      padding: 10px;
-      border: none;
-      font-size: 16px;
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
+/* responsive tweaks */
+@media (max-width:480px){ .thumb{height:140px} .modal-box{height:92%} }
+</style>
 </head>
-
 <body>
+<header>📌 Tablero de Anuncios</header>
 
-  <header>📌 Tablero de Anuncios</header>
+<button class="volver" onclick="location.href='index.html'">⬅ Volver</button>
 
-  <button class="volver" onclick="location.href='index.html'">⬅ Volver</button>
+<div id="notice" class="notice" role="status" aria-live="polite"></div>
 
-  <!-- FORMULARIO SOLO PARA ADMIN -->
-  <div class="formulario" id="formulario">
-    <select id="tipo">
-      <option value="">Selecciona categoría</option>
-      <option>Vida Cristiana</option>
-      <option>Limpieza</option>
-      <option>Cartas</option>
-      <option>Conferencias</option>
-      <option>Lectores Atalaya</option>
-      <option>Otros</option>
-    </select>
+<div class="wrapper">
 
-    <input type="text" id="titulo" placeholder="Título (opcional)">
-    <input type="text" id="link" placeholder="Pegar enlace de Drive">
+  <!-- FORMULARIO (solo visible para admin) -->
+  <div id="formContainer" class="formulario" aria-hidden="false">
+    <div class="form-row">
+      <label for="tipoInput">Categoría (obligatoria)</label>
+      <select id="tipoInput">
+        <option value="">-- Seleccionar --</option>
+        <option>Vida Cristiana</option>
+        <option>Limpieza</option>
+        <option>Cartas</option>
+        <option>Conferencias</option>
+        <option>Lectores Atalaya</option>
+        <option>Otros</option>
+      </select>
 
-    <button class="btn-guardar" onclick="guardar()">Guardar</button>
-  </div>
+      <label for="tituloInput">Título (opcional)</label>
+      <input id="tituloInput" type="text" placeholder="Si está vacío se usará la categoría como título">
 
-  <!-- LISTA -->
-  <div class="lista" id="lista"></div>
+      <label for="linkInput">Link público (Google Drive, imagen directa, PDF, Dropbox)</label>
+      <input id="linkInput" type="text" placeholder="Pegar enlace público">
 
-  <!-- MODAL -->
-  <div class="modal" id="modal">
-    <div class="modal-box">
-      <button class="cerrar" onclick="cerrar()">Cerrar</button>
-      <iframe id="visor"></iframe>
+      <button id="saveBtn" class="btn-guardar">Guardar anuncio</button>
     </div>
   </div>
 
-  <script type="module">
-    import { db, ref, push, set, onValue, update, remove } from "./firebase.js";
+  <!-- controles: buscador y orden -->
+  <div class="controls">
+    <input id="searchBox" class="search" placeholder="Buscar por título o descripción...">
+    <button id="sortBtn" class="btn" title="Ordenar">Orden: <span id="sortLabel">Más nuevo</span></button>
+  </div>
 
-    /* SESION */
-    let sesion = JSON.parse(localStorage.getItem("sesion")) || { perfil: "invitado" };
-    if (sesion.perfil !== "admin") {
-      document.getElementById("formulario").style.display = "none";
+  <!-- lista -->
+  <div id="listGrid" class="grid" aria-live="polite"></div>
+</div>
+
+<!-- preview modal -->
+<div id="previewModal" class="modal" aria-hidden="true">
+  <div class="modal-box">
+    <div class="modal-header">
+      <button id="closePreview" class="modal-close">Cerrar</button>
+    </div>
+    <div id="previewBody" class="modal-body"></div>
+  </div>
+</div>
+
+<script type="module">
+/* ---------------- Firebase import (no modificar) ---------------- */
+import { db, ref, push, set, onValue, update, remove } from "./firebase.js";
+
+/* ---------------- Estado y elementos UI ---------------- */
+const formContainer = document.getElementById('formContainer');
+const tipoInput = document.getElementById('tipoInput');
+const tituloInput = document.getElementById('tituloInput');
+const linkInput = document.getElementById('linkInput');
+const saveBtn = document.getElementById('saveBtn');
+const searchBox = document.getElementById('searchBox');
+const sortBtn = document.getElementById('sortBtn');
+const sortLabel = document.getElementById('sortLabel');
+const listGrid = document.getElementById('listGrid');
+const notice = document.getElementById('notice');
+
+const previewModal = document.getElementById('previewModal');
+const previewBody = document.getElementById('previewBody');
+const closePreview = document.getElementById('closePreview');
+
+let lastData = []; // array of items
+let sortNewest = true; // default: newest first
+
+/* ---------------- Session / permisos ---------------- */
+let sessionRaw = null;
+try { sessionRaw = JSON.parse(localStorage.getItem('sesion')); } catch(e){ sessionRaw = null; }
+const role = (sessionRaw && (sessionRaw.perfil || sessionRaw.rol)) ? (sessionRaw.perfil || sessionRaw.rol) : 'invitado';
+const isAdmin = role === 'admin';
+
+/* mostrar form solo si admin */
+if(!isAdmin){
+  formContainer.style.display = 'none';
+} else {
+  formContainer.style.display = 'block';
+}
+
+/* ---------------- Utilidades URL / Drive handling ---------------- */
+function looksLikeUrl(s){
+  try { new URL(s); return true; } catch(e){ return false; }
+}
+
+function extractDriveId(url){
+  // matches file/d/ID or id=ID
+  try{
+    const u = new URL(url);
+    if(u.hostname.includes('drive.google.com')){
+      const m = url.match(/\/file\/d\/([-\w]{10,})/);
+      if(m && m[1]) return m[1];
+      if(u.searchParams.has('id')) return u.searchParams.get('id');
+      // sometimes share link format: https://drive.google.com/open?id=ID
+      const m2 = url.match(/id=([-\w]{10,})/);
+      if(m2 && m2[1]) return m2[1];
     }
+  }catch(e){}
+  return null;
+}
 
-    const lista = document.getElementById("lista");
-    const modal = document.getElementById("modal");
-    const visor = document.getElementById("visor");
+function drivePreviewLink(url){
+  // convert to drive preview if possible
+  const id = extractDriveId(url);
+  if(id) return `https://drive.google.com/file/d/${id}/preview`;
+  return url;
+}
 
-    function drivePreview(url) {
-      if (!url.includes("drive.google.com")) return url;
-      let id = url.match(/[-\w]{25,}/);
-      return id ? `https://drive.google.com/file/d/${id}/preview` : url;
-    }
+function driveThumb(url){
+  const id = extractDriveId(url);
+  if(id){
+    // Drive supports thumbnail endpoint
+    return `https://drive.google.com/thumbnail?id=${id}`;
+  }
+  return null;
+}
 
-    function miniatura(url) {
-      if (url.includes("drive.google.com")) {
-        let id = url.match(/[-\w]{25,}/);
-        return id ? `https://drive.google.com/thumbnail?id=${id}` : "";
-      }
-      return "";
-    }
+/* ---------------- Favorites local (localStorage) ---------------- */
+function getFavs(){ return JSON.parse(localStorage.getItem('tab_favs') || '{}'); }
+function toggleFav(key){
+  const favs = getFavs();
+  if(favs[key]) delete favs[key]; else favs[key] = true;
+  localStorage.setItem('tab_favs', JSON.stringify(favs));
+  renderList(lastData);
+}
+function isFav(key){ const f = getFavs(); return !!f[key]; }
 
-    window.guardar = async () => {
-      const tipo = document.getElementById("tipo").value;
-      const titulo = document.getElementById("titulo").value.trim();
-      const link = document.getElementById("link").value.trim();
+/* ---------------- Save new announcement (admin) ---------------- */
+saveBtn.addEventListener('click', async () => {
+  const tipo = (tipoInput.value || '').trim();
+  const titulo = (tituloInput.value || '').trim();
+  const link = (linkInput.value || '').trim();
 
-      if (!tipo || !link) {
-        alert("Debes elegir tipo y pegar el link.");
-        return;
-      }
+  if(!tipo || !link){
+    alert('La categoría y el link son obligatorios.');
+    return;
+  }
+  if(!looksLikeUrl(link)){
+    alert('El link no es válido.');
+    return;
+  }
 
-      const finalTitulo = titulo || tipo;
+  const finalTitle = titulo || tipo;
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Guardando...';
+  try{
+    const n = push(ref(db, 'tablero'));
+    await set(n, { tipo, titulo: finalTitle, link, ts: Date.now() });
+    tipoInput.value = ''; tituloInput.value = ''; linkInput.value = '';
+  }catch(err){
+    console.error(err);
+    alert('Error guardando. Revisa consola.');
+  }finally{
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Guardar anuncio';
+  }
+});
 
-      await set(push(ref(db, "tablero")), {
-        tipo,
-        titulo: finalTitulo,
-        link,
-        favorito: false,
-        ts: Date.now()
-      });
+/* ---------------- Render list (safe DOM creation) ---------------- */
+function createCard(item){
+  const card = document.createElement('div');
+  card.className = 'card';
 
-      document.getElementById("titulo").value = "";
-      document.getElementById("link").value = "";
+  // admin menu (3 dots) top-left
+  if(isAdmin){
+    const adminBtn = document.createElement('div');
+    adminBtn.className = 'admin-menu';
+    adminBtn.textContent = '⋮';
+    adminBtn.title = 'Opciones';
+    card.appendChild(adminBtn);
 
-      alert("Guardado correctamente.");
-    };
+    const menuBox = document.createElement('div');
+    menuBox.className = 'menu-box';
+    menuBox.id = 'menu-'+item._key;
 
-    onValue(ref(db, "tablero"), snap => {
-      lista.innerHTML = "";
+    const optEdit = document.createElement('div'); optEdit.className='menu-option'; optEdit.textContent='Editar';
+    const optDel = document.createElement('div'); optDel.className='menu-option'; optDel.textContent='Eliminar';
 
-      let datos = [];
-      snap.forEach(d => datos.push({ id: d.key, ...d.val() }));
+    optEdit.addEventListener('click', ()=> openEditPrompt(item));
+    optDel.addEventListener('click', ()=> deleteConfirm(item._key));
 
-      datos.sort((a, b) => b.ts - a.ts);
+    menuBox.appendChild(optEdit); menuBox.appendChild(optDel);
+    card.appendChild(menuBox);
 
-      datos.forEach(d => {
-        const div = document.createElement("div");
-        div.className = "card";
-
-        const prev = drivePreview(d.link);
-        const thumb = miniatura(d.link);
-
-        div.innerHTML = `
-          ${sesion.perfil === "admin" ? `<div class="menu-admin" onclick="abrirMenu('${d.id}')">⋮</div>` : ""}
-          <div class="menu-opciones" id="menu-${d.id}">
-            <div onclick="editar('${d.id}')">Editar</div>
-            <div onclick="eliminar('${d.id}')">Eliminar</div>
-          </div>
-
-          <div class="estrella ${d.favorito ? 'activa' : ''}" onclick="favorito('${d.id}', ${d.favorito})">★</div>
-
-          ${thumb ? `<img src="${thumb}" class="miniatura">` : ""}
-
-          <div class="tipo">${d.tipo}</div>
-          <div class="titulo">${d.titulo}</div>
-
-          <button class="btn ver" onclick="ver('${prev}')">👁 Vista previa</button>
-          <button class="btn descargar" onclick="window.open('${d.link}', '_blank')">⬇ Descargar</button>
-          <button class="btn wa" onclick="window.open('https://wa.me/?text=' + encodeURIComponent('${d.titulo}: ${d.link}') )">WhatsApp</button>
-        `;
-
-        lista.appendChild(div);
-      });
+    adminBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      // hide any other menus
+      document.querySelectorAll('.menu-box').forEach(m => { if(m !== menuBox) m.style.display = 'none'; });
+      menuBox.style.display = menuBox.style.display === 'block' ? 'none' : 'block';
     });
 
-    window.ver = (url) => {
-      visor.src = url;
-      modal.style.display = "flex";
-    };
-    window.cerrar = () => modal.style.display = "none";
+    // close menu on click outside
+    document.addEventListener('click', ()=> { menuBox.style.display = 'none'; });
+    menuBox.addEventListener('click', (e)=> e.stopPropagation());
+  }
 
-    window.favorito = (id, actual) => {
-      update(ref(db, "tablero/" + id), { favorito: !actual });
-    };
+  // star favorite top-right
+  const star = document.createElement('div');
+  star.className = 'star' + (isFav(item._key) ? ' active' : '');
+  star.textContent = '★';
+  star.title = 'Marcar favorito';
+  star.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    toggleFav(item._key);
+  });
+  card.appendChild(star);
 
-    window.abrirMenu = (id) => {
-      const m = document.getElementById("menu-" + id);
-      m.style.display = m.style.display === "block" ? "none" : "block";
-    };
+  // thumbnail (image or drive thumb if available)
+  const thumbUrl = (() => {
+    // if direct image extension -> use it
+    try{
+      const u = new URL(item.link);
+      if(u.pathname.match(/\.(jpg|jpeg|png|gif)$/i)) return item.link;
+    }catch(e){}
+    // drive thumbnail
+    const dt = driveThumb(item.link);
+    if(dt) return dt;
+    return null;
+  })();
 
-    window.eliminar = (id) => {
-      if (confirm("¿Eliminar anuncio?")) remove(ref(db, "tablero/" + id));
-    };
+  if(thumbUrl){
+    const img = document.createElement('img');
+    img.src = thumbUrl;
+    img.alt = item.titulo || item.tipo;
+    img.className = 'thumb';
+    card.appendChild(img);
+  }
 
-    window.editar = (id) => {
-      const nuevo = prompt("Nuevo título:");
-      if (nuevo) update(ref(db, "tablero/" + id), { titulo: nuevo });
-    };
-  </script>
+  // tipo, titulo, meta
+  const tipoEl = document.createElement('div'); tipoEl.className='tipo'; tipoEl.textContent = item.tipo || '';
+  const tituloEl = document.createElement('div'); tituloEl.className='titulo'; tituloEl.textContent = item.titulo || item.tipo;
+  const metaEl = document.createElement('div'); metaEl.className='meta'; metaEl.textContent = new Date(item.ts || 0).toLocaleString();
 
+  card.appendChild(tipoEl);
+  card.appendChild(tituloEl);
+  card.appendChild(metaEl);
+
+  // actions: view, download, whatsapp
+  const actions = document.createElement('div'); actions.className='actions';
+
+  const viewBtn = document.createElement('button'); viewBtn.className='btn view'; viewBtn.textContent='👁 Vista previa';
+  viewBtn.addEventListener('click', ()=>{
+    // show preview modal; we decided "only buttons" open preview
+    const previewUrl = drivePreviewLink(item.link);
+    showPreview(previewUrl, item);
+  });
+
+  const dlBtn = document.createElement('button'); dlBtn.className='btn download'; dlBtn.textContent='⬇ Descargar';
+  dlBtn.addEventListener('click', ()=> {
+    // try download via anchor, fallback open
+    try{
+      const a = document.createElement('a'); a.href = item.link; a.download = item.titulo || ''; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }catch(e){ window.open(item.link, '_blank'); }
+  });
+
+  const waBtn = document.createElement('button'); waBtn.className='btn wa'; waBtn.textContent='📤 WhatsApp';
+  waBtn.addEventListener('click', ()=> {
+    const txt = encodeURIComponent((item.titulo || '') + '\n' + (item.link || ''));
+    window.open('https://wa.me/?text=' + txt, '_blank');
+  });
+
+  actions.appendChild(viewBtn);
+  actions.appendChild(dlBtn);
+  actions.appendChild(waBtn);
+
+  card.appendChild(actions);
+  return card;
+}
+
+function renderList(data){
+  listGrid.innerHTML = '';
+  if(!Array.isArray(data) || data.length === 0){
+    const e = document.createElement('div'); e.className='card'; e.textContent='No hay anuncios para mostrar'; listGrid.appendChild(e); return;
+  }
+
+  // filter by search
+  const q = (searchBox.value || '').toLowerCase().trim();
+  let filtered = data.filter(it=>{
+    if(!it) return false;
+    if(q === '') return true;
+    return ((it.titulo||'').toLowerCase().includes(q) || (it.tipo||'').toLowerCase().includes(q) || (it.link||'').toLowerCase().includes(q));
+  });
+
+  // sort
+  filtered.sort((a,b)=> sortNewest ? (b.ts||0)-(a.ts||0) : (a.ts||0)-(b.ts||0));
+
+  filtered.forEach(item => {
+    const card = createCard(item);
+    listGrid.appendChild(card);
+  });
+}
+
+/* preview handling */
+function showPreview(url, item){
+  previewBody.innerHTML = '';
+  // decide content: pdf embed, image, else open in new tab fallback
+  const lower = (url||'').toLowerCase();
+  if(lower.includes('drive.google.com') || lower.includes('.pdf')){
+    // use drivePreviewLink to try convert
+    const previewUrl = drivePreviewLink(url);
+    const ifr = document.createElement('iframe');
+    ifr.src = previewUrl;
+    previewBody.appendChild(ifr);
+    previewModal.style.display = 'flex';
+    previewModal.setAttribute('aria-hidden','false');
+    return;
+  }
+  // direct image
+  if(lower.match(/\.(jpg|jpeg|png|gif)$/i)){
+    const img = document.createElement('img'); img.src = url; img.alt = item.titulo || '';
+    previewBody.appendChild(img);
+    previewModal.style.display = 'flex';
+    previewModal.setAttribute('aria-hidden','false');
+    return;
+  }
+  // fallback: open new tab
+  window.open(url, '_blank');
+}
+
+closePreview.addEventListener('click', ()=> {
+  previewModal.style.display = 'none';
+  previewModal.setAttribute('aria-hidden','true');
+});
+
+/* ---------------- DB listener ---------------- */
+const tableroRef = ref(db, 'tablero');
+onValue(tableroRef, snapshot => {
+  try{
+    const arr = [];
+    snapshot.forEach(ch => {
+      const v = ch.val();
+      v._key = ch.key;
+      arr.push(v);
+    });
+    lastData = arr;
+    renderList(lastData);
+    notice.style.display = 'none';
+  }catch(err){
+    console.error('render error', err);
+    notice.style.display = 'block';
+    notice.textContent = 'Error mostrando anuncios. Revisa consola.';
+  }
+}, err => {
+  console.error('DB read error', err);
+  notice.style.display = 'block';
+  notice.textContent = 'Error leyendo anuncios. Revise permisos en la base.';
+});
+
+/* delete with confirmation (admin only) */
+async function deleteConfirm(key){
+  if(!isAdmin) { alert('Solo admin puede eliminar.'); return; }
+  if(!confirm('¿Eliminar este anuncio?')) return;
+  try{
+    await remove(ref(db, `tablero/${key}`));
+  }catch(e){
+    console.error(e);
+    alert('No se pudo eliminar.');
+  }
+}
+
+/* edit prompt for admin (simple inline prompt) */
+function openEditPrompt(item){
+  if(!isAdmin) { alert('Solo admin puede editar.'); return; }
+  const newTitle = prompt('Editar título:', item.titulo || '');
+  if(newTitle === null) return; // cancel
+  const newLink = prompt('Editar link (obligatorio):', item.link || '');
+  if(newLink === null) return;
+  if(!newLink || !looksLikeUrl(newLink)) { alert('Link inválido.'); return; }
+  const newTipo = prompt('Editar categoría:', item.tipo || '');
+  if(newTipo === null || !newTipo) { alert('Categoría obligatoria.'); return; }
+  update(ref(db, `tablero/${item._key}`), { titulo: newTitle || newTipo, link: newLink, tipo: newTipo, ts: Date.now() }).catch(e=>{ console.error(e); alert('Error actualizando'); });
+}
+
+/* ---------------- Search and sort interactions ---------------- */
+searchBox.addEventListener('input', ()=> renderList(lastData));
+sortBtn.addEventListener('click', ()=> {
+  sortNewest = !sortNewest;
+  sortLabel.textContent = sortNewest ? 'Más nuevo' : 'Más viejo';
+  renderList(lastData);
+});
+
+/* close menus on resize/scroll to keep UI clean */
+window.addEventListener('resize', ()=> document.querySelectorAll('.menu-box').forEach(m=>m.style.display='none'));
+
+/* expose some functions to window for inline calls from created DOM (if needed) */
+window.openEditPrompt = openEditPrompt;
+window.deleteConfirm = deleteConfirm;
+window.toggleFav = toggleFav;
+
+/* end of module */
+</script>
 </body>
-
 </html>
