@@ -1,214 +1,276 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
 <title>Tablero de Anuncios</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    margin: 0;
-    padding: 20px;
-  }
+:root {
+  --verde: #1a4b27;
+  --gris: #f4f4f4;
+  --blanco: #fff;
+  --btn: #1a4b27;
+  --btn-hover: #14521c;
+}
 
-  #contenedor {
-    max-width: 480px;
-    margin: auto;
-  }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--gris);
+}
 
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #1a4b27;
-  }
+/* ENCABEZADO */
+header {
+  background: var(--verde);
+  color: var(--blanco);
+  padding: 15px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+}
 
-  button, select, input {
-    font-size: 15px;
-  }
+/* BOTÓN VOLVER */
+.volver {
+  background: var(--verde);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  margin: 10px;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+}
+.volver:hover {
+  background: var(--btn-hover);
+}
 
-  #btnAgregar {
-    width: 100%;
-    padding: 12px;
-    background: #1a4b27;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    margin-bottom: 15px;
-  }
+/* ÁREA DE SUBIDA */
+.top {
+  max-width: 480px;
+  margin: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-  #formulario {
-    display: none;
-    padding: 15px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 0 5px #ccc;
-    margin-bottom: 20px;
-  }
+select, input[type=file] {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #aaa;
+  font-size: 16px;
+  width: 100%;
+}
 
-  #formulario label {
-    font-size: 14px;
-    font-weight: bold;
-  }
+button {
+  background: var(--btn);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+button:hover {
+  background: var(--btn-hover);
+}
 
-  #formulario input, #formulario select {
-    width: 100%;
-    padding: 10px;
-    margin: 6px 0 15px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
+/* LISTA */
+.container {
+  padding: 15px;
+  max-width: 900px;
+  margin: auto;
+}
 
-  #subir {
-    width: 100%;
-    padding: 10px;
-    background: #1a4b27;
-    color: white;
-    border: none;
-    border-radius: 8px;
-  }
+.card {
+  background: var(--blanco);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border-left: 6px solid var(--verde);
+}
 
-  .categoriaBox {
-    background: white;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    box-shadow: 0 0 4px #ccc;
-  }
+.tipo {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--verde);
+}
 
-  .itemFila {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    margin: 6px 0;
-  }
+.nombre {
+  font-size: 16px;
+  margin: 8px 0;
+}
 
-  a {
-    text-decoration: none;
-    color: #1a4b27;
-  }
+/* MODAL */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-box {
+  background: white;
+  width: 95%;
+  max-width: 800px;
+  height: 85%;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+iframe, img {
+  flex: 1;
+  width: 100%;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.close {
+  background: red;
+  padding: 10px;
+  color: white;
+  border: none;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
 </style>
-
 </head>
+
 <body>
 
-<div id="contenedor">
+<!-- BOTÓN VOLVER -->
+<button class="volver" onclick="location.href='index.html'">⬅ Volver al Menú</button>
 
-  <h2>Anuncios</h2>
+<header>📌 Tablero de Anuncios</header>
 
-  <button id="btnAgregar">➕ Agregar anuncio</button>
+<!-- SUBIDA (solo admin) -->
+<div class="top" id="uploadSection">
+  <select id="tipo">
+    <option value="">Seleccionar categoría</option>
+    <option>Vida Cristiana</option>
+    <option>Cartas</option>
+    <option>Limpieza</option>
+    <option>Conferencias</option>
+    <option>Lectores Atalaya</option>
+    <option>Otros</option>
+  </select>
 
-  <div id="formulario">
-      <label>Categoría:</label>
-      <select id="categoria">
-        <option value="vida">Vida cristiana</option>
-        <option value="cartas">Cartas</option>
-        <option value="limpieza">Limpieza</option>
-        <option value="conferencias">Conferencias</option>
-        <option value="atalaya">Lectores Atalaya</option>
-        <option value="otros">Otros</option>
-      </select>
+  <input type="file" id="archivo" accept=".pdf,image/*">
+  <button onclick="subir()">📤 Agregar anuncio</button>
+</div>
 
-      <label>Nombre del archivo:</label>
-      <input type="text" id="nombreArchivo" placeholder="Ej: Programa semana 10">
+<!-- LISTA -->
+<div class="container" id="lista"></div>
 
-      <label>Link público de Google Drive:</label>
-      <input type="text" id="urlArchivo" placeholder="Pegá aquí el enlace">
-
-      <button id="subir">Guardar anuncio</button>
-
-      <p id="estado" style="font-size:14px; color:#444;"></p>
+<!-- MODAL -->
+<div class="modal" id="visor">
+  <div class="modal-box">
+    <button class="close" onclick="cerrar()">Cerrar</button>
+    <div id="contenido" style="flex:1;"></div>
   </div>
-
-  <div id="lista"></div>
-
 </div>
 
 
 <script type="module">
-import { db, ref, set, push, onValue } from "./firebase.js";
+import {
+  db, ref, set, push, onValue,
+  storage, sRef, uploadBytes, getDownloadURL
+} from "./firebase.js";
 
-/* ===== VALIDAR ADMIN ===== */
-const sesion = JSON.parse(localStorage.getItem("sesion"));
-const esAdmin = sesion && sesion.rol === "admin";
+const tipo = document.getElementById("tipo");
+const archivo = document.getElementById("archivo");
+const lista = document.getElementById("lista");
+const visor = document.getElementById("visor");
+const cont = document.getElementById("contenido");
+const uploadSection = document.getElementById("uploadSection");
 
-if (!esAdmin) {
-  document.getElementById("btnAgregar").style.display = "none";
+/* PERMISOS */
+let sesion = JSON.parse(localStorage.getItem("sesion")) || { perfil: "invitado" };
+const permitidos = ["admin"];
+if (!permitidos.includes(sesion.perfil)) {
+  uploadSection.style.display = "none";
 }
 
-/* ELEMENTOS */
-const btnAgregar = document.getElementById("btnAgregar");
-const formulario = document.getElementById("formulario");
-const subir = document.getElementById("subir");
-const lista = document.getElementById("lista");
-const estado = document.getElementById("estado");
-
-/* MOSTRAR/OCULTAR FORM */
-btnAgregar.onclick = () => {
-  formulario.style.display = formulario.style.display === "none" ? "block" : "none";
-};
-
-/* GUARDAR DATOS */
-subir.onclick = async () => {
-  const categoria = document.getElementById("categoria").value;
-  const nombre = document.getElementById("nombreArchivo").value.trim();
-  const url = document.getElementById("urlArchivo").value.trim();
-
-  if (!nombre || !url) {
-    estado.textContent = "Debe completar todos los campos.";
+/* SUBIR ARCHIVO */
+window.subir = async () => {
+  if (!tipo.value || !archivo.files[0]) {
+    alert("Seleccione categoría y archivo.");
     return;
   }
 
-  estado.textContent = "Guardando...";
+  const f = archivo.files[0];
+  const ruta = "tablero/" + Date.now() + "_" + f.name;
+  const refS = sRef(storage, ruta);
 
   try {
-    const nuevo = push(ref(db, "anuncios/" + categoria));
-    await set(nuevo, { nombre, url });
+    await uploadBytes(refS, f);
+    const url = await getDownloadURL(refS);
 
-    estado.textContent = "Guardado ✔️";
-    setTimeout(() => {
-      formulario.style.display = "none";
-      estado.textContent = "";
-    }, 1000);
+    await set(push(ref(db, "tablero")), {
+      tipo: tipo.value,
+      nombre: f.name,
+      url,
+      tipoArchivo: f.type,
+      ts: Date.now()
+    });
 
+    tipo.value = "";
+    archivo.value = "";
+    alert("Archivo subido correctamente.");
   } catch (e) {
-    estado.textContent = "Error: " + e;
+    alert("Error subiendo archivo.");
+    console.error(e);
   }
 };
 
-/* LISTAR */
-function cargarAnuncios() {
-  onValue(ref(db, "anuncios"), (snap) => {
-    lista.innerHTML = "";
-    if (!snap.exists()) return;
+/* LISTAR ARCHIVOS */
+onValue(ref(db, "tablero"), snap => {
+  lista.innerHTML = "";
+  if (!snap.exists()) return;
 
-    const data = snap.val();
+  const datos = [];
+  snap.forEach(x => datos.push(x.val()));
+  datos.sort((a, b) => b.ts - a.ts);
 
-    Object.keys(data).forEach(cat => {
-      const box = document.createElement("div");
-      box.className = "categoriaBox";
-      box.innerHTML = `<h4>${cat.toUpperCase()}</h4>`;
-
-      Object.values(data[cat]).forEach(item => {
-        const fila = document.createElement("div");
-        fila.className = "itemFila";
-        fila.innerHTML = `
-          <span>${item.nombre}</span>
-          <span>
-            <a href="${item.url}" target="_blank">👁️ Ver</a> |
-            <a href="${item.url}" download>⬇️</a>
-          </span>
-        `;
-        box.appendChild(fila);
-      });
-
-      lista.appendChild(box);
-    });
+  datos.forEach(d => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <div class="tipo">${d.tipo}</div>
+      <div class="nombre">${d.nombre}</div>
+      <button onclick="ver('${d.url}','${d.tipoArchivo}')">👁 Ver</button>
+      <button onclick="descargar('${d.url}','${d.nombre}')">⬇ Descargar</button>
+    `;
+    lista.appendChild(div);
   });
-}
-cargarAnuncios();
+});
 
+/* VER */
+window.ver = (url, t) => {
+  cont.innerHTML = t === "application/pdf"
+    ? `<iframe src="${url}"></iframe>`
+    : `<img src="${url}">`;
+  visor.style.display = "flex";
+};
+
+/* CERRAR */
+window.cerrar = () => visor.style.display = "none";
+
+/* DESCARGAR */
+window.descargar = (url, nombre) => {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  a.click();
+};
 </script>
 
 </body>
