@@ -7,80 +7,73 @@
 
 <style>
     body{
-        margin:0;background:#eef2f1;font-family:Arial, sans-serif;
+        margin:0;background:#f3f3f3;font-family:Arial, sans-serif;
     }
     header{
-        background:#1a4b27;color:white;padding:18px;font-size:22px;
+        background:#1a4b27;color:white;padding:18px;font-size:20px;
         text-align:center;font-weight:bold;
     }
-
     #lista{
-        padding:18px;
+        padding:12px;
         display:flex;
         flex-direction:column;
-        gap:22px;
+        gap:12px;
     }
 
-    /* TARJETA ESTILO GOOGLE CALENDAR MEJORADA PARA PERSONAS MAYORES */
+    /* TARJETA ULTRA COMPACTA */
     .card{
         background:white;
-        padding:20px;
-        border-radius:20px;
-        box-shadow:0 4px 12px rgba(0,0,0,0.18);
-        font-size:18px;
-        line-height:1.45;
+        border-radius:12px;
+        padding:12px 14px;
+        box-shadow:0 3px 6px rgba(0,0,0,0.12);
+        font-size:15px;
+        line-height:1.3;
     }
 
-    .encabezado{
-        font-size:20px;
+    .fecha-line{
+        font-size:16px;
         font-weight:bold;
         color:#1a4b27;
+        margin-bottom:8px;
         display:flex;
         justify-content:space-between;
         align-items:center;
-        margin-bottom:10px;
-        white-space:nowrap;
     }
 
-    .separador{
-        width:100%;
-        height:2px;
-        background:#d0d0d0;
-        margin:12px 0;
+    .section{
+        margin-bottom:4px;
     }
 
     .label{
+        font-size:13px;
         font-weight:bold;
-        margin-bottom:2px;
-        font-size:17px;
+        color:#444;
     }
+
     .value{
-        padding-left:8px;
-        font-size:19px;
+        font-size:15px;
     }
 
     .more-btn{
-        border:none;background:none;font-size:26px;
-        cursor:pointer;padding:4px;
-        color:#555;
+        border:none;background:none;font-size:20px;
+        cursor:pointer;padding:4px;color:#333;
     }
 
     .menu{
         display:none;
         flex-direction:column;
-        margin-top:14px;
+        margin-top:8px;
         border-top:1px solid #ddd;
-        padding-top:12px;
-        gap:8px;
+        padding-top:6px;
+        gap:4px;
     }
     .menu button{
-        background:#f3f3f3;border:none;padding:12px;
-        border-radius:10px;font-size:16px;text-align:left;
-        cursor:pointer;
+        background:#eee;border:none;padding:8px;
+        border-radius:6px;font-size:14px;text-align:left;cursor:pointer;
     }
 
     .empty{
-        padding:30px;text-align:center;color:#555;font-size:20px;
+        padding:28px;text-align:center;color:#555;font-size:17px;
     }
 
     /* MODAL */
@@ -148,7 +141,7 @@ const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 let rol = (sesion.rol || "invitado").toLowerCase();
 if (rol === "invitado") rol = "conductor";
 
-/* MODAL */
+/* MODAL ELEMENTS */
 const modal = document.getElementById("modal");
 const e_territorio = document.getElementById("e_territorio");
 const e_manzanas = document.getElementById("e_manzanas");
@@ -166,72 +159,67 @@ let salidas = [];
 let activeMenuId = null;
 let editingId = null;
 
-/* UTIL: DIA DE LA SEMANA */
-const dias = ["DOMINGO","LUNES","MARTES","MIÉRCOLES","JUEVES","VIERNES","SÁBADO"];
-function formatearEncabezado(f,h){
-    if(!f) return "";
-    const d = new Date(f+"T"+(h||"00:00"));
-    let dia = dias[d.getDay()];
-    let dd = String(d.getDate()).padStart(2,"0");
-    let mes = d.toLocaleString("es-ES",{month:"short"}).toUpperCase();
-    mes = mes.replace(".","");
-    let hora = h ? h.substring(0,5) : "";
-    return `🗓️ ${dia} • ${dd} ${mes} • ${hora} h`;
+/* FORMATEO */
+function ddmmaa(fechaISO){
+    if(!fechaISO) return "";
+    const f = new Date(fechaISO);
+    const dias = ["DOM","LUN","MAR","MIÉ","JUE","VIE","SÁB"];
+    const dia = dias[f.getDay()];
+    const [y,m,d] = fechaISO.split("-");
+    return {dia, texto:`${dia} • ${d} ${mesCorto(m)} •`};
+}
+function mesCorto(m){
+    return ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"][Number(m)-1];
 }
 
-/* UTIL: FILTRO 24 HORAS */
+/* FILTRO AUTOMÁTICO 24H */
 function esValida(fecha, hora){
-    if(!fecha) return false;
-    const now = Date.now();
-    const date = new Date(fecha+"T"+(hora||"00:00")).getTime();
-    return now <= date + 24*60*60*1000;
+    if(!fecha || !hora) return true;
+    const dt = new Date(`${fecha}T${hora}:00`);
+    return (Date.now() - dt.getTime()) <= 24*60*60*1000;
 }
 
 /* RENDER */
 function render(){
     lista.innerHTML = "";
 
-    const visibles = salidas.filter(s => esValida(s.fecha, s.hora));
+    const futuras = salidas.filter(s => esValida(s.fecha, s.hora));
 
-    if(visibles.length === 0){
-        lista.innerHTML = `<div class="empty">No hay salidas próximas</div>`;
+    if(futuras.length === 0){
+        lista.innerHTML = `<div class="empty">No hay salidas</div>`;
         return;
     }
 
-    visibles.forEach(s=>{
+    futuras.forEach(s=>{
+
+        const f = ddmmaa(s.fecha || "");
+
         const card = document.createElement("div");
         card.className = "card";
 
         card.innerHTML = `
-            <div class="encabezado">
-                <span>${formatearEncabezado(s.fecha, s.hora)}</span>
+            <div class="fecha-line">
+                <span>🗓️ ${f.texto} ${s.hora||""} h</span>
                 ${rol==="admin" ? `<button class="more-btn" data-id="${s.id}">⋯</button>` : ""}
             </div>
 
-            <div class="separador"></div>
+            <div class="section"><span class="label">📍 Dirección</span>
+                <div class="value">${s.calle||""} ${s.interseccion? "— " + s.interseccion : ""}</div>
+            </div>
 
-            <div class="item">
-                <div class="label">📍 Dirección</div>
-                <div class="value">${s.calle||""} ${s.interseccion ? "— Esquina "+s.interseccion : ""}</div>
-            </div><br>
-
-            <div class="item">
-                <div class="label">🚗 Conductor</div>
+            <div class="section"><span class="label">🚗 Conductor</span>
                 <div class="value">${s.conductor||"—"}</div>
-            </div><br>
+            </div>
 
-            <div class="item">
-                <div class="label">🗺️ Territorio</div>
+            <div class="section"><span class="label">🗺️ Territorio</span>
                 <div class="value">${s.territorio||"—"}</div>
-            </div><br>
+            </div>
 
-            <div class="item">
-                <div class="label">🔲 Manzanas</div>
+            <div class="section"><span class="label">🔲 Manzanas</span>
                 <div class="value">${(s.pendientes||[]).join(", ")}</div>
-            </div><br>
+            </div>
 
-            <div class="item">
-                <div class="label">📝 Observaciones</div>
+            <div class="section"><span class="label">📝 Observaciones</span>
                 <div class="value">${s.observaciones||"—"}</div>
             </div>
 
@@ -352,7 +340,7 @@ async function deleteSalida(id){
     }
 }
 
-/* LOAD REALTIME */
+/* REALTIME */
 onValue(salidasRef, snap=>{
     const data = snap.val() || {};
     salidas = Object.keys(data).map(id=>({id,...data[id]}));
