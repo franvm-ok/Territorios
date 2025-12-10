@@ -40,7 +40,7 @@
 
     <input id="conductor" placeholder="Nombre del conductor" autocomplete="off">
 
-    <!-- ⬇️ NUEVO: FECHA QUE PREDICÓ -->
+    <!-- Fecha predicación -->
     <input id="fechaPredico" type="date">
 
     <textarea id="observaciones" placeholder="Observaciones (opcional)"></textarea>
@@ -52,6 +52,9 @@
 <script type="module">
 import { db, ref, push, set } from "./firebase.js";
 
+// ============================
+// TERRITORIOS
+// ============================
 const territorios = [
   {numero:1,manzanas:4},{numero:2,manzanas:4},{numero:3,manzanas:4},{numero:4,manzanas:5},
   {numero:5,manzanas:8},{numero:6,manzanas:6},{numero:7,manzanas:6},{numero:8,manzanas:7},
@@ -63,7 +66,9 @@ const territorios = [
   {numero:29,manzanas:5},{numero:30,manzanas:8},{numero:31,manzanas:8},{numero:32,manzanas:6}
 ];
 
-// elementos
+// ============================
+// ELEMENTOS
+// ============================
 const pt = document.getElementById("pantallaTerritorios");
 const pm = document.getElementById("pantallaManzanas");
 const pf = document.getElementById("pantallaFormulario");
@@ -79,18 +84,21 @@ const obsEl = document.getElementById("observaciones");
 
 let territorioActual = null;
 
-// ⬇️ Establecer fecha por defecto = hoy
+// ============================
+// FECHA POR DEFECTO = HOY
+// ============================
 const hoy = new Date().toISOString().split("T")[0];
 fechaPredicoEl.value = hoy;
 
-// ocultar pantallas
+// ============================
+// FUNCIONES DE NAVEGACIÓN
+// ============================
 function ocultarTodo(){
   pt.style.display="none";
   pm.style.display="none";
   pf.style.display="none";
 }
 
-// render tarjetas
 function renderTarjetas(){
   tarjetasEl.innerHTML="";
   territorios.forEach(t=>{
@@ -120,19 +128,17 @@ function mostrarManzanas(t){
   }
 }
 
-// navegación
-volverTerr.onclick=()=>{ocultarTodo(); pt.style.display="block";};
-volverManz.onclick=()=>{ocultarTodo(); pm.style.display="block";};
+volverTerr.onclick=()=>{ ocultarTodo(); pt.style.display="block"; };
+volverManz.onclick=()=>{ ocultarTodo(); pm.style.display="block"; };
 irFormulario.onclick=()=>{
-  if(!territorioActual){
-    alert("Debe elegir un territorio.");
-    return;
-  }
+  if(!territorioActual){ alert("Debe elegir un territorio."); return; }
   ocultarTodo();
   pf.style.display="block";
 };
 
-// envío
+// ============================
+// ENVÍO DEL REPORTE
+// ============================
 enviarBtn.onclick=async ()=>{
   if(!territorioActual){
     alert("Error interno: no hay territorio seleccionado.");
@@ -140,55 +146,53 @@ enviarBtn.onclick=async ()=>{
     return;
   }
 
-  const conductor=conductorEl.value.trim();
-  if(!conductor){
-    alert("Ingrese el conductor.");
-    return;
-  }
+  const conductor = conductorEl.value.trim();
+  if(!conductor){ alert("Ingrese el conductor."); return; }
 
   const fechaPredico = fechaPredicoEl.value;
-  if(!fechaPredico){
-    alert("Ingrese la fecha en que predicó.");
-    return;
-  }
+  if(!fechaPredico){ alert("Ingrese la fecha en que predicó."); return; }
 
   const hechas=[], pendientes=[];
   document.querySelectorAll(".manzana").forEach(m=>{
-    const letra=m.innerText.replace("Manzana","").trim().charAt(0);
+    const letra = m.innerText.replace("Manzana","").trim().charAt(0);
     if(m.classList.contains("checked")) hechas.push(letra);
     else pendientes.push(letra);
   });
 
-  const ahora=new Date();
-  const reporte={
-    territorio:territorioActual.numero,
+  const ahora = new Date();
+  const reporte = {
+    territorio: territorioActual.numero,
     conductor,
     fecha_predicacion: fechaPredico,
-    observaciones:obsEl.value.trim(),
+    observaciones: obsEl.value.trim(),
     hechas,
     pendientes,
-    fecha:ahora.toLocaleDateString(),
-    hora:ahora.toLocaleTimeString(),
-    ts:ahora.getTime()
+    fecha: ahora.toLocaleDateString(),
+    hora: ahora.toLocaleTimeString(),
+    ts: ahora.getTime()
   };
 
-  try{
-    await set(push(ref(db,"reportes")),reporte);
-    await set(ref(db,`pendientes/territorio_${reporte.territorio}`),{
-      territorio:reporte.territorio,
+  try {
+    // Guarda el reporte
+    await set(push(ref(db, "reportes")), reporte);
+
+    // Actualiza pendientes
+    await set(ref(db, `pendientes/territorio_${reporte.territorio}`), {
+      territorio: reporte.territorio,
       pendientes,
       conductor,
-      ts:reporte.ts
+      ts: reporte.ts
     });
 
-    window.location.href="reportes.html";
-
-  }catch(err){
+    // Redirige a reportes
+    window.location.href = "reportes.html";
+  } catch (err) {
     console.error(err);
-    alert("Firebase bloquea el guardado. Revisar reglas de la base de datos.");
+    alert("Error al guardar en Firebase. Verifique las reglas de la base.");
   }
 };
 
+// Render inicial
 renderTarjetas();
 </script>
 </body>
