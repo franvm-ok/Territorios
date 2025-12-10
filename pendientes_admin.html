@@ -4,266 +4,113 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pendientes - Admin</title>
-
 <style>
-  :root{
-    --verde:#1a4b27;
-    --bg:#f4f4f4;
-    --card:#ffffff;
-    --muted:#666;
-    --danger:#b91c1c;
-    --ok:#2d8a3e;
-    --focus: #ffdb4d;
-    --font-size:18px;
-  }
+:root{--verde:#1a4b27;--bg:#f4f4f4}
+body{margin:0;font-family:Arial;background:var(--bg)}
+header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
+.container{max-width:900px;margin:auto;padding:15px}
+.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
+.pendiente{border-left:6px solid #c1121f}
+.completado{border-left:6px solid #ccc;opacity:0.7}
+.etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
+.admin input,.admin textarea{width:100%;margin-bottom:6px;padding:8px;border-radius:6px;border:1px solid #ccc}
+button{background:var(--verde);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
+.back{position:fixed;left:15px;bottom:15px}
 
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family: Arial, Helvetica, sans-serif;
-    background:var(--bg);
-    font-size:var(--font-size);
-    color:#222;
-  }
+/* BOTÓN + NUEVA SALIDA */
+.add-btn{
+  position:fixed;
+  top:15px;
+  right:15px;
+  background:#ffb703;
+  color:#000;
+  padding:12px 15px;
+  border-radius:50px;
+  font-size:20px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 3px 7px rgba(0,0,0,.25);
+}
 
-  header{
-    background:var(--verde);
-    color:white;
-    padding:16px 20px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-  }
-  header h1{margin:0;font-size:20px;font-weight:700}
-  /* Botón nueva salida */
-  #btnNueva{
-    background:white;
-    color:var(--verde);
-    border:none;
-    padding:10px 14px;
-    border-radius:8px;
-    font-weight:bold;
-    cursor:pointer;
-    box-shadow:0 2px 6px rgba(0,0,0,0.12);
-    font-size:16px;
-  }
-
-  .wrap{
-    max-width:980px;
-    margin:18px auto;
-    padding:10px;
-  }
-
-  #lista{display:grid;grid-template-columns:1fr;gap:12px;padding:6px}
-
-  .card{
-    background:var(--card);
-    padding:14px;
-    border-radius:12px;
-    box-shadow:0 3px 8px rgba(0,0,0,0.08);
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .card.row{flex-direction:row;align-items:center;justify-content:space-between;gap:6px}
-  .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-
-  .etiqueta{
-    display:inline-block;
-    padding:6px 10px;
-    font-size:14px;
-    border-radius:8px;
-    background:#eee;
-    color:#333;
-    font-weight:700;
-  }
-
-  .pendiente{border-left:6px solid #d9534f}
-  .completado{border-left:6px solid var(--ok)}
-
-  .info b{font-size:16px}
-  .info div{color:var(--muted);font-size:15px}
-
-  .admin{
-    margin-top:6px;
-    border-top:1px dashed #ddd;
-    padding-top:10px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-
-  label{font-weight:700;font-size:15px;color:#333}
-  input[type="text"], input[type="date"], input[type="time"], textarea{
-    padding:10px 12px;
-    border-radius:8px;
-    border:1px solid #bbb;
-    font-size:16px;
-    width:100%;
-    box-sizing:border-box;
-  }
-  textarea{min-height:70px;resize:vertical}
-
-  .row-flex{display:flex;gap:8px}
-  .row-flex > *{flex:1}
-
-  .btn{
-    padding:10px 14px;
-    border-radius:8px;
-    border:none;
-    background:var(--verde);
-    color:white;
-    font-weight:700;
-    font-size:16px;
-    cursor:pointer;
-  }
-  .btn.small{padding:8px 10px;font-size:15px}
-  .btn.warn{background:var(--danger)}
-  .btn.ghost{background:transparent;color:var(--verde);border:1px solid #eee;box-shadow:none}
-  .btn.delete{background:#7a1f1f}
-  .btn.secondary{background:#3b7a55}
-
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-  .muted{color:var(--muted);font-size:14px}
-
-  /* EDIT FORM dentro de cada card (oculto por defecto) */
-  .edit-area{display:none;gap:8px;flex-direction:column;margin-top:6px}
-
-  /* MODAL */
-  #modal{
-    position:fixed;inset:0;
-    display:none;
-    align-items:center;justify-content:center;
-    background:rgba(0,0,0,0.45);
-    padding:20px;
-    z-index:9999;
-  }
-  #modalContent{
-    background:white;
-    width:100%;
-    max-width:520px;
-    border-radius:12px;
-    padding:18px;
-    box-shadow:0 8px 30px rgba(0,0,0,0.25);
-  }
-  #modalContent h3{margin:0 0 10px 0;text-align:center;font-size:20px}
-  #modalContent .field{margin-bottom:8px}
-  #modalContent .actions{display:flex;gap:8px;justify-content:center;margin-top:10px}
-
-  /* RESPONSIVE */
-  @media (max-width:600px){
-    .row-flex{flex-direction:column}
-    header h1{font-size:18px}
-    #btnNueva{padding:8px 10px;font-size:15px}
-  }
-
-  /* FOCUS accessibility */
-  input:focus, textarea:focus, button:focus{
-    outline:3px solid var(--focus);
-    outline-offset:3px;
-  }
-
+/* MODAL */
+.modal-bg{
+  position:fixed;
+  left:0;top:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.modal{
+  background:#fff;
+  padding:20px;
+  width:90%;
+  max-width:400px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,.25);
+}
+.modal input,
+.modal textarea{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+.modal .close{
+  background:#c1121f;color:#fff;
+}
 </style>
 </head>
+
 <body>
 
-<header>
-  <h1>Pendientes - Admin</h1>
-  <button id="btnNueva" aria-label="Nueva salida">+ Nueva salida</button>
-</header>
+<header>🧱 Pendientes - Asignar Salidas</header>
 
-<div class="wrap">
-  <div id="lista">Cargando...</div>
-</div>
+<button class="add-btn" id="addNew">+ Nueva salida</button>
+
+<div class="container" id="lista"></div>
+<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
 <!-- MODAL NUEVA SALIDA -->
-<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <div id="modalContent">
-    <h3 id="modalTitle">Crear nueva salida</h3>
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Nueva salida</h3>
 
-    <div class="field">
-      <label for="n_territorio">Territorio</label>
-      <input id="n_territorio" type="text" placeholder="Ej: 12A (ej. '12A')">
-    </div>
+    <input id="nTerritorio" placeholder="Territorio">
+    <input id="nConductor" placeholder="Conductor">
+    <input type="date" id="nFecha">
+    <input type="time" id="nHora">
 
-    <div class="field">
-      <label for="n_manzanas">Manzanas (separadas por comas)</label>
-      <input id="n_manzanas" type="text" placeholder="Ej: 1, 2, 3">
-      <div class="muted">Escribe las manzanas que faltan o que serán recorridas.</div>
-    </div>
+    <!-- CAMPO UNIFICADO -->
+    <input id="nCalleInter" placeholder="Calle / Intersección">
 
-    <div class="field">
-      <label for="n_conductor">Conductor</label>
-      <input id="n_conductor" type="text" placeholder="Nombre del conductor">
-    </div>
+    <textarea id="nObs" placeholder="Observación"></textarea>
 
-    <div class="row-flex">
-      <div>
-        <label for="n_fecha">Fecha</label>
-        <input id="n_fecha" type="date">
-      </div>
-      <div>
-        <label for="n_hora">Hora</label>
-        <input id="n_hora" type="time">
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="n_calle">Calle</label>
-      <input id="n_calle" type="text" placeholder="Calle principal">
-    </div>
-
-    <div class="field">
-      <label for="n_inter">Intersección</label>
-      <input id="n_inter" type="text" placeholder="Calle de intersección">
-    </div>
-
-    <div class="field">
-      <label for="n_obs">Observaciones</label>
-      <textarea id="n_obs" placeholder="Notas, indicaciones, etc."></textarea>
-    </div>
-
-    <div class="actions">
-      <button id="guardarNueva" class="btn">Crear salida</button>
-      <button id="cerrarModal" class="btn small btn.ghost" style="background:#eee;color:#333">Cancelar</button>
-    </div>
+    <button id="crearNueva">Crear salida</button>
+    <button class="close" id="cerrarModal">Cancelar</button>
   </div>
 </div>
 
 <script type="module">
-import { db, ref as dbRef, onValue, push, remove, update } from "./firebase.js";
+import { db, ref as dbRef, onValue, push, remove } from "./firebase.js";
 
-/* ============================
-   ELEMENTOS
-============================ */
 const lista = document.getElementById("lista");
 const pendientesRef = dbRef(db,"pendientes");
 const salidasRef = dbRef(db,"salidas_asignadas");
 
+/* ============================
+   VALIDAR ADMIN
+============================ */
 const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 const rol = (sesion.rol || "invitado").toLowerCase();
 if (rol !== "admin") location.href="index.html";
 
-/* MODAL */
-const modal = document.getElementById("modal");
-const btnNueva = document.getElementById("btnNueva");
-const cerrarModal = document.getElementById("cerrarModal");
-const guardarNueva = document.getElementById("guardarNueva");
-
-/* INPUTS MODAL */
-const n_territorio = document.getElementById("n_territorio");
-const n_manzanas = document.getElementById("n_manzanas");
-const n_conductor = document.getElementById("n_conductor");
-const n_fecha = document.getElementById("n_fecha");
-const n_hora = document.getElementById("n_hora");
-const n_calle = document.getElementById("n_calle");
-const n_inter = document.getElementById("n_inter");
-const n_obs = document.getElementById("n_obs");
+let pendientes = [];
 
 /* ============================
-   UTILIDADES
+   FECHA Y HORA DEFAULT
 ============================ */
 function hoy(){
   const d=new Date();
@@ -275,272 +122,145 @@ function horaAhora(){
   d.setMilliseconds(0);
   return d.toTimeString().slice(0,5);
 }
-function limpiaModal(){
-  n_territorio.value = "";
-  n_manzanas.value = "";
-  n_conductor.value = "";
-  n_fecha.value = hoy();
-  n_hora.value = horaAhora();
-  n_calle.value = "";
-  n_inter.value = "";
-  n_obs.value = "";
-}
-
-/* abrir modal */
-btnNueva.onclick = () => {
-  limpiaModal();
-  modal.style.display = "flex";
-  // foco en primer campo para accesibilidad
-  setTimeout(()=>n_territorio.focus(),100);
-};
-cerrarModal.onclick = ()=> modal.style.display = "none";
-
-/* ESC para cerrar modal */
-document.addEventListener("keydown", (e)=>{
-  if(e.key === "Escape") modal.style.display = "none";
-});
 
 /* ============================
-   CREAR NUEVA SALIDA
+   RENDER
 ============================ */
-guardarNueva.onclick = async ()=>{
-  const territorio = n_territorio.value.trim();
-  const manzanas = n_manzanas.value.trim();
-  const conductor = n_conductor.value.trim();
-  const fecha = n_fecha.value;
-  const hora = n_hora.value;
-  const calle = n_calle.value.trim();
-  const inter = n_inter.value.trim();
-  const obs = n_obs.value.trim();
-
-  if(!territorio || !manzanas || !conductor || !fecha || !hora || !calle || !inter){
-    alert("Completa todos los campos obligatorios.");
-    return;
-  }
-
-  // push a salidas_asignadas
-  await push(salidasRef,{
-    territorio,
-    pendientes: manzanas.split(",").map(x=>x.trim()).filter(Boolean),
-    conductor,
-    fecha,
-    hora,
-    calle,
-    interseccion: inter,
-    observaciones: obs,
-    creado: Date.now()
-  });
-
-  alert("Salida creada correctamente.");
-  modal.style.display = "none";
-  location.replace("proximas.html");
-};
-
-/* ============================
-   RENDER PENDIENTES (con editar/eliminar)
-============================ */
-let pendientes = [];
-
 function render(){
-  lista.innerHTML = "";
-
-  if(!pendientes || pendientes.length === 0){
-    lista.innerHTML = `<div class="card"><div class="info"><b>No hay pendientes</b><div class="muted">Cuando aparezcan pendientes se verán acá.</div></div></div>`;
+  lista.innerHTML="";
+  if(pendientes.length===0){
+    lista.innerHTML="<p align='center'>No hay pendientes</p>";
     return;
   }
 
   pendientes.forEach(p=>{
     const tiene = Array.isArray(p.pendientes) && p.pendientes.length>0;
-    const card = document.createElement("div");
+
+    const card=document.createElement("div");
     card.className = "card " + (tiene ? "pendiente" : "completado");
 
-    card.innerHTML = `
-      <div class="row-flex" style="align-items:center;justify-content:space-between">
-        <div style="display:flex;gap:10px;align-items:center;flex:1;min-width:0">
-          <span class="etiqueta">${tiene ? "PENDIENTE" : "COMPLETADO"}</span>
-          <div class="info" style="min-width:0">
-            <div><b>Territorio ${p.territorio}</b></div>
-            <div class="muted">🧱 Faltan: <b>${(p.pendientes||[]).join(", ") || "Ninguna"}</b></div>
-            <div class="muted">👤 Último conductor: ${p.conductor || "—"}</div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn small assign" data-id="${p.id}">✅ Asignar</button>
-          <button class="btn small secondary edit" data-id="${p.id}">✎ Editar</button>
-          <button class="btn small delete" data-id="${p.id}">🗑️ Eliminar</button>
-        </div>
-      </div>
-
-      <div class="edit-area" id="edit-${p.id}">
-        <div class="field">
-          <label for="e_territorio_${p.id}">Territorio</label>
-          <input id="e_territorio_${p.id}" type="text" value="${escapeHtml(p.territorio || "")}">
-        </div>
-
-        <div class="field">
-          <label for="e_manzanas_${p.id}">Manzanas</label>
-          <input id="e_manzanas_${p.id}" type="text" value="${escapeHtml((p.pendientes||[]).join(", "))}">
-        </div>
-
-        <div class="field">
-          <label for="e_conductor_${p.id}">Último conductor</label>
-          <input id="e_conductor_${p.id}" type="text" value="${escapeHtml(p.conductor || "")}">
-        </div>
-
-        <div class="field">
-          <label for="e_obs_${p.id}">Observaciones</label>
-          <textarea id="e_obs_${p.id}">${escapeHtml(p.observaciones || "")}</textarea>
-        </div>
-
-        <div class="controls">
-          <button class="btn small save-edit" data-id="${p.id}">💾 Guardar cambios</button>
-          <button class="btn small ghost cancel-edit" data-id="${p.id}" style="background:#eee;color:#333">Cancelar</button>
-          <button class="btn small warn push-to-salida" data-id="${p.id}">➡ Asignar como salida</button>
-        </div>
-      </div>
+    card.innerHTML=`
+      <span class="etiqueta">${tiene?"PENDIENTE":"COMPLETADO"}</span>
+      <b>Territorio ${p.territorio}</b>
+      <div>🧱 Faltan: <b>${(p.pendientes||[]).join(", ") || "Ninguna"}</b></div>
+      <div>👤 Último conductor: ${p.conductor||"—"}</div>
     `;
+
+    if(tiene){
+      const admin=document.createElement("div");
+      admin.className="admin";
+
+      admin.innerHTML=`
+        <input id="c${p.id}" placeholder="Conductor" value="${p.conductor||""}">
+        <input type="date" id="f${p.id}" value="${hoy()}">
+        <input type="time" id="h${p.id}" value="${horaAhora()}">
+
+        <!-- UNIFICADO -->
+        <input id="calles${p.id}" placeholder="Calle / Intersección">
+
+        <textarea id="o${p.id}" placeholder="Observación"></textarea>
+        <button data-id="${p.id}">✅ Asignar salida</button>
+      `;
+      card.appendChild(admin);
+    }
 
     lista.appendChild(card);
   });
 
-  // EVENTOS: Asignar (botón arriba)
-  document.querySelectorAll(".assign").forEach(btn=>{
-    btn.onclick = (e)=>{
-      const id = btn.dataset.id;
-      toggleEdit(id, true); // abrir edit mode para asignar
-      // focus conductor input
-      const fld = document.getElementById(`e_conductor_${id}`);
-      if(fld) fld.focus();
-    };
-  });
+  /* ============================
+     EVENTO ASIGNAR
+  ============================ */
+  document.querySelectorAll("button[data-id]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id=btn.dataset.id;
+      const p=pendientes.find(x=>x.id===id);
 
-  // EVENTOS: Editar (abre/oculta el panel de edición)
-  document.querySelectorAll(".edit").forEach(btn=>{
-    btn.onclick = (e)=>{
-      const id = btn.dataset.id;
-      toggleEdit(id);
-    };
-  });
+      const c=document.getElementById("c"+id).value.trim();
+      const f=document.getElementById("f"+id).value;
+      const h=document.getElementById("h"+id).value;
+      const calleInter=document.getElementById("calles"+id).value.trim();
+      const o=document.getElementById("o"+id).value.trim();
 
-  // EVENTOS: Cancelar edición
-  document.querySelectorAll(".cancel-edit").forEach(btn=>{
-    btn.onclick = (e)=>{
-      const id = btn.dataset.id;
-      toggleEdit(id,false);
-    };
-  });
-
-  // GUARDAR EDICIÓN del pendiente (actualiza pendiente en Firebase)
-  document.querySelectorAll(".save-edit").forEach(btn=>{
-    btn.onclick = async (e)=>{
-      const id = btn.dataset.id;
-      const territorio = document.getElementById(`e_territorio_${id}`).value.trim();
-      const manzanas = document.getElementById(`e_manzanas_${id}`).value.trim();
-      const conductor = document.getElementById(`e_conductor_${id}`).value.trim();
-      const obs = document.getElementById(`e_obs_${id}`).value.trim();
-
-      if(!territorio){
-        alert("Territorio no puede quedar vacío.");
+      if(!c||!f||!h||!calleInter){
+        alert("Completa todos los campos.");
         return;
       }
 
-      // Actualizo pendiente
-      await update(dbRef(db, `pendientes/${id}`), {
-        territorio,
-        pendientes: manzanas.split(",").map(x=>x.trim()).filter(Boolean),
-        conductor,
-        observaciones: obs || ""
+      await push(salidasRef,{
+        territorio:p.territorio,
+        pendientes:Array.isArray(p.pendientes)?p.pendientes:[],
+        conductor:c,
+        fecha:f,
+        hora:h,
+        calle_inter:calleInter,
+        observaciones:o,
+        creado:Date.now()
       });
 
-      alert("Pendiente actualizado.");
-      toggleEdit(id,false);
-    };
-  });
-
-  // Eliminar pendiente
-  document.querySelectorAll(".delete").forEach(btn=>{
-    btn.onclick = async (e)=>{
-      const id = btn.dataset.id;
-      if(!confirm("¿Eliminar este pendiente? Esta acción no se puede deshacer.")) return;
-      await remove(dbRef(db, `pendientes/${id}`));
-      alert("Pendiente eliminado.");
-    };
-  });
-
-  // Asignar como salida (desde el panel de edición)
-  document.querySelectorAll(".push-to-salida").forEach(btn=>{
-    btn.onclick = async (e)=>{
-      const id = btn.dataset.id;
-      const territorio = document.getElementById(`e_territorio_${id}`).value.trim();
-      const manzanas = document.getElementById(`e_manzanas_${id}`).value.trim();
-      const conductor = document.getElementById(`e_conductor_${id}`).value.trim();
-      const obs = document.getElementById(`e_obs_${id}`).value.trim();
-
-      // Pedimos fecha y hora con prompt simple y grande (para evitar romper diseño).
-      let fecha = prompt("Fecha de la salida (AAAA-MM-DD)", hoy());
-      if(!fecha) return;
-      let hora = prompt("Hora (HH:MM)", horaAhora());
-      if(!hora) return;
-      // Validación mínima
-      if(!territorio || !manzanas || !conductor || !fecha || !hora){
-        alert("Completa territorio, manzanas, conductor, fecha y hora.");
-        return;
-      }
-
-      await push(salidasRef, {
-        territorio,
-        pendientes: manzanas.split(",").map(x=>x.trim()).filter(Boolean),
-        conductor,
-        fecha,
-        hora,
-        calle: "", // opcional, admin puede editar luego en próximas
-        interseccion: "",
-        observaciones: obs || "",
-        creado: Date.now()
-      });
-
-      // elimino pendiente
-      await remove(dbRef(db, `pendientes/${id}`));
-      alert("Pendiente convertido a salida y eliminado de la lista.");
-      // redirigir a próximas
+      await remove(dbRef(db,"pendientes/"+id));
       location.replace("proximas.html");
     };
   });
-
 }
 
-/* toggleEdit muestra/oculta el área de edición por id */
-function toggleEdit(id, forceOpen = null){
-  const area = document.getElementById(`edit-${id}`);
-  if(!area) return;
-  if(forceOpen === true) area.style.display = "flex";
-  else if(forceOpen === false) area.style.display = "none";
-  else area.style.display = (area.style.display === "flex") ? "none" : "flex";
-}
-
-/* escape para valor dentro de value/textarea */
-function escapeHtml(str){
-  if(!str) return "";
-  return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-}
-
-/* ESCUCHAR FIREBASE */
-onValue(pendientesRef, s=>{
-  pendientes = [];
+/* ============================
+   ESCUCHAR FIREBASE
+============================ */
+onValue(pendientesRef,s=>{
+  pendientes=[];
   s.forEach(x=>{
     let o = x.val();
     o.id = x.key;
     if(!Array.isArray(o.pendientes)) o.pendientes = [];
     pendientes.push(o);
   });
-
-  // opcional: ordenar por territorio
-  pendientes.sort((a,b)=> (a.territorio||"").toString().localeCompare((b.territorio||"").toString(), undefined, {numeric:true}));
-
   render();
 });
 
+/* ============================
+   BOTÓN NUEVA SALIDA
+============================ */
+document.getElementById("addNew").onclick = ()=>{
+  document.getElementById("modalBg").style.display = "flex";
+  document.getElementById("nFecha").value = hoy();
+  document.getElementById("nHora").value = horaAhora();
+};
+
+document.getElementById("cerrarModal").onclick = ()=>{
+  document.getElementById("modalBg").style.display="none";
+};
+
+/* ============================
+   CREAR NUEVA SALIDA
+============================ */
+document.getElementById("crearNueva").onclick = async ()=>{
+
+  const territorio = document.getElementById("nTerritorio").value.trim();
+  const conductor  = document.getElementById("nConductor").value.trim();
+  const fecha      = document.getElementById("nFecha").value;
+  const hora       = document.getElementById("nHora").value;
+  const calleInter = document.getElementById("nCalleInter").value.trim();
+  const obs        = document.getElementById("nObs").value.trim();
+
+  if(!territorio || !conductor || !fecha || !hora || !calleInter){
+    alert("Completa todos los campos.");
+    return;
+  }
+
+  await push(salidasRef,{
+    territorio,
+    pendientes:[],
+    conductor,
+    fecha,
+    hora,
+    calle_inter:calleInter,
+    observaciones:obs,
+    creado:Date.now()
+  });
+
+  document.getElementById("modalBg").style.display="none";
+  location.replace("proximas.html");
+};
 </script>
 
 </body>
