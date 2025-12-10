@@ -7,51 +7,66 @@
 
 <style>
     body{
-        margin:0;background:#f3f3f3;font-family:Arial, sans-serif;
+        margin:0;background:#f0f0f5;font-family:Arial, sans-serif;
     }
     header{
-        background:#1a4b27;color:white;padding:18px;font-size:20px;
+        background:#2e7d32;color:white;padding:18px;font-size:22px;
         text-align:center;font-weight:bold;
     }
     #lista{
-        padding:12px;
+        padding:14px;
         display:flex;
         flex-direction:column;
-        gap:12px;
+        gap:14px;
     }
 
-    /* TARJETA ULTRA COMPACTA */
+    /* TARJETA COMPACTA */
     .card{
-        background:white;
-        border-radius:12px;
-        padding:12px 14px;
-        box-shadow:0 3px 6px rgba(0,0,0,0.12);
-        font-size:15px;
-        line-height:1.3;
+        background:#ffffff;
+        border-radius:14px;
+        padding:14px 16px;
+        box-shadow:0 3px 8px rgba(0,0,0,0.15);
+        font-size:16px;
+        line-height:1.4;
+        border-left:6px solid #2e7d32;
     }
 
     .fecha-line{
-        font-size:16px;
+        font-size:18px;
         font-weight:bold;
-        color:#1a4b27;
-        margin-bottom:8px;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
+        color:#1b5e20;
+        margin-bottom:10px;
+        text-align:center;
     }
 
-    .section{
-        margin-bottom:4px;
+    .row{
+        display:flex;
+        justify-content:space-between;
+        margin-bottom:6px;
+    }
+
+    .row div{
+        flex:1;
     }
 
     .label{
-        font-size:13px;
+        font-size:14px;
         font-weight:bold;
-        color:#444;
+        color:#333;
     }
 
     .value{
+        font-size:16px;
+        color:#111;
+    }
+
+    .observaciones{
+        margin-top:8px;
         font-size:15px;
+        color:#222;
+        background:#f4f4f8;
+        padding:6px 10px;
+        border-radius:8px;
     }
 
     .more-btn{
@@ -68,7 +83,7 @@
         gap:4px;
     }
     .menu button{
-        background:#eee;border:none;padding:8px;
+        background:#e0e0e0;border:none;padding:8px;
         border-radius:6px;font-size:14px;text-align:left;cursor:pointer;
     }
 
@@ -97,7 +112,7 @@
         flex:1;padding:12px;font-size:16px;border:none;border-radius:8px;
         cursor:pointer;font-weight:bold;
     }
-    .save{ background:#1a4b27;color:white; }
+    .save{ background:#2e7d32;color:white; }
     .cancel{ background:#ccc; }
 </style>
 </head>
@@ -132,7 +147,6 @@
 <script type="module">
 import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
 
-/* ELEMENTOS */
 const lista = document.getElementById("lista");
 const salidasRef = dbRef(db, "salidas_asignadas");
 const pendientesRef = dbRef(db, "pendientes");
@@ -141,7 +155,6 @@ const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 let rol = (sesion.rol || "invitado").toLowerCase();
 if (rol === "invitado") rol = "conductor";
 
-/* MODAL ELEMENTS */
 const modal = document.getElementById("modal");
 const e_territorio = document.getElementById("e_territorio");
 const e_manzanas = document.getElementById("e_manzanas");
@@ -159,7 +172,7 @@ let salidas = [];
 let activeMenuId = null;
 let editingId = null;
 
-/* FORMATEO */
+/* FORMATEO FECHA */
 function ddmmaa(fechaISO){
     if(!fechaISO) return "";
     const f = new Date(fechaISO);
@@ -172,7 +185,7 @@ function mesCorto(m){
     return ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"][Number(m)-1];
 }
 
-/* FILTRO AUTOMÁTICO 24H */
+/* FILTRAR SALIDAS PASADAS (>24H) */
 function esValida(fecha, hora){
     if(!fecha || !hora) return true;
     const dt = new Date(`${fecha}T${hora}:00`);
@@ -182,7 +195,6 @@ function esValida(fecha, hora){
 /* RENDER */
 function render(){
     lista.innerHTML = "";
-
     const futuras = salidas.filter(s => esValida(s.fecha, s.hora));
 
     if(futuras.length === 0){
@@ -191,35 +203,32 @@ function render(){
     }
 
     futuras.forEach(s=>{
-
         const f = ddmmaa(s.fecha || "");
-
         const card = document.createElement("div");
         card.className = "card";
 
         card.innerHTML = `
-            <div class="fecha-line">
-                <span>🗓️ ${f.texto} ${s.hora||""} h</span>
-                ${rol==="admin" ? `<button class="more-btn" data-id="${s.id}">⋯</button>` : ""}
+            <div class="fecha-line">🗓️ ${f.texto} ${s.hora||""} h</div>
+
+            <div class="row">
+                <div><span class="label">📍 Dirección</span>
+                     <div class="value">${s.calle||""} ${s.interseccion? "— " + s.interseccion : ""}</div>
+                </div>
+                <div><span class="label">🚗 Conductor</span>
+                     <div class="value">${s.conductor||"—"}</div>
+                </div>
             </div>
 
-            <div class="section"><span class="label">📍 Dirección</span>
-                <div class="value">${s.calle||""} ${s.interseccion? "— " + s.interseccion : ""}</div>
+            <div class="row">
+                <div><span class="label">🗺️ Territorio</span>
+                     <div class="value">${s.territorio||"—"}</div>
+                </div>
+                <div><span class="label">🔲 Manzanas</span>
+                     <div class="value">${(s.pendientes||[]).join(", ")}</div>
+                </div>
             </div>
 
-            <div class="section"><span class="label">🚗 Conductor</span>
-                <div class="value">${s.conductor||"—"}</div>
-            </div>
-
-            <div class="section"><span class="label">🗺️ Territorio</span>
-                <div class="value">${s.territorio||"—"}</div>
-            </div>
-
-            <div class="section"><span class="label">🔲 Manzanas</span>
-                <div class="value">${(s.pendientes||[]).join(", ")}</div>
-            </div>
-
-            <div class="section"><span class="label">📝 Observaciones</span>
+            <div class="observaciones"><span class="label">📝 Observaciones</span>
                 <div class="value">${s.observaciones||"—"}</div>
             </div>
 
@@ -231,7 +240,6 @@ function render(){
                 </div>
             ` : ""}
         `;
-
         lista.appendChild(card);
     });
 
@@ -242,13 +250,11 @@ function render(){
                 toggleMenu(btn.dataset.id);
             };
         });
-
         document.querySelectorAll(".menu button").forEach(b=>{
             b.onclick = ()=>{
                 const id = b.dataset.id;
                 const action = b.dataset.action;
                 closeMenu();
-
                 if(action==="edit") openEditModal(id);
                 if(action==="undo") undoToPendientes(id);
                 if(action==="delete") deleteSalida(id);
@@ -275,9 +281,7 @@ function closeMenu(){
 function openEditModal(id){
     const s = salidas.find(x=>x.id===id);
     if(!s) return;
-
     editingId = id;
-
     e_fecha.value = s.fecha || "";
     e_hora.value = s.hora || "";
     e_calle.value = s.calle || "";
@@ -286,7 +290,6 @@ function openEditModal(id){
     e_manzanas.value = (s.pendientes||[]).join(", ");
     e_conductor.value = s.conductor || "";
     e_obs.value = s.observaciones || "";
-
     modal.style.display = "flex";
 }
 
@@ -297,11 +300,9 @@ cancelEdit.onclick = ()=>{
 
 saveEdit.onclick = async ()=>{
     if(!editingId) return;
-
     const manArr = e_manzanas.value.trim()
                    ? e_manzanas.value.split(",").map(x=>x.trim()).filter(x=>x)
                    : [];
-
     await update(dbRef(db,"salidas_asignadas/"+editingId),{
         fecha: e_fecha.value,
         hora: e_hora.value,
@@ -312,7 +313,6 @@ saveEdit.onclick = async ()=>{
         conductor: e_conductor.value.trim(),
         observaciones: e_obs.value.trim()
     });
-
     modal.style.display="none";
     editingId=null;
 };
@@ -321,7 +321,6 @@ saveEdit.onclick = async ()=>{
 async function undoToPendientes(id){
     const s = salidas.find(x=>x.id===id);
     if(!s) return;
-
     await push(pendientesRef,{
         territorio:s.territorio,
         pendientes:s.pendientes||[],
@@ -329,7 +328,6 @@ async function undoToPendientes(id){
         interseccion:s.interseccion||"",
         observaciones:s.observaciones||""
     });
-
     await remove(dbRef(db,"salidas_asignadas/"+id));
 }
 
@@ -340,17 +338,15 @@ async function deleteSalida(id){
     }
 }
 
-/* REALTIME */
+/* REALTIME LOAD */
 onValue(salidasRef, snap=>{
     const data = snap.val() || {};
     salidas = Object.keys(data).map(id=>({id,...data[id]}));
-
     salidas.sort((a,b)=>{
         const fa = (a.fecha||"") + " " + (a.hora||"");
         const fb = (b.fecha||"") + " " + (b.hora||"");
         return fa.localeCompare(fb);
     });
-
     render();
 });
 </script>
