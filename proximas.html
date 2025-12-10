@@ -7,67 +7,80 @@
 
 <style>
     body{
-        margin:0;background:#f3f3f3;font-family:Arial, sans-serif;
+        margin:0;background:#eef2f1;font-family:Arial, sans-serif;
     }
     header{
-        background:#1a4b27;color:white;padding:18px;font-size:20px;
+        background:#1a4b27;color:white;padding:18px;font-size:22px;
         text-align:center;font-weight:bold;
     }
+
     #lista{
-        padding:15px;
+        padding:18px;
         display:flex;
         flex-direction:column;
-        gap:18px;
+        gap:22px;
     }
+
+    /* TARJETA ESTILO GOOGLE CALENDAR MEJORADA PARA PERSONAS MAYORES */
     .card{
         background:white;
-        border-radius:15px;
-        padding:15px;
-        box-shadow:0 4px 10px rgba(0,0,0,0.12);
+        padding:20px;
+        border-radius:20px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.18);
+        font-size:18px;
+        line-height:1.45;
     }
-    .top-fecha{
+
+    .encabezado{
         font-size:20px;
         font-weight:bold;
         color:#1a4b27;
-        margin-bottom:10px;
         display:flex;
         justify-content:space-between;
         align-items:center;
+        margin-bottom:10px;
+        white-space:nowrap;
     }
-    .direccion{
-        font-size:16px;
-        margin-bottom:12px;
+
+    .separador{
+        width:100%;
+        height:2px;
+        background:#d0d0d0;
+        margin:12px 0;
     }
-    .row{
-        display:flex;
-        gap:12px;
-        margin-bottom:5px;
-    }
-    .row div{ flex:1; }
+
     .label{
-        font-size:12px;color:#777;
+        font-weight:bold;
+        margin-bottom:2px;
+        font-size:17px;
     }
     .value{
-        font-size:17px;font-weight:bold;
+        padding-left:8px;
+        font-size:19px;
     }
+
+    .more-btn{
+        border:none;background:none;font-size:26px;
+        cursor:pointer;padding:4px;
+        color:#555;
+    }
+
     .menu{
         display:none;
         flex-direction:column;
-        margin-top:12px;
+        margin-top:14px;
         border-top:1px solid #ddd;
-        padding-top:10px;
-        gap:6px;
+        padding-top:12px;
+        gap:8px;
     }
     .menu button{
-        background:#eee;border:none;padding:10px;
-        border-radius:8px;font-size:15px;text-align:left;cursor:pointer;
+        background:#f3f3f3;border:none;padding:12px;
+        border-radius:10px;font-size:16px;text-align:left;
+        cursor:pointer;
     }
-    .more-btn{
-        border:none;background:none;font-size:24px;
-        cursor:pointer;padding:4px;
-    }
+
     .empty{
-        padding:30px;text-align:center;color:#555;font-size:18px;
+        padding:30px;text-align:center;color:#555;font-size:20px;
     }
 
     /* MODAL */
@@ -126,9 +139,7 @@
 <script type="module">
 import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
 
-/* -------------------------
-   ELEMENTOS
---------------------------*/
+/* ELEMENTOS */
 const lista = document.getElementById("lista");
 const salidasRef = dbRef(db, "salidas_asignadas");
 const pendientesRef = dbRef(db, "pendientes");
@@ -137,9 +148,7 @@ const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 let rol = (sesion.rol || "invitado").toLowerCase();
 if (rol === "invitado") rol = "conductor";
 
-/* -------------------------
-   MODAL ELEMENTS
---------------------------*/
+/* MODAL */
 const modal = document.getElementById("modal");
 const e_territorio = document.getElementById("e_territorio");
 const e_manzanas = document.getElementById("e_manzanas");
@@ -153,81 +162,84 @@ const e_obs = document.getElementById("e_obs");
 const saveEdit = document.getElementById("saveEdit");
 const cancelEdit = document.getElementById("cancelEdit");
 
-/* -------------------------
-   VARIABLES
---------------------------*/
 let salidas = [];
 let activeMenuId = null;
 let editingId = null;
 
-/* -------------------------
-   UTILS
---------------------------*/
-function ddmmaa(fechaISO){
-    if(!fechaISO) return "";
-    const [y,m,d] = fechaISO.split("-");
-    return `${d}/${m}/${String(y).slice(2)}`;
+/* UTIL: DIA DE LA SEMANA */
+const dias = ["DOMINGO","LUNES","MARTES","MIÉRCOLES","JUEVES","VIERNES","SÁBADO"];
+function formatearEncabezado(f,h){
+    if(!f) return "";
+    const d = new Date(f+"T"+(h||"00:00"));
+    let dia = dias[d.getDay()];
+    let dd = String(d.getDate()).padStart(2,"0");
+    let mes = d.toLocaleString("es-ES",{month:"short"}).toUpperCase();
+    mes = mes.replace(".","");
+    let hora = h ? h.substring(0,5) : "";
+    return `🗓️ ${dia} • ${dd} ${mes} • ${hora} h`;
 }
 
-/* -------------------------
-   RENDER
---------------------------*/
+/* UTIL: FILTRO 24 HORAS */
+function esValida(fecha, hora){
+    if(!fecha) return false;
+    const now = Date.now();
+    const date = new Date(fecha+"T"+(hora||"00:00")).getTime();
+    return now <= date + 24*60*60*1000;
+}
+
+/* RENDER */
 function render(){
     lista.innerHTML = "";
 
-    if(salidas.length === 0){
-        lista.innerHTML = `<div class="empty">No hay salidas asignadas</div>`;
+    const visibles = salidas.filter(s => esValida(s.fecha, s.hora));
+
+    if(visibles.length === 0){
+        lista.innerHTML = `<div class="empty">No hay salidas próximas</div>`;
         return;
     }
 
-    salidas.forEach(sal=>{
+    visibles.forEach(s=>{
         const card = document.createElement("div");
         card.className = "card";
 
         card.innerHTML = `
-            <div class="top-fecha">
-                <span>📅 ${ddmmaa(sal.fecha||"")}</span>
-                ${rol==="admin" ? `<button class="more-btn" data-id="${sal.id}">⋯</button>` : ""}
+            <div class="encabezado">
+                <span>${formatearEncabezado(s.fecha, s.hora)}</span>
+                ${rol==="admin" ? `<button class="more-btn" data-id="${s.id}">⋯</button>` : ""}
             </div>
 
-            <div class="direccion">
-                📍 ${sal.calle||""} ${sal.interseccion? "y "+sal.interseccion:""}
-            </div>
+            <div class="separador"></div>
 
-            <div class="row">
-                <div>
-                    <div class="label">Hora</div>
-                    <div class="value">${sal.hora||"—"}</div>
-                </div>
-                <div>
-                    <div class="label">Conductor</div>
-                    <div class="value">${sal.conductor||"—"}</div>
-                </div>
-            </div>
+            <div class="item">
+                <div class="label">📍 Dirección</div>
+                <div class="value">${s.calle||""} ${s.interseccion ? "— Esquina "+s.interseccion : ""}</div>
+            </div><br>
 
-            <div class="row">
-                <div>
-                    <div class="label">Territorio</div>
-                    <div class="value">${sal.territorio||"—"}</div>
-                </div>
-                <div>
-                    <div class="label">Manzanas</div>
-                    <div class="value">${(sal.pendientes||[]).join(", ")}</div>
-                </div>
-            </div>
+            <div class="item">
+                <div class="label">🚗 Conductor</div>
+                <div class="value">${s.conductor||"—"}</div>
+            </div><br>
 
-            <div class="row">
-                <div>
-                    <div class="label">Observación</div>
-                    <div class="value">${sal.observaciones||"—"}</div>
-                </div>
+            <div class="item">
+                <div class="label">🗺️ Territorio</div>
+                <div class="value">${s.territorio||"—"}</div>
+            </div><br>
+
+            <div class="item">
+                <div class="label">🔲 Manzanas</div>
+                <div class="value">${(s.pendientes||[]).join(", ")}</div>
+            </div><br>
+
+            <div class="item">
+                <div class="label">📝 Observaciones</div>
+                <div class="value">${s.observaciones||"—"}</div>
             </div>
 
             ${rol==="admin" ? `
-                <div class="menu" id="menu-${sal.id}">
-                    <button data-action="edit" data-id="${sal.id}">✎ Editar</button>
-                    <button data-action="undo" data-id="${sal.id}">⮌ Deshacer</button>
-                    <button data-action="delete" data-id="${sal.id}" style="color:#b91c1c">🗑️ Eliminar</button>
+                <div class="menu" id="menu-${s.id}">
+                    <button data-action="edit" data-id="${s.id}">✎ Editar</button>
+                    <button data-action="undo" data-id="${s.id}">⮌ Deshacer</button>
+                    <button data-action="delete" data-id="${s.id}" style="color:#b91c1c">🗑️ Eliminar</button>
                 </div>
             ` : ""}
         `;
@@ -257,9 +269,7 @@ function render(){
     }
 }
 
-/* -------------------------
-   MENU
---------------------------*/
+/* MENU */
 function toggleMenu(id){
     closeMenu();
     const m = document.getElementById("menu-"+id);
@@ -273,9 +283,7 @@ function closeMenu(){
     }
 }
 
-/* -------------------------
-   EDITAR
---------------------------*/
+/* EDITAR */
 function openEditModal(id){
     const s = salidas.find(x=>x.id===id);
     if(!s) return;
@@ -321,9 +329,7 @@ saveEdit.onclick = async ()=>{
     editingId=null;
 };
 
-/* -------------------------
-   DESHACER
---------------------------*/
+/* DESHACER */
 async function undoToPendientes(id){
     const s = salidas.find(x=>x.id===id);
     if(!s) return;
@@ -339,18 +345,14 @@ async function undoToPendientes(id){
     await remove(dbRef(db,"salidas_asignadas/"+id));
 }
 
-/* -------------------------
-   ELIMINAR
---------------------------*/
+/* ELIMINAR */
 async function deleteSalida(id){
     if(confirm("¿Eliminar esta salida?")){
         await remove(dbRef(db,"salidas_asignadas/"+id));
     }
 }
 
-/* -------------------------
-   REALTIME LOAD
---------------------------*/
+/* LOAD REALTIME */
 onValue(salidasRef, snap=>{
     const data = snap.val() || {};
     salidas = Object.keys(data).map(id=>({id,...data[id]}));
