@@ -20,8 +20,8 @@
         gap:14px;
     }
 
-    /* TARJETA COMPACTA */
     .card{
+        position:relative;
         background:#ffffff;
         border-radius:14px;
         padding:14px 16px;
@@ -29,6 +29,43 @@
         font-size:16px;
         line-height:1.4;
         border-left:6px solid #2e7d32;
+    }
+
+    .more-btn{
+        position:absolute;
+        top:10px;
+        right:12px;
+        border:none;
+        background:none;
+        font-size:22px;
+        cursor:pointer;
+        color:#333;
+    }
+
+    .menu{
+        display:none;
+        position:absolute;
+        top:42px;
+        right:12px;
+        background:#fff;
+        box-shadow:0 4px 12px rgba(0,0,0,0.2);
+        border-radius:8px;
+        padding:6px 0;
+        width:140px;
+        z-index:50;
+        flex-direction:column;
+    }
+    .menu button{
+        width:100%;
+        padding:10px 14px;
+        background:none;
+        border:none;
+        text-align:left;
+        cursor:pointer;
+        font-size:15px;
+    }
+    .menu button:hover{
+        background:#f0f0f0;
     }
 
     .fecha-line{
@@ -69,24 +106,6 @@
         border-radius:8px;
     }
 
-    .more-btn{
-        border:none;background:none;font-size:20px;
-        cursor:pointer;padding:4px;color:#333;
-    }
-
-    .menu{
-        display:none;
-        flex-direction:column;
-        margin-top:8px;
-        border-top:1px solid #ddd;
-        padding-top:6px;
-        gap:4px;
-    }
-    .menu button{
-        background:#e0e0e0;border:none;padding:8px;
-        border-radius:6px;font-size:14px;text-align:left;cursor:pointer;
-    }
-
     .empty{
         padding:28px;text-align:center;color:#555;font-size:17px;
     }
@@ -95,7 +114,7 @@
     #modal{
         display:none;position:fixed;top:0;left:0;width:100%;height:100%;
         background:rgba(0,0,0,0.55);justify-content:center;align-items:center;
-        padding:20px;z-index:20;
+        padding:20px;z-index:100;
     }
     .modal-box{
         background:white;padding:20px;border-radius:12px;width:100%;
@@ -172,7 +191,7 @@ let salidas = [];
 let activeMenuId = null;
 let editingId = null;
 
-/* FORMATEO FECHA */
+/* FECHA */
 function ddmmaa(fechaISO){
     if(!fechaISO) return "";
     const f = new Date(fechaISO);
@@ -185,7 +204,6 @@ function mesCorto(m){
     return ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"][Number(m)-1];
 }
 
-/* FILTRAR SALIDAS PASADAS (>24H) */
 function esValida(fecha, hora){
     if(!fecha || !hora) return true;
     const dt = new Date(`${fecha}T${hora}:00`);
@@ -208,6 +226,8 @@ function render(){
         card.className = "card";
 
         card.innerHTML = `
+            ${rol==="admin" ? `<button class="more-btn" data-id="${s.id}">⋮</button>` : ""}
+
             <div class="fecha-line">🗓️ ${f.texto} ${s.hora||""} h</div>
 
             <div class="row">
@@ -240,12 +260,13 @@ function render(){
                 </div>
             ` : ""}
         `;
+
         lista.appendChild(card);
     });
 
     if(rol==="admin"){
         document.querySelectorAll(".more-btn").forEach(btn=>{
-            btn.onclick = e=>{
+            btn.onclick = (e)=>{
                 e.stopPropagation();
                 toggleMenu(btn.dataset.id);
             };
@@ -263,7 +284,6 @@ function render(){
     }
 }
 
-/* MENU */
 function toggleMenu(id){
     closeMenu();
     const m = document.getElementById("menu-"+id);
@@ -282,6 +302,7 @@ function openEditModal(id){
     const s = salidas.find(x=>x.id===id);
     if(!s) return;
     editingId = id;
+
     e_fecha.value = s.fecha || "";
     e_hora.value = s.hora || "";
     e_calle.value = s.calle || "";
@@ -290,6 +311,7 @@ function openEditModal(id){
     e_manzanas.value = (s.pendientes||[]).join(", ");
     e_conductor.value = s.conductor || "";
     e_obs.value = s.observaciones || "";
+
     modal.style.display = "flex";
 }
 
@@ -300,9 +322,11 @@ cancelEdit.onclick = ()=>{
 
 saveEdit.onclick = async ()=>{
     if(!editingId) return;
+
     const manArr = e_manzanas.value.trim()
                    ? e_manzanas.value.split(",").map(x=>x.trim()).filter(x=>x)
                    : [];
+
     await update(dbRef(db,"salidas_asignadas/"+editingId),{
         fecha: e_fecha.value,
         hora: e_hora.value,
@@ -313,6 +337,7 @@ saveEdit.onclick = async ()=>{
         conductor: e_conductor.value.trim(),
         observaciones: e_obs.value.trim()
     });
+
     modal.style.display="none";
     editingId=null;
 };
@@ -321,6 +346,7 @@ saveEdit.onclick = async ()=>{
 async function undoToPendientes(id){
     const s = salidas.find(x=>x.id===id);
     if(!s) return;
+
     await push(pendientesRef,{
         territorio:s.territorio,
         pendientes:s.pendientes||[],
@@ -328,6 +354,7 @@ async function undoToPendientes(id){
         interseccion:s.interseccion||"",
         observaciones:s.observaciones||""
     });
+
     await remove(dbRef(db,"salidas_asignadas/"+id));
 }
 
@@ -338,15 +365,17 @@ async function deleteSalida(id){
     }
 }
 
-/* REALTIME LOAD */
+/* REALTIME */
 onValue(salidasRef, snap=>{
     const data = snap.val() || {};
     salidas = Object.keys(data).map(id=>({id,...data[id]}));
+
     salidas.sort((a,b)=>{
         const fa = (a.fecha||"") + " " + (a.hora||"");
         const fb = (b.fecha||"") + " " + (b.hora||"");
         return fa.localeCompare(fb);
     });
+
     render();
 });
 </script>
