@@ -9,158 +9,199 @@
 :root{
   --verde:#1a4b27;
   --bg:#f4f4f4;
+  --card:#ffffff;
+  --muted:#666;
+  --radius:12px;
+  --font-size:17px;
 }
 
-/* ------------------------- */
-/* GENERAL */
-/* ------------------------- */
+/* ---------- GLOBAL ---------- */
+*{box-sizing:border-box}
+html,body{height:100%}
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial, Helvetica, sans-serif;
   background:var(--bg);
+  color:#222;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-size:var(--font-size);
+  line-height:1.3;
   overflow-x:hidden;
 }
+
 header{
   background:var(--verde);
   color:#fff;
   text-align:center;
-  font-weight:bold;
-  padding:18px;
+  font-weight:700;
+  padding:16px 14px;
   font-size:20px;
+  position:relative;
 }
+
+/* ---------- CONTAINER ---------- */
 .container{
-  max-width:900px;
-  margin:auto;
-  padding:15px;
-}
-.card{
-  background:#fff;
-  border-radius:12px;
+  max-width:980px;
+  margin:14px auto;
   padding:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,.06);
-  margin-bottom:12px;
+}
+
+/* ---------- CARD ---------- */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.06);
+  margin-bottom:14px;
   word-wrap:break-word;
 }
-.pendiente{
-  border-left:6px solid #c1121f;
-}
-.completado{
-  border-left:6px solid #ccc;
-  opacity:0.7;
-}
+
+.pendiente{ border-left:6px solid #c1121f; }
+.completado{ border-left:6px solid #7a7a7a; opacity:0.9; }
+
 .etiqueta{
-  background:#ffe095;
-  padding:3px 6px;
-  border-radius:6px;
-  font-size:12px;
-  margin-right:6px;
+  display:inline-block;
+  background:#fff4d9;
+  color:#333;
+  padding:6px 10px;
+  border-radius:10px;
+  font-weight:700;
+  font-size:14px;
+  margin-bottom:8px;
 }
 
-.admin input,
-.admin textarea{
+/* meta / texto */
+.card h4{ margin:8px 0 6px 0; font-size:18px; }
+.card .muted{ color:var(--muted); font-size:15px; margin-bottom:6px; }
+
+/* ---------- ADMIN FORM INSIDE CARD ---------- */
+.admin{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding-top:10px;
+  border-top:1px dashed #e6e6e6;
+}
+
+.admin input, .admin textarea{
   width:100%;
-  margin-bottom:6px;
-  padding:10px;
-  border-radius:6px;
-  border:1px solid #ccc;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #d1d1d1;
   font-size:16px;
-  box-sizing:border-box;
 }
 
-button{
+.admin .row{
+  display:flex;
+  gap:10px;
+}
+.admin .row > *{ flex:1; }
+
+/* assign button */
+.admin button[data-id]{
   background:var(--verde);
-  color:white;
-  border:none;
+  color:#fff;
+  border-radius:10px;
   padding:10px 12px;
-  border-radius:8px;
-  font-weight:bold;
+  font-weight:700;
   cursor:pointer;
+  border:none;
   font-size:16px;
 }
 
-.back{
-  position:fixed;
-  left:15px;
-  bottom:15px;
-  z-index:20;
-}
-
-/* ------------------------- */
-/* BOTÓN FLOTANTE + NUEVA SALIDA */
-/* ------------------------- */
-.add-btn{
+/* ---------- FLOATING ACTION BUTTON ---------- */
+.fab{
   position:fixed;
   right:18px;
   bottom:18px;
-  width:56px;
-  height:56px;
+  width:56px;height:56px;
+  display:flex;align-items:center;justify-content:center;
   border-radius:50%;
   background:var(--verde);
   color:#fff;
-  font-size:32px;
-  font-weight:bold;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 4px 10px rgba(0,0,0,.25);
+  box-shadow:0 8px 22px rgba(0,0,0,0.18);
+  font-size:30px;
+  border:none;
   cursor:pointer;
-  z-index:25;
-}
-.add-btn:hover{
-  opacity:0.92;
+  z-index:40;
 }
 
-/* ------------------------- */
-/* MODAL */
-/* ------------------------- */
+/* ---------- BACK BUTTON ---------- */
+.back{
+  position:fixed;
+  left:14px;
+  bottom:18px;
+  background:#ffffff;
+  color:var(--verde);
+  border:1px solid #e6e6e6;
+  padding:10px 12px;
+  border-radius:10px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.06);
+  cursor:pointer;
+  z-index:40;
+  font-weight:700;
+}
+
+/* ---------- MODAL ---------- */
 .modal-bg{
   position:fixed;
-  left:0;
-  top:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,.55);
+  inset:0;
   display:none;
+  background:rgba(0,0,0,0.55);
   align-items:center;
   justify-content:center;
-  padding:15px;
-  z-index:50;
+  padding:18px;
+  z-index:60;
 }
 .modal{
-  background:#fff;
-  padding:20px;
   width:100%;
-  max-width:420px;
+  max-width:520px;
+  background:#fff;
   border-radius:14px;
-  box-shadow:0 5px 15px rgba(0,0,0,.25);
+  padding:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  max-height:90vh;
+  overflow:auto;
 }
-.modal h3{
-  margin-top:0;
-  font-size:20px;
-  text-align:center;
-}
-.modal input,
-.modal textarea{
+.modal h3{ margin:0 0 12px 0; text-align:center; font-size:20px; }
+.modal .grid{ display:grid; grid-template-columns:1fr; gap:10px; }
+
+/* inputs larger for accessibility */
+.modal input, .modal textarea{
   width:100%;
   padding:12px;
-  margin-bottom:12px;
-  border-radius:8px;
-  border:1px solid #ccc;
+  border-radius:10px;
+  border:1px solid #ddd;
   font-size:16px;
-  box-sizing:border-box;
 }
-.modal .close{
-  background:#c1121f;
-}
+.modal textarea{ min-height:90px; resize:vertical; }
 
-/* ------------------------- */
-/* RESPONSIVE */
-/* ------------------------- */
+/* action buttons */
+.modal .actions{
+  display:flex; gap:10px; margin-top:8px;
+}
+.modal .actions button{
+  flex:1; padding:12px; font-size:16px; border-radius:10px; border:none; cursor:pointer;
+}
+.modal .actions .primary{ background:var(--verde); color:#fff; font-weight:700; }
+.modal .actions .cancel{ background:#e6e6e6; color:#333; }
+
+/* ---------- HELPER ---------- */
+.small-muted{ color:var(--muted); font-size:13px; margin-top:-6px; margin-bottom:6px; }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:900px){
+  .container{ padding:12px; }
+  .card{ padding:12px; }
+}
 @media (max-width:600px){
-  header{ font-size:18px; padding:15px; }
-  .card{ padding:10px; }
-  button{ font-size:15px; }
-  .add-btn{ width:52px; height:52px; font-size:30px; }
+  header{ font-size:18px; padding:14px;}
+  .fab{ width:52px;height:52px; font-size:28px; right:14px; bottom:14px; }
+  .back{ left:12px; bottom:14px; padding:10px; font-size:15px; }
+  .modal{ padding:14px; }
+  .modal h3{ font-size:18px; }
 }
 </style>
 </head>
@@ -169,92 +210,142 @@ button{
 
 <header>🧱 Pendientes - Asignar Salidas</header>
 
-<button class="add-btn" id="addNew">+</button>
+<!-- Lista -->
+<div class="container" id="lista">Cargando...</div>
 
-<div class="container" id="lista"></div>
+<!-- FAB (nuevo abajo-derecha) -->
+<button class="fab" id="addNew" aria-label="Nueva salida">+</button>
 
+<!-- Volver -->
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
-<!-- ============================ -->
 <!-- MODAL NUEVA SALIDA -->
-<!-- ============================ -->
-<div class="modal-bg" id="modalBg">
-  <div class="modal">
-    <h3>Nueva salida</h3>
+<div class="modal-bg" id="modalBg" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" role="document">
+    <h3 id="modalTitle">Crear nueva salida</h3>
 
-    <input id="nTerritorio" placeholder="Territorio">
-    <input id="nConductor" placeholder="Conductor">
-    <input type="date" id="nFecha">
-    <input type="time" id="nHora">
+    <div class="grid">
+      <label for="nTerritorio"><strong>Territorio</strong></label>
+      <input id="nTerritorio" placeholder="Ej: 12A" aria-label="Territorio">
 
-    <input id="nCalleInter" placeholder="Calle / Intersección">
-    <textarea id="nObs" placeholder="Observación"></textarea>
+      <label for="nManzanas"><strong>Manzanas (separadas por coma)</strong></label>
+      <input id="nManzanas" placeholder="Ej: 1, 2, 3" aria-label="Manzanas">
 
-    <button id="crearNueva">Crear salida</button>
-    <button class="close" id="cerrarModal">Cancelar</button>
+      <label for="nConductor"><strong>Conductor</strong></label>
+      <input id="nConductor" placeholder="Nombre del conductor" aria-label="Conductor">
+
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1">
+          <label for="nFecha"><strong>Fecha</strong></label>
+          <input type="date" id="nFecha" aria-label="Fecha">
+        </div>
+        <div style="flex:1">
+          <label for="nHora"><strong>Hora</strong></label>
+          <input type="time" id="nHora" aria-label="Hora">
+        </div>
+      </div>
+
+      <label for="nCalleInter"><strong>Calle / Intersección</strong></label>
+      <input id="nCalleInter" placeholder="Calle principal y/o intersección" aria-label="Calle e intersección">
+
+      <label for="nObs"><strong>Observaciones</strong></label>
+      <textarea id="nObs" placeholder="Notas, indicaciones, etc." aria-label="Observaciones"></textarea>
+    </div>
+
+    <div class="actions" style="margin-top:8px;">
+      <button class="primary" id="crearNueva">Crear salida</button>
+      <button class="cancel" id="cerrarModal">Cancelar</button>
+    </div>
+    <div style="height:10px"></div>
   </div>
 </div>
 
 <script type="module">
 import { db, ref as dbRef, onValue, push, remove } from "./firebase.js";
 
+/* -------------------------
+   ELEMENTOS & REFS
+--------------------------*/
 const lista = document.getElementById("lista");
-const pendientesRef = dbRef(db,"pendientes");
-const salidasRef = dbRef(db,"salidas_asignadas");
+const pendientesRef = dbRef(db, "pendientes");
+const salidasRef = dbRef(db, "salidas_asignadas");
 
-/* VALIDAR ADMIN */
+const addNew = document.getElementById("addNew");
+const modalBg = document.getElementById("modalBg");
+const crearNueva = document.getElementById("crearNueva");
+const cerrarModal = document.getElementById("cerrarModal");
+
+const nTerritorio = document.getElementById("nTerritorio");
+const nManzanas = document.getElementById("nManzanas");
+const nConductor = document.getElementById("nConductor");
+const nFecha = document.getElementById("nFecha");
+const nHora = document.getElementById("nHora");
+const nCalleInter = document.getElementById("nCalleInter");
+const nObs = document.getElementById("nObs");
+
+/* ============================
+   VALIDAR ADMIN (sin tocar lógica)
+============================ */
 const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
-const rol = (sesion.rol || "invitado").toLowerCase();
-if (rol !== "admin") location.href="index.html";
+if ((sesion.rol || "invitado").toLowerCase() !== "admin") location.href = "index.html";
 
-let pendientes = [];
-
-/* FECHAS DEFAULT */
+/* ============================
+   FECHA / HORA DEFAULT
+============================ */
 function hoy(){
   const d=new Date();
   return d.toISOString().slice(0,10);
 }
 function horaAhora(){
   const d=new Date();
-  d.setSeconds(0);
-  d.setMilliseconds(0);
+  d.setSeconds(0); d.setMilliseconds(0);
   return d.toTimeString().slice(0,5);
 }
 
-/* RENDER */
+/* ============================
+   RENDER PENDIENTES
+   (NO TOCO LÓGICA, sólo HTML/CSS)
+============================ */
+let pendientes = [];
 function render(){
-  lista.innerHTML="";
+  lista.innerHTML = "";
 
-  if(pendientes.length===0){
-    lista.innerHTML="<p align='center'>No hay pendientes</p>";
+  if(!pendientes || pendientes.length === 0){
+    lista.innerHTML = `<div class="card"><div style="text-align:center"><strong>No hay pendientes</strong><div class="small-muted">Cuando aparezcan pendientes se verán acá.</div></div></div>`;
     return;
   }
 
   pendientes.forEach(p=>{
-    const tiene = Array.isArray(p.pendientes) && p.pendientes.length>0;
+    const tiene = Array.isArray(p.pendientes) && p.pendientes.length > 0;
 
-    const card=document.createElement("div");
+    const card = document.createElement("div");
     card.className = "card " + (tiene ? "pendiente" : "completado");
 
-    card.innerHTML=`
-      <span class="etiqueta">${tiene?"PENDIENTE":"COMPLETADO"}</span>
-      <b>Territorio ${p.territorio}</b><br>
-      🧱 Faltan: <b>${(p.pendientes||[]).join(", ") || "Ninguna"}</b><br>
-      👤 Último conductor: ${p.conductor||"—"}
+    const pendientesText = (p.pendientes||[]).join(", ");
+
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div style="min-width:0">
+          <span class="etiqueta">${tiene ? "PENDIENTE" : "COMPLETADO"}</span>
+          <h4>Territorio ${p.territorio || ""}</h4>
+          <div class="muted">🧱 Faltan: <strong>${pendientesText || "Ninguna"}</strong></div>
+          <div class="muted">👤 Último conductor: ${p.conductor || "—"}</div>
+        </div>
+      </div>
     `;
 
     if(tiene){
-      const admin=document.createElement("div");
-      admin.className="admin";
+      const admin = document.createElement("div");
+      admin.className = "admin";
 
-      admin.innerHTML=`
+      admin.innerHTML = `
         <input id="c${p.id}" placeholder="Conductor" value="${p.conductor||""}">
-        <input type="date" id="f${p.id}" value="${hoy()}">
-        <input type="time" id="h${p.id}" value="${horaAhora()}">
-
+        <div class="row">
+          <input type="date" id="f${p.id}" value="${hoy()}">
+          <input type="time" id="h${p.id}" value="${horaAhora()}">
+        </div>
         <input id="calles${p.id}" placeholder="Calle / Intersección">
         <textarea id="o${p.id}" placeholder="Observación"></textarea>
-
         <button data-id="${p.id}">Asignar salida</button>
       `;
       card.appendChild(admin);
@@ -263,92 +354,111 @@ function render(){
     lista.appendChild(card);
   });
 
+  /* Evento asignar (igual que antes) */
   document.querySelectorAll("button[data-id]").forEach(btn=>{
     btn.onclick = async ()=>{
-      const id=btn.dataset.id;
-      const p=pendientes.find(x=>x.id===id);
+      const id = btn.dataset.id;
+      const p = pendientes.find(x=>x.id===id);
 
-      const c=document.getElementById("c"+id).value.trim();
-      const f=document.getElementById("f"+id).value;
-      const h=document.getElementById("h"+id).value;
-      const calleInter=document.getElementById("calles"+id).value.trim();
-      const o=document.getElementById("o"+id).value.trim();
+      const c = document.getElementById("c"+id).value.trim();
+      const f = document.getElementById("f"+id).value;
+      const h = document.getElementById("h"+id).value;
+      const calleInter = document.getElementById("calles"+id).value.trim();
+      const o = document.getElementById("o"+id).value.trim();
 
-      if(!c||!f||!h||!calleInter){
+      if(!c || !f || !h || !calleInter){
         alert("Completa todos los campos.");
         return;
       }
 
-      await push(salidasRef,{
-        territorio:p.territorio,
-        pendientes:Array.isArray(p.pendientes)?p.pendientes:[],
-        conductor:c,
-        fecha:f,
-        hora:h,
-        calle_inter:calleInter,
-        observaciones:o,
-        creado:Date.now()
+      await push(salidasRef, {
+        territorio: p.territorio,
+        pendientes: Array.isArray(p.pendientes) ? p.pendientes : [],
+        conductor: c,
+        fecha: f,
+        hora: h,
+        calle_inter: calleInter,
+        observaciones: o,
+        creado: Date.now()
       });
 
-      await remove(dbRef(db,"pendientes/"+id));
+      await remove(dbRef(db, "pendientes/"+id));
       location.replace("proximas.html");
     };
   });
+
 }
 
 /* ESCUCHAR FIREBASE */
-onValue(pendientesRef,s=>{
-  pendientes=[];
+onValue(pendientesRef, s=>{
+  pendientes = [];
   s.forEach(x=>{
     let o = x.val();
     o.id = x.key;
     if(!Array.isArray(o.pendientes)) o.pendientes = [];
     pendientes.push(o);
   });
+  // opcional ordenar
+  pendientes.sort((a,b)=> (a.territorio||"").toString().localeCompare((b.territorio||"").toString(), undefined, {numeric:true}));
   render();
 });
 
-/* BOTÓN NUEVA SALIDA */
-document.getElementById("addNew").onclick = ()=>{
-  document.getElementById("modalBg").style.display = "flex";
-  document.getElementById("nFecha").value = hoy();
-  document.getElementById("nHora").value = horaAhora();
+/* ============================
+   BOTÓN NUEVA SALIDA (abrir modal)
+============================ */
+addNew.onclick = ()=>{
+  // limpiar modal
+  nTerritorio.value = "";
+  nManzanas.value = "";
+  nConductor.value = "";
+  nFecha.value = hoy();
+  nHora.value = horaAhora();
+  nCalleInter.value = "";
+  nObs.value = "";
+  modalBg.style.display = "flex";
+  // foco para accesibilidad
+  setTimeout(()=>nTerritorio.focus(),150);
 };
 
-document.getElementById("cerrarModal").onclick = ()=>{
-  document.getElementById("modalBg").style.display="none";
-};
+/* cerrar modal */
+cerrarModal.onclick = ()=> modalBg.style.display = "none";
+modalBg.addEventListener("click", (e)=>{ if(e.target===modalBg) modalBg.style.display="none"; });
 
-/* CREAR NUEVA SALIDA */
-document.getElementById("crearNueva").onclick = async ()=>{
+/* ============================
+   CREAR NUEVA SALIDA (ahora con manzanas)
+============================ */
+crearNueva.onclick = async ()=>{
 
-  const territorio = document.getElementById("nTerritorio").value.trim();
-  const conductor  = document.getElementById("nConductor").value.trim();
-  const fecha      = document.getElementById("nFecha").value;
-  const hora       = document.getElementById("nHora").value;
-  const calleInter = document.getElementById("nCalleInter").value.trim();
-  const obs        = document.getElementById("nObs").value.trim();
+  const territorio = nTerritorio.value.trim();
+  const manzanasRaw = nManzanas.value.trim();
+  const conductor = nConductor.value.trim();
+  const fecha = nFecha.value;
+  const hora = nHora.value;
+  const calleInter = nCalleInter.value.trim();
+  const obs = nObs.value.trim();
 
-  if(!territorio || !conductor || !fecha || !hora || !calleInter){
-    alert("Completa todos los campos.");
+  if(!territorio || !manzanasRaw || !conductor || !fecha || !hora || !calleInter){
+    alert("Completa todos los campos obligatorios (Territorio, Manzanas, Conductor, Fecha, Hora, Calle/Intersección).");
     return;
   }
 
-  await push(salidasRef,{
+  const manzanasArr = manzanasRaw.split(",").map(x=>x.trim()).filter(Boolean);
+
+  await push(salidasRef, {
     territorio,
-    pendientes:[],
+    pendientes: manzanasArr,
     conductor,
     fecha,
     hora,
-    calle_inter:calleInter,
-    observaciones:obs,
-    creado:Date.now()
+    calle_inter: calleInter,
+    observaciones: obs,
+    creado: Date.now()
   });
 
-  document.getElementById("modalBg").style.display="none";
+  modalBg.style.display = "none";
+  // redirigir a proximas para ver la salida creada (igual que antes)
   location.replace("proximas.html");
 };
-
 </script>
 
 </body>
