@@ -4,62 +4,145 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pendientes - Admin</title>
-<style>
-:root{--verde:#1a4b27;--bg:#f4f4f4}
-body{margin:0;font-family:Arial;background:var(--bg)}
-header{background:var(--verde);color:#fff;text-align:center;font-weight:bold;padding:18px}
-.container{max-width:900px;margin:auto;padding:15px}
-.card{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);margin-bottom:10px}
-.pendiente{border-left:6px solid #c1121f}
-.completado{border-left:6px solid #ccc;opacity:0.7}
-.etiqueta{background:#ffe095;padding:3px 6px;border-radius:6px;font-size:12px;margin-right:6px}
-.admin input,.admin textarea{width:100%;margin-bottom:6px;padding:8px;border-radius:6px;border:1px solid #ccc}
-button{background:var(--verde);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
-.back{position:fixed;left:15px;bottom:15px}
 
-/* BOTÓN + NUEVA SALIDA */
-.add-btn{
-  position:fixed;
-  top:15px;
-  right:15px;
-  background:#ffb703;
-  color:#000;
-  padding:12px 15px;
-  border-radius:50px;
-  font-size:20px;
-  font-weight:bold;
-  cursor:pointer;
-  box-shadow:0 3px 7px rgba(0,0,0,.25);
+<style>
+:root{
+  --verde:#1a4b27;
+  --bg:#f4f4f4;
 }
 
+/* ------------------------- */
+/* GENERAL */
+/* ------------------------- */
+body{
+  margin:0;
+  font-family:Arial;
+  background:var(--bg);
+}
+header{
+  background:var(--verde);
+  color:#fff;
+  text-align:center;
+  font-weight:bold;
+  padding:18px;
+  font-size:20px;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:15px;
+}
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+  margin-bottom:10px;
+}
+.pendiente{
+  border-left:6px solid #c1121f;
+}
+.completado{
+  border-left:6px solid #ccc;
+  opacity:0.7;
+}
+.etiqueta{
+  background:#ffe095;
+  padding:3px 6px;
+  border-radius:6px;
+  font-size:12px;
+  margin-right:6px;
+}
+
+.admin input,
+.admin textarea{
+  width:100%;
+  margin-bottom:6px;
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+
+button{
+  background:var(--verde);
+  color:white;
+  border:none;
+  padding:10px 12px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:16px;
+}
+
+.back{
+  position:fixed;
+  left:15px;
+  bottom:15px;
+}
+
+/* ------------------------- */
+/* BOTÓN + NUEVA SALIDA */
+/* ------------------------- */
+.add-btn{
+  position:fixed;
+  top:12px;
+  right:12px;
+  background:var(--verde);
+  color:#fff;
+  padding:10px 14px;
+  border-radius:25px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 3px 8px rgba(0,0,0,.18);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.add-btn:hover{
+  opacity:0.92;
+}
+
+/* ------------------------- */
 /* MODAL */
+/* ------------------------- */
 .modal-bg{
   position:fixed;
-  left:0;top:0;
-  width:100%;height:100%;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
   background:rgba(0,0,0,.55);
   display:none;
   align-items:center;
   justify-content:center;
+  padding:15px;
 }
 .modal{
   background:#fff;
   padding:20px;
-  width:90%;
-  max-width:400px;
-  border-radius:12px;
+  width:100%;
+  max-width:420px;
+  border-radius:14px;
   box-shadow:0 5px 15px rgba(0,0,0,.25);
+}
+.modal h3{
+  margin-top:0;
+  font-size:20px;
+  text-align:center;
 }
 .modal input,
 .modal textarea{
   width:100%;
-  padding:10px;
-  margin-bottom:10px;
+  padding:12px;
+  margin-bottom:12px;
   border-radius:8px;
   border:1px solid #ccc;
+  font-size:16px;
 }
 .modal .close{
-  background:#c1121f;color:#fff;
+  background:#c1121f;
 }
 </style>
 </head>
@@ -68,12 +151,15 @@ button{background:var(--verde);color:white;border:none;padding:8px 10px;border-r
 
 <header>🧱 Pendientes - Asignar Salidas</header>
 
-<button class="add-btn" id="addNew">+ Nueva salida</button>
+<button class="add-btn" id="addNew">➕ Nueva salida</button>
 
 <div class="container" id="lista"></div>
+
 <button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
+<!-- ============================ -->
 <!-- MODAL NUEVA SALIDA -->
+<!-- ============================ -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h3>Nueva salida</h3>
@@ -100,18 +186,14 @@ const lista = document.getElementById("lista");
 const pendientesRef = dbRef(db,"pendientes");
 const salidasRef = dbRef(db,"salidas_asignadas");
 
-/* ============================
-   VALIDAR ADMIN
-============================ */
+/* VALIDAR ADMIN */
 const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
 const rol = (sesion.rol || "invitado").toLowerCase();
 if (rol !== "admin") location.href="index.html";
 
 let pendientes = [];
 
-/* ============================
-   FECHA Y HORA DEFAULT
-============================ */
+/* FECHAS DEFAULT */
 function hoy(){
   const d=new Date();
   return d.toISOString().slice(0,10);
@@ -123,11 +205,10 @@ function horaAhora(){
   return d.toTimeString().slice(0,5);
 }
 
-/* ============================
-   RENDER
-============================ */
+/* RENDER */
 function render(){
   lista.innerHTML="";
+
   if(pendientes.length===0){
     lista.innerHTML="<p align='center'>No hay pendientes</p>";
     return;
@@ -141,9 +222,9 @@ function render(){
 
     card.innerHTML=`
       <span class="etiqueta">${tiene?"PENDIENTE":"COMPLETADO"}</span>
-      <b>Territorio ${p.territorio}</b>
-      <div>🧱 Faltan: <b>${(p.pendientes||[]).join(", ") || "Ninguna"}</b></div>
-      <div>👤 Último conductor: ${p.conductor||"—"}</div>
+      <b>Territorio ${p.territorio}</b><br>
+      🧱 Faltan: <b>${(p.pendientes||[]).join(", ") || "Ninguna"}</b><br>
+      👤 Último conductor: ${p.conductor||"—"}
     `;
 
     if(tiene){
@@ -155,11 +236,10 @@ function render(){
         <input type="date" id="f${p.id}" value="${hoy()}">
         <input type="time" id="h${p.id}" value="${horaAhora()}">
 
-        <!-- UNIFICADO -->
         <input id="calles${p.id}" placeholder="Calle / Intersección">
 
         <textarea id="o${p.id}" placeholder="Observación"></textarea>
-        <button data-id="${p.id}">✅ Asignar salida</button>
+        <button data-id="${p.id}">Asignar salida</button>
       `;
       card.appendChild(admin);
     }
@@ -167,9 +247,7 @@ function render(){
     lista.appendChild(card);
   });
 
-  /* ============================
-     EVENTO ASIGNAR
-  ============================ */
+  /* EVENTO ASIGNAR */
   document.querySelectorAll("button[data-id]").forEach(btn=>{
     btn.onclick = async ()=>{
       const id=btn.dataset.id;
@@ -203,9 +281,7 @@ function render(){
   });
 }
 
-/* ============================
-   ESCUCHAR FIREBASE
-============================ */
+/* ESCUCHAR FIREBASE */
 onValue(pendientesRef,s=>{
   pendientes=[];
   s.forEach(x=>{
@@ -217,9 +293,7 @@ onValue(pendientesRef,s=>{
   render();
 });
 
-/* ============================
-   BOTÓN NUEVA SALIDA
-============================ */
+/* BOTÓN NUEVA SALIDA */
 document.getElementById("addNew").onclick = ()=>{
   document.getElementById("modalBg").style.display = "flex";
   document.getElementById("nFecha").value = hoy();
@@ -230,9 +304,7 @@ document.getElementById("cerrarModal").onclick = ()=>{
   document.getElementById("modalBg").style.display="none";
 };
 
-/* ============================
-   CREAR NUEVA SALIDA
-============================ */
+/* CREAR NUEVA SALIDA */
 document.getElementById("crearNueva").onclick = async ()=>{
 
   const territorio = document.getElementById("nTerritorio").value.trim();
@@ -261,6 +333,7 @@ document.getElementById("crearNueva").onclick = async ()=>{
   document.getElementById("modalBg").style.display="none";
   location.replace("proximas.html");
 };
+
 </script>
 
 </body>
