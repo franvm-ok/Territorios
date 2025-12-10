@@ -37,7 +37,12 @@
 
   <div id="pantallaFormulario" style="display:none;">
     <button id="volverManz" class="small-btn">⬅ Volver</button>
-    <input id="conductor" placeholder="Conductor" autocomplete="off">
+
+    <input id="conductor" placeholder="Nombre del conductor" autocomplete="off">
+
+    <!-- ⬇️ NUEVO: FECHA QUE PREDICÓ -->
+    <input id="fechaPredico" type="date">
+
     <textarea id="observaciones" placeholder="Observaciones (opcional)"></textarea>
     <button id="enviar">Enviar informe</button>
   </div>
@@ -69,9 +74,14 @@ const volverManz = document.getElementById("volverManz");
 const irFormulario = document.getElementById("irFormulario");
 const enviarBtn = document.getElementById("enviar");
 const conductorEl = document.getElementById("conductor");
+const fechaPredicoEl = document.getElementById("fechaPredico");
 const obsEl = document.getElementById("observaciones");
 
 let territorioActual = null;
+
+// ⬇️ Establecer fecha por defecto = hoy
+const hoy = new Date().toISOString().split("T")[0];
+fechaPredicoEl.value = hoy;
 
 // ocultar pantallas
 function ocultarTodo(){
@@ -136,6 +146,12 @@ enviarBtn.onclick=async ()=>{
     return;
   }
 
+  const fechaPredico = fechaPredicoEl.value;
+  if(!fechaPredico){
+    alert("Ingrese la fecha en que predicó.");
+    return;
+  }
+
   const hechas=[], pendientes=[];
   document.querySelectorAll(".manzana").forEach(m=>{
     const letra=m.innerText.replace("Manzana","").trim().charAt(0);
@@ -147,6 +163,7 @@ enviarBtn.onclick=async ()=>{
   const reporte={
     territorio:territorioActual.numero,
     conductor,
+    fecha_predicacion: fechaPredico,
     observaciones:obsEl.value.trim(),
     hechas,
     pendientes,
@@ -164,7 +181,6 @@ enviarBtn.onclick=async ()=>{
       ts:reporte.ts
     });
 
-    // ✅ redirección final
     window.location.href="reportes.html";
 
   }catch(err){
