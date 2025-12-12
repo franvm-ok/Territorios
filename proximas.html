@@ -1,457 +1,381 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Próximas Salidas</title>
-
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Próximas salidas</title>
+<link rel="stylesheet" href="styles.css"/>
 <style>
-  :root{
-    --verde:#1a4b27;
-    --bg:#f2f2f7;
-    --card:#fff;
-    --muted:#666;
-    --radius:14px;
-    --text-lg:18px;
-    --text-md:16px;
-    --btn-height:46px;
-  }
-
-  *{box-sizing:border-box}
-  body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial; background:var(--bg); color:#222; -webkit-font-smoothing:antialiased; }
+  body{margin:0;font-family:Arial;background:#f4f4f4;color:#333;}
 
   header{
-    background:var(--verde);
+    background:#1a4b27;
     color:#fff;
-    padding:16px;
+    padding:18px;
     text-align:center;
-    font-size:20px;
+    font-weight:700;
+    font-size:22px;
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+
+  .contenedor{
+    max-width:900px;
+    margin:auto;
+    padding:16px;
+  }
+
+  .card{
+    background:#fff;
+    border-radius:16px;
+    padding:18px 20px;
+    margin-bottom:16px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.09);
+    position:relative;
+  }
+
+  .card-title{
+    text-align:center;
+    font-size:19px;
+    font-weight:700;
+    margin-bottom:14px;
+    color:#1a4b27;
+  }
+
+  .fila{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+    font-size:15px;
+  }
+
+  .label{
+    font-weight:700;
+    color:#1a4b27;
+  }
+
+  .obs{
+    margin-top:10px;
+    font-size:14px;
+    background:#f5f5f5;
+    padding:10px;
+    border-radius:12px;
+    line-height:1.4;
+  }
+
+  .menu-btn{
+    position:absolute;
+    top:10px;
+    right:12px;
+    font-size:24px;
+    cursor:pointer;
+    user-select:none;
+  }
+
+  .admin-menu{
+    position:absolute;
+    top:40px;
+    right:10px;
+    background:white;
+    box-shadow:0 4px 10px rgba(0,0,0,0.12);
+    border-radius:10px;
+    overflow:hidden;
+    display:none;
+    z-index:20;
+  }
+
+  .admin-menu button{
+    width:100%;
+    padding:12px 16px;
+    border:none;
+    background:white;
+    text-align:left;
+    font-size:14px;
+    cursor:pointer;
+  }
+
+  .admin-menu button:hover{
+    background:#f0f0f0;
+  }
+
+  /* Modal */
+  .modal{
+    position:fixed;
+    left:0;top:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    z-index:100;
+  }
+
+  .modal-content{
+    background:#fff;
+    width:100%;
+    max-width:420px;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  }
+
+  .modal-content h3{
+    margin-top:0;
+    color:#1a4b27;
+    text-align:center;
+  }
+
+  .modal-content input, .modal-content textarea{
+    width:100%;
+    margin-top:8px;
+    margin-bottom:14px;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:15px;
+    box-sizing:border-box;
+  }
+
+  .modal-actions{
+    display:flex;
+    justify-content:space-between;
+  }
+
+  .btn{
+    padding:12px 18px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
     font-weight:700;
   }
 
-  .container{
-    max-width:920px;
-    margin:12px auto;
-    padding:12px;
-  }
+  .btn-guardar{background:#1a4b27;color:#fff;}
+  .btn-cancelar{background:#ccc;}
 
-  /* tarjeta */
-  .card{
-    background:var(--card);
-    border-radius:var(--radius);
-    padding:14px;
-    margin-bottom:14px;
-    box-shadow:0 6px 18px rgba(20,20,20,0.06);
-    overflow:hidden;
-  }
-
-  .fecha-principal{
-    font-size:20px;
-    font-weight:800;
-    color:var(--verde);
-    text-align:center;
-    margin-bottom:10px;
-  }
-
-  .info-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px; align-items:flex-start; }
-  .info-item{ flex:1 1 48%; min-width:140px; font-size:var(--text-md); line-height:1.3; }
-  .info-item .label{ display:block; font-weight:700; color:#333; margin-bottom:4px; font-size:14px; }
-  .direccion-box{ font-size:var(--text-md); background:#fafafa; padding:8px 10px; border-radius:10px; color:#222; }
-
-  .observaciones{ margin-top:8px; background:#fafafa; padding:10px;border-radius:10px; font-size:var(--text-md); color:#222; }
-
-  /* acciones: icono + texto */
-  .actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
-  .btn{
-    display:flex; align-items:center; gap:8px;
-    padding:10px 12px;
-    border-radius:10px;
-    font-size:var(--text-md);
-    cursor:pointer;
-    border:none;
-    min-height:var(--btn-height);
-    flex:1 1 30%;
-    justify-content:center;
-  }
-  .btn:active{ transform: translateY(1px); }
-  .btn .icon{ font-size:18px; line-height:1; }
-
-  .btn-edit{ background:#e8f0fe; color:#0b3a8a; }
-  .btn-undo{ background:#fff4d8; color:#8a5a00; }
-  .btn-delete{ background:#fdecea; color:#9b1717; }
-
-  /* hidden for non-admin */
-  .admin-only{ display:none; }
-
-  /* bottom sheet modal (edición) */
-  .sheet-bg{
-    position:fixed; inset:0; display:none; align-items:flex-end;
-    background: rgba(0,0,0,0.32); padding:12px; z-index:1200;
-  }
-  .sheet{
-    width:100%; max-width:680px;
-    background:#fff; border-radius:16px 16px 8px 8px;
-    box-shadow:0 -6px 30px rgba(0,0,0,0.18);
-    padding:16px;
-    transform: translateY(0);
-    max-height:86vh;
-    overflow:auto;
-  }
-  .sheet .grab{ width:56px;height:6px;background:#e5e5ea;border-radius:6px;margin:6px auto 12px auto; }
-
-  .sheet h3{ margin:0 0 10px 0; text-align:center; font-size:18px; color:var(--verde); font-weight:800; }
-
-  .form-row{ display:flex; gap:10px; }
-  .form-row .col{ flex:1; }
-
-  label{ display:block; font-weight:700; margin-bottom:6px; color:#333; font-size:14px; }
-  input[type="text"], input[type="date"], input[type="time"], textarea{
-    width:100%; padding:10px; font-size:16px; border-radius:10px; border:1px solid #ddd; background:#fafafa;
-  }
-  textarea{ min-height:80px; resize:vertical; }
-
-  .sheet-buttons{ display:flex; gap:10px; margin-top:12px; }
-  .sheet-btn{ flex:1; padding:12px; border-radius:10px; font-size:16px; cursor:pointer; text-align:center; }
-  .sheet-cancel{ background:#e6e6e6; color:#222; border:none; }
-  .sheet-save{ background:var(--verde); color:white; border:none; }
-
-  /* responsive */
-  @media (max-width:720px){
-    .info-item{ flex-basis:100%; }
-    .btn{ flex-basis:48%; }
-    .form-row{ flex-direction:column; }
-  }
 </style>
 </head>
-
 <body>
 
 <header>Próximas salidas</header>
 
-<main class="container">
-  <div id="lista">Cargando...</div>
-</main>
+<div class="contenedor" id="lista"></div>
 
-<!-- BOTTOM SHEET / EDIT -->
-<div class="sheet-bg" id="sheetBg" aria-hidden="true">
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-    <div class="grab" aria-hidden="true"></div>
-    <h3 id="sheetTitle">Editar salida</h3>
+<!-- MODAL EDITAR -->
+<div class="modal" id="modalEditar">
+  <div class="modal-content">
+    <h3>Editar salida</h3>
 
-    <div class="group">
-      <label for="fTerritorio">Territorio</label>
-      <input id="fTerritorio" type="text" placeholder="Ej: 12A">
-    </div>
+    <label>Territorio</label>
+    <input id="editTerritorio"/>
 
-    <div class="group">
-      <label for="fManzana">Manzanas (separadas por coma)</label>
-      <input id="fManzana" type="text" placeholder="Ej: 1, 2, 3">
-    </div>
+    <label>Manzanas</label>
+    <input id="editManzanas"/>
 
-    <div class="group">
-      <label for="fConductor">Conductor</label>
-      <input id="fConductor" type="text" placeholder="Nombre conductor">
-    </div>
+    <label>Conductor</label>
+    <input id="editConductor"/>
 
-    <div class="form-row" style="margin-top:6px;">
-      <div class="col">
-        <label for="fFecha">Fecha</label>
-        <input id="fFecha" type="date">
-      </div>
-      <div class="col">
-        <label for="fHora">Hora</label>
-        <input id="fHora" type="time">
-      </div>
-    </div>
+    <label>Fecha</label>
+    <input type="date" id="editFecha"/>
 
-    <div class="group">
-      <label for="fDireccion">Calle / Intersección</label>
-      <input id="fDireccion" type="text" placeholder="Ej: Eva Perón 1234 - Mendoza">
-    </div>
+    <label>Hora</label>
+    <input type="time" id="editHora"/>
 
-    <div class="group">
-      <label for="fObs">Observaciones</label>
-      <textarea id="fObs" placeholder="Notas..."></textarea>
-    </div>
+    <label>Calle / Intersección</label>
+    <input id="editDireccion"/>
 
-    <div class="sheet-buttons">
-      <button class="sheet-btn sheet-cancel" id="sheetCancel">Cancelar</button>
-      <button class="sheet-btn sheet-save" id="sheetSave">Guardar</button>
+    <label>Observaciones</label>
+    <textarea id="editObs" rows="3"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancelar" id="cancelarEdicion">Cancelar</button>
+      <button class="btn btn-guardar" id="guardarEdicion">Guardar</button>
     </div>
   </div>
 </div>
 
 <script type="module">
-/* =========== IMPORT FIREBASE =========== */
-import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
+import { db, ref, onValue, update, remove, push } from "./firebase.js";
 
-/* =========== ELEMENTS =========== */
-const lista = document.getElementById('lista');
-const sheetBg = document.getElementById('sheetBg');
-const sheetCancel = document.getElementById('sheetCancel');
-const sheetSave = document.getElementById('sheetSave');
+const lista = document.getElementById("lista");
+const modal = document.getElementById("modalEditar");
 
-const fTerritorio = document.getElementById('fTerritorio');
-const fManzana = document.getElementById('fManzana');
-const fConductor = document.getElementById('fConductor');
-const fFecha = document.getElementById('fFecha');
-const fHora = document.getElementById('fHora');
-const fDireccion = document.getElementById('fDireccion');
-const fObs = document.getElementById('fObs');
+let salidaActualId = null;
 
-const salidasRef = dbRef(db, 'salidas_asignadas');
-const pendientesRef = dbRef(db, 'pendientes');
+const rol = localStorage.getItem("rol");  // admin / conductor / invitado
 
-/* =========== ROLE (admin visibility) =========== */
-const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
-let rol = (sesion.rol || "invitado").toLowerCase();
-if (rol === "invitado") rol = "conductor";
-const isAdmin = (rol === 'admin');
+const salidasRef = ref(db, "salidas_asignadas");
+const pendientesRef = ref(db, "pendientes");
 
-/* =========== HELPERS =========== */
-const MS_DAY = 24*60*60*1000;
+/* ============================
+   CARGAR LISTA
+============================ */
+onValue(salidasRef, snap => {
+  lista.innerHTML = "";
+  const datos = snap.val();
 
-function diaAbrev(dateObj){
-  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  return dias[dateObj.getDay()];
-}
-function mesAbrev(numMonth){
-  return ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][numMonth];
-}
-function formatDisplay(fechaISO, hora){
-  try{
-    if(!fechaISO) return '';
-    const [y,m,d] = fechaISO.split('-').map(x=>Number(x));
-    const dt = new Date(y,m-1,Number(fechaISO.split('-')[2]||d));
-    // If hora exists parse
-    let hhmm = '';
-    if(hora){
-      // ensure format HH:MM
-      hhmm = hora.length>=5 ? hora.slice(0,5) : hora;
+  if(!datos) return;
+
+  const arr = Object.entries(datos).map(([id, obj]) => ({id, ...obj}));
+
+  // Orden por fecha/hora
+  arr.sort((a,b)=> new Date(a.fechaHora) - new Date(b.fechaHora));
+
+  const ahora = Date.now();
+
+  arr.forEach(salida => {
+    const fechaSalida = new Date(salida.fechaHora).getTime();
+    const diferencia = ahora - fechaSalida;
+
+    // borrar las que pasaron 24h
+    if(diferencia > 24 * 60 * 60 * 1000){
+      remove(ref(db, "salidas_asignadas/" + salida.id));
+      return;
     }
-    const dia = diaAbrev(dt);
-    const diaNum = Number(fechaISO.split('-')[2]) || dt.getDate();
-    const mes = mesAbrev(dt.getMonth());
-    return `${dia} - ${diaNum} ${mes} - ${hhmm} hs`;
-  }catch(e){
-    return `${fechaISO} ${hora || ''}`;
-  }
-}
-function parseDateTime(fecha, hora){
-  if(!fecha) return null;
-  // build local date time
-  const iso = `${fecha}T${(hora||'00:00')}:00`;
-  const d = new Date(iso);
-  if(isNaN(d.getTime())) return null;
-  return d;
-}
 
-/* =========== CLEANUP EXPIRED (option A: delete >24h) =========== */
-async function cleanupExpired(snapshotObj){
-  const now = Date.now();
-  const items = [];
-  snapshotObj.forEach(child=>{
-    const id = child.key;
-    const data = child.val();
-    items.push({id, ...data});
-  });
-  for(const s of items){
-    const dt = parseDateTime(s.fecha, s.hora);
-    if(dt){
-      if(now - dt.getTime() > MS_DAY){
-        // delete expired
-        try{
-          await remove(dbRef(db, 'salidas_asignadas/' + s.id));
-        }catch(e){ console.warn('cleanup remove failed', e); }
-      }
+    const fecha = new Date(salida.fechaHora);
+
+    const dia = fecha.toLocaleDateString('es-AR',{weekday:"short"});
+    const fechaTxt = fecha.toLocaleDateString('es-AR',{day:"numeric",month:"short"});
+    const horaTxt = fecha.toLocaleTimeString('es-AR',{hour:"2-digit",minute:"2-digit"});
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    // menú admin
+    if(rol === "admin"){
+      const menuBtn = document.createElement("div");
+      menuBtn.className = "menu-btn";
+      menuBtn.textContent = "⋮";
+
+      const menu = document.createElement("div");
+      menu.className = "admin-menu";
+
+      const btnEdit = document.createElement("button");
+      btnEdit.textContent = "✏️ Editar";
+      btnEdit.onclick = ()=> abrirEdicion(salida);
+
+      const btnUndo = document.createElement("button");
+      btnUndo.textContent = "↩️ Deshacer";
+      btnUndo.onclick = ()=> deshacerSalida(salida.id);
+
+      const btnDel = document.createElement("button");
+      btnDel.textContent = "🗑 Eliminar";
+      btnDel.onclick = ()=> eliminarSalida(salida.id);
+
+      menu.appendChild(btnEdit);
+      menu.appendChild(btnUndo);
+      menu.appendChild(btnDel);
+
+      menuBtn.addEventListener("click", ()=>{
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+      });
+
+      card.appendChild(menuBtn);
+      card.appendChild(menu);
     }
-  }
-}
 
-/* =========== RENDER =========== */
-function renderList(snapshot){
-  // collect items then sort
-  const arr = [];
-  snapshot.forEach(child=>{
-    const id = child.key;
-    const data = child.val();
-    arr.push({ id, ...data });
-  });
+    const titulo = document.createElement("div");
+    titulo.className = "card-title";
+    titulo.textContent = `${capitalizar(dia)} • ${fechaTxt} • ${horaTxt} hs`;
 
-  // filter out expired <=24h (we also delete in cleanupExpired)
-  const now = Date.now();
-  const valids = arr.filter(s=>{
-    const dt = parseDateTime(s.fecha, s.hora);
-    if(!dt) return true; // keep if no date/time
-    return (now - dt.getTime()) <= MS_DAY;
-  });
+    const fila1 = fila("Dirección", salida.direccion || "—");
+    const fila2 = fila("Territorio", salida.territorio || "—");
+    const fila3 = fila("Manzanas", salida.manzanas || "—");
+    const fila4 = fila("Conductor", salida.conductor || "—");
 
-  // sort by date+hora ascending
-  valids.sort((a,b)=>{
-    const da = parseDateTime(a.fecha, a.hora) || new Date(0);
-    const db = parseDateTime(b.fecha, b.hora) || new Date(0);
-    return da.getTime() - db.getTime();
-  });
+    const obs = document.createElement("div");
+    obs.className = "obs";
+    obs.textContent = salida.observaciones || "—";
 
-  // render
-  lista.innerHTML = '';
-  if(valids.length === 0){
-    lista.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:18px">No hay salidas próximas</div>`;
-    return;
-  }
-
-  valids.forEach(s=>{
-    const card = document.createElement('article');
-    card.className = 'card';
-
-    const fechaText = formatDisplay(s.fecha, s.hora);
-
-    // address: prefer 'direccion' (single field). fallback to calle + interseccion or calle_inter
-    const direccion = s.direccion || s.calle_inter || ((s.calle || '') + (s.interseccion ? ' - ' + s.interseccion : ''));
-
-    card.innerHTML = `
-      <div class="fecha-principal">${fechaText}</div>
-
-      <div class="info-row">
-        <div class="info-item">
-          <div class="label">Dirección</div>
-          <div class="direccion-box">${direccion || '—'}</div>
-        </div>
-
-        <div class="info-item">
-          <div class="label">Territorio</div>
-          <div>${s.territorio || '—'}</div>
-        </div>
-      </div>
-
-      <div class="info-row">
-        <div class="info-item">
-          <div class="label">Manzanas</div>
-          <div>${ (Array.isArray(s.pendientes) ? s.pendientes.join(', ') : (s.manzana || '—')) }</div>
-        </div>
-
-        <div class="info-item">
-          <div class="label">Conductor</div>
-          <div>${s.conductor || '—'}</div>
-        </div>
-      </div>
-
-      <div class="observaciones"><span class="label">Observaciones</span><div style="margin-top:6px">${s.observaciones || '—'}</div></div>
-
-      <div class="actions">
-        ${ isAdmin ? `<button class="btn btn-edit" data-id="${s.id}" data-action="edit"><span class="icon">✏️</span> Editar</button>` : '' }
-        ${ isAdmin ? `<button class="btn btn-undo" data-id="${s.id}" data-action="undo"><span class="icon">↩️</span> Deshacer</button>` : '' }
-        ${ isAdmin ? `<button class="btn btn-delete" data-id="${s.id}" data-action="delete"><span class="icon">🗑️</span> Eliminar</button>` : '' }
-      </div>
-    `;
+    card.appendChild(titulo);
+    card.appendChild(fila1);
+    card.appendChild(fila2);
+    card.appendChild(fila3);
+    card.appendChild(fila4);
+    card.appendChild(obs);
 
     lista.appendChild(card);
   });
-
-  // attach listeners for admin buttons (delegation)
-  if(isAdmin){
-    lista.querySelectorAll('button[data-action]').forEach(btn=>{
-      btn.onclick = (e)=>{
-        const id = btn.dataset.id;
-        const action = btn.dataset.action;
-        if(action === 'edit') openEdit(id);
-        if(action === 'undo') confirmUndo(id);
-        if(action === 'delete') confirmDelete(id);
-      };
-    });
-  }
-}
-
-/* =========== ACTIONS =========== */
-function openEdit(id){
-  const ref = dbRef(db, 'salidas_asignadas/' + id);
-  // get once
-  onValue(ref, snap=>{
-    const d = snap.val() || {};
-    fTerritorio.value = d.territorio || '';
-    // manzanas may be stored as pendientes array or manzana string
-    fManzana.value = Array.isArray(d.pendientes) ? d.pendientes.join(', ') : (d.manzana || '');
-    fConductor.value = d.conductor || '';
-    fFecha.value = d.fecha || '';
-    fHora.value = d.hora || '';
-    fDireccion.value = d.direccion || d.calle_inter || ((d.calle||'') + (d.interseccion ? ' - '+d.interseccion : ''));
-    fObs.value = d.observaciones || '';
-    editTargetId = id;
-    sheetBg.style.display = 'flex';
-  }, { onlyOnce:true });
-}
-
-let editTargetId = null;
-
-sheetCancel.onclick = ()=>{
-  sheetBg.style.display = 'none';
-  editTargetId = null;
-};
-
-sheetSave.onclick = async ()=>{
-  if(!editTargetId) return;
-  const manArr = fManzana.value.trim() ? fManzana.value.split(',').map(x=>x.trim()).filter(Boolean) : [];
-  const payload = {
-    territorio: fTerritorio.value.trim(),
-    pendientes: manArr,
-    manzana: fManzana.value.trim(),
-    conductor: fConductor.value.trim(),
-    fecha: fFecha.value,
-    hora: fHora.value,
-    direccion: fDireccion.value.trim(),
-    observaciones: fObs.value.trim()
-  };
-  try{
-    await update(dbRef(db, 'salidas_asignadas/' + editTargetId), payload);
-  }catch(e){
-    console.error('save failed', e);
-  }
-  sheetBg.style.display = 'none';
-  editTargetId = null;
-};
-
-/* confirm dialogs */
-function confirmUndo(id){
-  if(!confirm('¿Desea deshacer esta salida y volverla a pendientes?')) return;
-  doUndo(id);
-}
-async function doUndo(id){
-  const ref = dbRef(db, 'salidas_asignadas/' + id);
-  onValue(ref, async snap=>{
-    const d = snap.val();
-    if(!d) return;
-    // prepare pending object: keep same fields that pendientes expects
-    const pendingObj = {
-      territorio: d.territorio || '',
-      pendientes: Array.isArray(d.pendientes) ? d.pendientes : (d.manzana ? d.manzana.split(',').map(x=>x.trim()) : []),
-      conductor: d.conductor || '',
-      calle_inter: d.direccion || d.calle_inter || ((d.calle||'') + (d.interseccion ? ' - '+d.interseccion : '')),
-      observaciones: d.observaciones || ''
-    };
-    try{
-      await push(pendientesRef, pendingObj);
-      await remove(ref);
-    }catch(e){ console.error('undo failed', e); }
-  }, { onlyOnce:true });
-}
-
-function confirmDelete(id){
-  if(!confirm('¿Desea eliminar esta salida de forma permanente?')) return;
-  doDelete(id);
-}
-async function doDelete(id){
-  try{
-    await remove(dbRef(db, 'salidas_asignadas/' + id));
-  }catch(e){ console.error('delete failed', e); }
-}
-
-/* =========== INITIAL LISTENER =========== */
-onValue(salidasRef, async snap=>{
-  // first cleanup expired (option A)
-  await cleanupExpired(snap);
-  // then render list (snap will refresh after deletions maybe)
-  renderList(snap);
 });
+
+/* ============================
+   FUNCIONES
+============================ */
+
+function fila(label, valor){
+  const f = document.createElement("div");
+  f.className = "fila";
+
+  const l = document.createElement("div");
+  l.className = "label";
+  l.textContent = label;
+
+  const v = document.createElement("div");
+  v.textContent = valor;
+
+  f.appendChild(l);
+  f.appendChild(v);
+  return f;
+}
+
+function capitalizar(str){
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function abrirEdicion(salida){
+  salidaActualId = salida.id;
+
+  document.getElementById("editTerritorio").value = salida.territorio || "";
+  document.getElementById("editManzanas").value = salida.manzanas || "";
+  document.getElementById("editConductor").value = salida.conductor || "";
+  document.getElementById("editDireccion").value = salida.direccion || "";
+  document.getElementById("editObs").value = salida.observaciones || "";
+
+  const fecha = new Date(salida.fechaHora);
+
+  document.getElementById("editFecha").value = fecha.toISOString().substring(0,10);
+  document.getElementById("editHora").value = fecha.toTimeString().substring(0,5);
+
+  modal.style.display = "flex";
+}
+
+document.getElementById("cancelarEdicion").onclick = ()=>{
+  modal.style.display = "none";
+};
+
+document.getElementById("guardarEdicion").onclick = ()=>{
+  const fecha = document.getElementById("editFecha").value;
+  const hora = document.getElementById("editHora").value;
+
+  const fechaHora = new Date(`${fecha}T${hora}:00`).toISOString();
+
+  update(ref(db,"salidas_asignadas/" + salidaActualId),{
+    territorio: document.getElementById("editTerritorio").value,
+    manzanas: document.getElementById("editManzanas").value,
+    conductor: document.getElementById("editConductor").value,
+    direccion: document.getElementById("editDireccion").value,
+    observaciones: document.getElementById("editObs").value,
+    fechaHora
+  });
+
+  modal.style.display="none";
+};
+
+function deshacerSalida(id){
+  if(!confirm("¿Seguro que desea DESHACER esta salida?")) return;
+
+  // mover a pendientes
+  push(pendientesRef, { origen:id });
+
+  remove(ref(db, "salidas_asignadas/" + id));
+}
+
+function eliminarSalida(id){
+  if(!confirm("¿Seguro que desea ELIMINAR esta salida?")) return;
+
+  remove(ref(db, "salidas_asignadas/" + id));
+}
 </script>
 
 </body>
