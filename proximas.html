@@ -3,175 +3,124 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Próximas salidas</title>
+<title>Próximas Salidas</title>
 
 <style>
-    body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, Arial;
-        background: #f2f2f7;
-        color: #333;
-    }
+  :root{
+    --verde:#1a4b27;
+    --bg:#f2f2f7;
+    --card:#fff;
+    --muted:#666;
+    --radius:14px;
+    --text-lg:18px;
+    --text-md:16px;
+    --btn-height:46px;
+  }
 
-    header {
-        background: #1a4b27;
-        color: white;
-        padding: 18px;
-        text-align: center;
-        font-size: 22px;
-        font-weight: 600;
-    }
+  *{box-sizing:border-box}
+  body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial; background:var(--bg); color:#222; -webkit-font-smoothing:antialiased; }
 
-    .container {
-        padding: 16px;
-        max-width: 700px;
-        margin: auto;
-    }
+  header{
+    background:var(--verde);
+    color:#fff;
+    padding:16px;
+    text-align:center;
+    font-size:20px;
+    font-weight:700;
+  }
 
-    /* Tarjeta */
-    .card {
-        background: white;
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 18px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
+  .container{
+    max-width:920px;
+    margin:12px auto;
+    padding:12px;
+  }
 
-    .fecha-principal {
-        font-size: 20px;
-        font-weight: 700;
-        color: #1a4b27;
-        margin-bottom: 10px;
-    }
+  /* tarjeta */
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:14px;
+    box-shadow:0 6px 18px rgba(20,20,20,0.06);
+    overflow:hidden;
+  }
 
-    .info {
-        font-size: 17px;
-        line-height: 1.4;
-        margin-bottom: 12px;
-    }
+  .fecha-principal{
+    font-size:20px;
+    font-weight:800;
+    color:var(--verde);
+    text-align:center;
+    margin-bottom:10px;
+  }
 
-    .label {
-        font-weight: 600;
-        color: #444;
-    }
+  .info-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px; align-items:flex-start; }
+  .info-item{ flex:1 1 48%; min-width:140px; font-size:var(--text-md); line-height:1.3; }
+  .info-item .label{ display:block; font-weight:700; color:#333; margin-bottom:4px; font-size:14px; }
+  .direccion-box{ font-size:var(--text-md); background:#fafafa; padding:8px 10px; border-radius:10px; color:#222; }
 
-    /* Botones de acción */
-    .actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 12px;
-        flex-wrap: wrap;
-    }
+  .observaciones{ margin-top:8px; background:#fafafa; padding:10px;border-radius:10px; font-size:var(--text-md); color:#222; }
 
-    .btn {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 14px;
-        border-radius: 10px;
-        font-size: 16px;
-        cursor: pointer;
-        border: none;
-        flex: 1;
-        justify-content: center;
-    }
+  /* acciones: icono + texto */
+  .actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .btn{
+    display:flex; align-items:center; gap:8px;
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:var(--text-md);
+    cursor:pointer;
+    border:none;
+    min-height:var(--btn-height);
+    flex:1 1 30%;
+    justify-content:center;
+  }
+  .btn:active{ transform: translateY(1px); }
+  .btn .icon{ font-size:18px; line-height:1; }
 
-    .btn svg {
-        width: 18px;
-        height: 18px;
-    }
+  .btn-edit{ background:#e8f0fe; color:#0b3a8a; }
+  .btn-undo{ background:#fff4d8; color:#8a5a00; }
+  .btn-delete{ background:#fdecea; color:#9b1717; }
 
-    .editar { background: #e8f0fe; color:#1a3d8f; }
-    .deshacer { background: #fff4d8; color:#8a5a00; }
-    .eliminar { background: #fde4e4; color:#a10000; }
+  /* hidden for non-admin */
+  .admin-only{ display:none; }
 
-    /* Modal */
-    .modal-bg {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.40);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-    }
+  /* bottom sheet modal (edición) */
+  .sheet-bg{
+    position:fixed; inset:0; display:none; align-items:flex-end;
+    background: rgba(0,0,0,0.32); padding:12px; z-index:1200;
+  }
+  .sheet{
+    width:100%; max-width:680px;
+    background:#fff; border-radius:16px 16px 8px 8px;
+    box-shadow:0 -6px 30px rgba(0,0,0,0.18);
+    padding:16px;
+    transform: translateY(0);
+    max-height:86vh;
+    overflow:auto;
+  }
+  .sheet .grab{ width:56px;height:6px;background:#e5e5ea;border-radius:6px;margin:6px auto 12px auto; }
 
-    .modal {
-        background: white;
-        width: 100%;
-        max-width: 480px;
-        border-radius: 16px;
-        padding: 20px;
-        animation: fadeIn .2s;
-    }
+  .sheet h3{ margin:0 0 10px 0; text-align:center; font-size:18px; color:var(--verde); font-weight:800; }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+  .form-row{ display:flex; gap:10px; }
+  .form-row .col{ flex:1; }
 
-    .modal h2 {
-        font-size: 20px;
-        margin-bottom: 14px;
-        font-weight: 700;
-        color: #1a4b27;
-    }
+  label{ display:block; font-weight:700; margin-bottom:6px; color:#333; font-size:14px; }
+  input[type="text"], input[type="date"], input[type="time"], textarea{
+    width:100%; padding:10px; font-size:16px; border-radius:10px; border:1px solid #ddd; background:#fafafa;
+  }
+  textarea{ min-height:80px; resize:vertical; }
 
-    .group {
-        margin-bottom: 12px;
-    }
+  .sheet-buttons{ display:flex; gap:10px; margin-top:12px; }
+  .sheet-btn{ flex:1; padding:12px; border-radius:10px; font-size:16px; cursor:pointer; text-align:center; }
+  .sheet-cancel{ background:#e6e6e6; color:#222; border:none; }
+  .sheet-save{ background:var(--verde); color:white; border:none; }
 
-    label {
-        font-weight: 600;
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    input, textarea {
-        width: 100%;
-        padding: 10px;
-        font-size: 16px;
-        border-radius: 10px;
-        border: 1px solid #ccc;
-        outline: none;
-    }
-
-    textarea {
-        resize: none;
-        height: 70px;
-    }
-
-    .fila {
-        display: flex;
-        gap: 10px;
-    }
-
-    .modal-buttons {
-        display: flex;
-        gap: 10px;
-        margin-top: 16px;
-    }
-
-    .btn-cancel {
-        flex: 1;
-        padding: 12px;
-        background: #ccc;
-        color: #333;
-        border-radius: 10px;
-        text-align: center;
-        cursor: pointer;
-    }
-
-    .btn-save {
-        flex: 1;
-        padding: 12px;
-        background: #1a4b27;
-        color: white;
-        border-radius: 10px;
-        text-align: center;
-        cursor: pointer;
-    }
-
+  /* responsive */
+  @media (max-width:720px){
+    .info-item{ flex-basis:100%; }
+    .btn{ flex-basis:48%; }
+    .form-row{ flex-direction:column; }
+  }
 </style>
 </head>
 
@@ -179,179 +128,330 @@
 
 <header>Próximas salidas</header>
 
-<div class="container" id="lista">
+<main class="container">
+  <div id="lista">Cargando...</div>
+</main>
 
-    <!-- Tarjetas generadas dinámicamente desde JS / Firebase -->
+<!-- BOTTOM SHEET / EDIT -->
+<div class="sheet-bg" id="sheetBg" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <h3 id="sheetTitle">Editar salida</h3>
 
-</div>
-
-<!-- Modal edición -->
-<div class="modal-bg" id="modalEditar">
-    <div class="modal">
-        <h2>Editar salida</h2>
-
-        <div class="group">
-            <label>Territorio</label>
-            <input id="editTerritorio">
-        </div>
-
-        <div class="group">
-            <label>Manzana</label>
-            <input id="editManzana">
-        </div>
-
-        <div class="group">
-            <label>Conductor</label>
-            <input id="editConductor">
-        </div>
-
-        <div class="fila">
-            <div class="group" style="flex:1">
-                <label>Fecha</label>
-                <input type="date" id="editFecha">
-            </div>
-            <div class="group" style="flex:1">
-                <label>Hora</label>
-                <input type="time" id="editHora">
-            </div>
-        </div>
-
-        <div class="group">
-            <label>Calle / intersección</label>
-            <input id="editDireccion">
-        </div>
-
-        <div class="group">
-            <label>Observaciones</label>
-            <textarea id="editObs"></textarea>
-        </div>
-
-        <div class="modal-buttons">
-            <div class="btn-cancel" onclick="cerrarModal()">Cancelar</div>
-            <div class="btn-save" onclick="guardarCambios()">Guardar</div>
-        </div>
+    <div class="group">
+      <label for="fTerritorio">Territorio</label>
+      <input id="fTerritorio" type="text" placeholder="Ej: 12A">
     </div>
+
+    <div class="group">
+      <label for="fManzana">Manzanas (separadas por coma)</label>
+      <input id="fManzana" type="text" placeholder="Ej: 1, 2, 3">
+    </div>
+
+    <div class="group">
+      <label for="fConductor">Conductor</label>
+      <input id="fConductor" type="text" placeholder="Nombre conductor">
+    </div>
+
+    <div class="form-row" style="margin-top:6px;">
+      <div class="col">
+        <label for="fFecha">Fecha</label>
+        <input id="fFecha" type="date">
+      </div>
+      <div class="col">
+        <label for="fHora">Hora</label>
+        <input id="fHora" type="time">
+      </div>
+    </div>
+
+    <div class="group">
+      <label for="fDireccion">Calle / Intersección</label>
+      <input id="fDireccion" type="text" placeholder="Ej: Eva Perón 1234 - Mendoza">
+    </div>
+
+    <div class="group">
+      <label for="fObs">Observaciones</label>
+      <textarea id="fObs" placeholder="Notas..."></textarea>
+    </div>
+
+    <div class="sheet-buttons">
+      <button class="sheet-btn sheet-cancel" id="sheetCancel">Cancelar</button>
+      <button class="sheet-btn sheet-save" id="sheetSave">Guardar</button>
+    </div>
+  </div>
 </div>
 
 <script type="module">
-/* ============================
-   IMPORTS FIREBASE
-============================ */
+/* =========== IMPORT FIREBASE =========== */
 import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
 
-const lista = document.getElementById("lista");
-const salidasRef = dbRef(db, "salidas_asignadas");
-const pendientesRef = dbRef(db, "pendientes");
+/* =========== ELEMENTS =========== */
+const lista = document.getElementById('lista');
+const sheetBg = document.getElementById('sheetBg');
+const sheetCancel = document.getElementById('sheetCancel');
+const sheetSave = document.getElementById('sheetSave');
 
-/* ID temporal para edición */
-let editId = null;
+const fTerritorio = document.getElementById('fTerritorio');
+const fManzana = document.getElementById('fManzana');
+const fConductor = document.getElementById('fConductor');
+const fFecha = document.getElementById('fFecha');
+const fHora = document.getElementById('fHora');
+const fDireccion = document.getElementById('fDireccion');
+const fObs = document.getElementById('fObs');
 
-/* ============================
-   CARGAR TARJETAS
-============================ */
-onValue(salidasRef, (snapshot) => {
-    lista.innerHTML = "";
+const salidasRef = dbRef(db, 'salidas_asignadas');
+const pendientesRef = dbRef(db, 'pendientes');
 
-    snapshot.forEach((child) => {
-        const data = child.val();
-        const id = child.key;
+/* =========== ROLE (admin visibility) =========== */
+const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
+let rol = (sesion.rol || "invitado").toLowerCase();
+if (rol === "invitado") rol = "conductor";
+const isAdmin = (rol === 'admin');
 
-        const card = document.createElement("div");
-        card.className = "card";
+/* =========== HELPERS =========== */
+const MS_DAY = 24*60*60*1000;
 
-        const fecha = data.fecha || "";
-        const hora = data.hora || "";
-        const dia = new Date(fecha + " " + hora).toLocaleDateString("es-AR", { weekday:"long" });
+function diaAbrev(dateObj){
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  return dias[dateObj.getDay()];
+}
+function mesAbrev(numMonth){
+  return ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][numMonth];
+}
+function formatDisplay(fechaISO, hora){
+  try{
+    if(!fechaISO) return '';
+    const [y,m,d] = fechaISO.split('-').map(x=>Number(x));
+    const dt = new Date(y,m-1,Number(fechaISO.split('-')[2]||d));
+    // If hora exists parse
+    let hhmm = '';
+    if(hora){
+      // ensure format HH:MM
+      hhmm = hora.length>=5 ? hora.slice(0,5) : hora;
+    }
+    const dia = diaAbrev(dt);
+    const diaNum = Number(fechaISO.split('-')[2]) || dt.getDate();
+    const mes = mesAbrev(dt.getMonth());
+    return `${dia} - ${diaNum} ${mes} - ${hhmm} hs`;
+  }catch(e){
+    return `${fechaISO} ${hora || ''}`;
+  }
+}
+function parseDateTime(fecha, hora){
+  if(!fecha) return null;
+  // build local date time
+  const iso = `${fecha}T${(hora||'00:00')}:00`;
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return null;
+  return d;
+}
 
-        card.innerHTML = `
-            <div class="fecha-principal">${dia.toUpperCase()} - ${fecha} ${hora}</div>
+/* =========== CLEANUP EXPIRED (option A: delete >24h) =========== */
+async function cleanupExpired(snapshotObj){
+  const now = Date.now();
+  const items = [];
+  snapshotObj.forEach(child=>{
+    const id = child.key;
+    const data = child.val();
+    items.push({id, ...data});
+  });
+  for(const s of items){
+    const dt = parseDateTime(s.fecha, s.hora);
+    if(dt){
+      if(now - dt.getTime() > MS_DAY){
+        // delete expired
+        try{
+          await remove(dbRef(db, 'salidas_asignadas/' + s.id));
+        }catch(e){ console.warn('cleanup remove failed', e); }
+      }
+    }
+  }
+}
 
-            <div class="info"><span class="label">Dirección:</span> ${data.direccion || ""}</div>
-            <div class="info"><span class="label">Territorio:</span> ${data.territorio || ""}</div>
-            <div class="info"><span class="label">Manzana:</span> ${data.manzana || ""}</div>
-            <div class="info"><span class="label">Conductor:</span> ${data.conductor || ""}</div>
-            <div class="info"><span class="label">Observaciones:</span> ${data.observaciones || ""}</div>
+/* =========== RENDER =========== */
+function renderList(snapshot){
+  // collect items then sort
+  const arr = [];
+  snapshot.forEach(child=>{
+    const id = child.key;
+    const data = child.val();
+    arr.push({ id, ...data });
+  });
 
-            <div class="actions">
-                <button class="btn editar" onclick="editar('${id}')">
-                    ✏️ Editar
-                </button>
+  // filter out expired <=24h (we also delete in cleanupExpired)
+  const now = Date.now();
+  const valids = arr.filter(s=>{
+    const dt = parseDateTime(s.fecha, s.hora);
+    if(!dt) return true; // keep if no date/time
+    return (now - dt.getTime()) <= MS_DAY;
+  });
 
-                <button class="btn deshacer" onclick="deshacer('${id}')">
-                    ↩️ Deshacer
-                </button>
+  // sort by date+hora ascending
+  valids.sort((a,b)=>{
+    const da = parseDateTime(a.fecha, a.hora) || new Date(0);
+    const db = parseDateTime(b.fecha, b.hora) || new Date(0);
+    return da.getTime() - db.getTime();
+  });
 
-                <button class="btn eliminar" onclick="eliminarSalida('${id}')">
-                    🗑️ Eliminar
-                </button>
-            </div>
-        `;
+  // render
+  lista.innerHTML = '';
+  if(valids.length === 0){
+    lista.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:18px">No hay salidas próximas</div>`;
+    return;
+  }
 
-        lista.appendChild(card);
+  valids.forEach(s=>{
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const fechaText = formatDisplay(s.fecha, s.hora);
+
+    // address: prefer 'direccion' (single field). fallback to calle + interseccion or calle_inter
+    const direccion = s.direccion || s.calle_inter || ((s.calle || '') + (s.interseccion ? ' - ' + s.interseccion : ''));
+
+    card.innerHTML = `
+      <div class="fecha-principal">${fechaText}</div>
+
+      <div class="info-row">
+        <div class="info-item">
+          <div class="label">Dirección</div>
+          <div class="direccion-box">${direccion || '—'}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Territorio</div>
+          <div>${s.territorio || '—'}</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-item">
+          <div class="label">Manzanas</div>
+          <div>${ (Array.isArray(s.pendientes) ? s.pendientes.join(', ') : (s.manzana || '—')) }</div>
+        </div>
+
+        <div class="info-item">
+          <div class="label">Conductor</div>
+          <div>${s.conductor || '—'}</div>
+        </div>
+      </div>
+
+      <div class="observaciones"><span class="label">Observaciones</span><div style="margin-top:6px">${s.observaciones || '—'}</div></div>
+
+      <div class="actions">
+        ${ isAdmin ? `<button class="btn btn-edit" data-id="${s.id}" data-action="edit"><span class="icon">✏️</span> Editar</button>` : '' }
+        ${ isAdmin ? `<button class="btn btn-undo" data-id="${s.id}" data-action="undo"><span class="icon">↩️</span> Deshacer</button>` : '' }
+        ${ isAdmin ? `<button class="btn btn-delete" data-id="${s.id}" data-action="delete"><span class="icon">🗑️</span> Eliminar</button>` : '' }
+      </div>
+    `;
+
+    lista.appendChild(card);
+  });
+
+  // attach listeners for admin buttons (delegation)
+  if(isAdmin){
+    lista.querySelectorAll('button[data-action]').forEach(btn=>{
+      btn.onclick = (e)=>{
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+        if(action === 'edit') openEdit(id);
+        if(action === 'undo') confirmUndo(id);
+        if(action === 'delete') confirmDelete(id);
+      };
     });
+  }
+}
+
+/* =========== ACTIONS =========== */
+function openEdit(id){
+  const ref = dbRef(db, 'salidas_asignadas/' + id);
+  // get once
+  onValue(ref, snap=>{
+    const d = snap.val() || {};
+    fTerritorio.value = d.territorio || '';
+    // manzanas may be stored as pendientes array or manzana string
+    fManzana.value = Array.isArray(d.pendientes) ? d.pendientes.join(', ') : (d.manzana || '');
+    fConductor.value = d.conductor || '';
+    fFecha.value = d.fecha || '';
+    fHora.value = d.hora || '';
+    fDireccion.value = d.direccion || d.calle_inter || ((d.calle||'') + (d.interseccion ? ' - '+d.interseccion : ''));
+    fObs.value = d.observaciones || '';
+    editTargetId = id;
+    sheetBg.style.display = 'flex';
+  }, { onlyOnce:true });
+}
+
+let editTargetId = null;
+
+sheetCancel.onclick = ()=>{
+  sheetBg.style.display = 'none';
+  editTargetId = null;
+};
+
+sheetSave.onclick = async ()=>{
+  if(!editTargetId) return;
+  const manArr = fManzana.value.trim() ? fManzana.value.split(',').map(x=>x.trim()).filter(Boolean) : [];
+  const payload = {
+    territorio: fTerritorio.value.trim(),
+    pendientes: manArr,
+    manzana: fManzana.value.trim(),
+    conductor: fConductor.value.trim(),
+    fecha: fFecha.value,
+    hora: fHora.value,
+    direccion: fDireccion.value.trim(),
+    observaciones: fObs.value.trim()
+  };
+  try{
+    await update(dbRef(db, 'salidas_asignadas/' + editTargetId), payload);
+  }catch(e){
+    console.error('save failed', e);
+  }
+  sheetBg.style.display = 'none';
+  editTargetId = null;
+};
+
+/* confirm dialogs */
+function confirmUndo(id){
+  if(!confirm('¿Desea deshacer esta salida y volverla a pendientes?')) return;
+  doUndo(id);
+}
+async function doUndo(id){
+  const ref = dbRef(db, 'salidas_asignadas/' + id);
+  onValue(ref, async snap=>{
+    const d = snap.val();
+    if(!d) return;
+    // prepare pending object: keep same fields that pendientes expects
+    const pendingObj = {
+      territorio: d.territorio || '',
+      pendientes: Array.isArray(d.pendientes) ? d.pendientes : (d.manzana ? d.manzana.split(',').map(x=>x.trim()) : []),
+      conductor: d.conductor || '',
+      calle_inter: d.direccion || d.calle_inter || ((d.calle||'') + (d.interseccion ? ' - '+d.interseccion : '')),
+      observaciones: d.observaciones || ''
+    };
+    try{
+      await push(pendientesRef, pendingObj);
+      await remove(ref);
+    }catch(e){ console.error('undo failed', e); }
+  }, { onlyOnce:true });
+}
+
+function confirmDelete(id){
+  if(!confirm('¿Desea eliminar esta salida de forma permanente?')) return;
+  doDelete(id);
+}
+async function doDelete(id){
+  try{
+    await remove(dbRef(db, 'salidas_asignadas/' + id));
+  }catch(e){ console.error('delete failed', e); }
+}
+
+/* =========== INITIAL LISTENER =========== */
+onValue(salidasRef, async snap=>{
+  // first cleanup expired (option A)
+  await cleanupExpired(snap);
+  // then render list (snap will refresh after deletions maybe)
+  renderList(snap);
 });
-
-/* ============================
-   EDITAR
-============================ */
-window.editar = (id) => {
-    editId = id;
-    const ref = dbRef(db, "salidas_asignadas/" + id);
-
-    onValue(ref, (snap) => {
-        const d = snap.val();
-        document.getElementById("editTerritorio").value = d.territorio || "";
-        document.getElementById("editManzana").value = d.manzana || "";
-        document.getElementById("editConductor").value = d.conductor || "";
-        document.getElementById("editFecha").value = d.fecha || "";
-        document.getElementById("editHora").value = d.hora || "";
-        document.getElementById("editDireccion").value = d.direccion || "";
-        document.getElementById("editObs").value = d.observaciones || "";
-    }, { onlyOnce:true });
-
-    document.getElementById("modalEditar").style.display = "flex";
-};
-
-window.cerrarModal = () => {
-    document.getElementById("modalEditar").style.display = "none";
-    editId = null;
-};
-
-window.guardarCambios = () => {
-    if (!editId) return;
-
-    update(dbRef(db, "salidas_asignadas/" + editId), {
-        territorio: document.getElementById("editTerritorio").value,
-        manzana: document.getElementById("editManzana").value,
-        conductor: document.getElementById("editConductor").value,
-        fecha: document.getElementById("editFecha").value,
-        hora: document.getElementById("editHora").value,
-        direccion: document.getElementById("editDireccion").value,
-        observaciones: document.getElementById("editObs").value,
-    });
-
-    cerrarModal();
-};
-
-/* ============================
-   DESHACER → vuelve a pendientes
-============================ */
-window.deshacer = (id) => {
-    const ref = dbRef(db, "salidas_asignadas/" + id);
-
-    onValue(ref, (snap) => {
-        const data = snap.val();
-        push(pendientesRef, data);
-        remove(ref);
-    }, { onlyOnce:true });
-};
-
-/* ============================
-   ELIMINAR
-============================ */
-window.eliminarSalida = (id) => {
-    remove(dbRef(db, "salidas_asignadas/" + id));
-};
 </script>
 
 </body>
