@@ -1,223 +1,210 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Próximas Salidas</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Próximas salidas</title>
 
 <style>
-  body{
-    margin:0;
-    font-family: Arial, sans-serif;
-    background:#f2f2f2;
-    color:#333;
-  }
+    body{
+        margin:0;
+        font-family:Arial, sans-serif;
+        background:#f4f4f4;
+        color:#333;
+    }
+    header{
+        background:#1a4b27;
+        color:white;
+        padding:18px;
+        font-size:22px;
+        text-align:center;
+        font-weight:bold;
+    }
+    .wrap{
+        max-width:950px;
+        margin:25px auto;
+        padding:10px;
+    }
 
-  header{
-    background:#1a4b27;
-    color:#fff;
-    padding:16px;
-    text-align:center;
-    font-weight:700;
-    font-size:20px;
-  }
+    /* Tarjetas compactas tipo bloque */
+    .grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+        gap:14px;
+    }
 
-  .container{
-    padding:14px;
-    max-width:720px;
-    margin:auto;
-  }
+    .card{
+        background:white;
+        border-radius:12px;
+        padding:16px;
+        box-shadow:0 3px 7px rgba(0,0,0,0.12);
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        border-left:6px solid #1a4b27;
+    }
 
-  /* TARJETA COMPACTA */
-  .card{
-    background:#fff;
-    border-radius:14px;
-    padding:16px;
-    margin-bottom:14px;
-    box-shadow:0 3px 12px rgba(0,0,0,0.10);
-    position:relative;
-  }
+    .card h3{
+        margin:0 0 8px 0;
+        font-size:18px;
+        font-weight:bold;
+        color:#1a4b27;
+    }
 
-  .card-header{
-    font-size:18px;
-    font-weight:bold;
-    margin-bottom:10px;
-    color:#1a4b27;
-  }
+    .info{
+        font-size:14px;
+        margin-bottom:10px;
+        line-height:1.4;
+    }
 
-  .row{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:8px;
-  }
+    .tag{
+        display:inline-block;
+        padding:4px 8px;
+        font-size:12px;
+        border-radius:8px;
+        margin-top:6px;
+        background:#e6f4ea;
+        color:#1a4b27;
+        font-weight:bold;
+    }
 
-  .label{
-    font-weight:bold;
-    color:#1a4b27;
-  }
+    .admin-btns{
+        margin-top:12px;
+        display:flex;
+        gap:6px;
+    }
+    .admin-btns button{
+        flex:1;
+        padding:6px 0;
+        font-size:13px;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+        color:white;
+    }
+    .edit{ background:#1565c0; }
+    .undo{ background:#6a1b9a; }
+    .del{ background:#c62828; }
 
-  .value{
-    color:#444;
-    font-size:15px;
-  }
-
-  .obs{
-    margin-top:10px;
-    font-size:14px;
-    color:#555;
-    border-top:1px solid #ddd;
-    padding-top:8px;
-    line-height:1.4;
-  }
-
-  /* BOTONES ADMIN */
-  .admin-buttons{
-    display:flex;
-    gap:8px;
-    margin-top:12px;
-  }
-
-  .btn{
-    padding:8px 10px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:14px;
-    border:none;
-    display:flex;
-    align-items:center;
-    gap:6px;
-  }
-  .editar{background:#1a4b27; color:#fff;}
-  .deshacer{background:#d39e00; color:#fff;}
-  .eliminar{background:#c62828; color:#fff;}
-
+    /* Ocultar admin por defecto, se muestra si es admin */
+    .admin-btns{ display:none; }
 </style>
 </head>
+
 <body>
+<header>Próximas salidas</header>
 
-<header>Próximas Salidas</header>
-
-<div class="container" id="lista"></div>
+<div class="wrap">
+    <div id="lista" class="grid"></div>
+</div>
 
 <script type="module">
-/* IMPORTAR FIREBASE */
-import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
+import { db, ref as dbRef, onValue, update, remove } from "./firebase.js";
 
-/* DETECTAR ROL */
-const rol = localStorage.getItem("rol");
+/* ----------------------
+   VALIDAR ADMIN
+----------------------- */
+const sesion = JSON.parse(localStorage.getItem("sesion")) || {};
+const esAdmin = sesion.rol === "admin";
 
-/* LISTA */
+/* ----------------------
+   ELEMENTOS
+----------------------- */
 const lista = document.getElementById("lista");
 const salidasRef = dbRef(db, "salidas_asignadas");
 
-/* FORMATEAR FECHAS */
-function formatearFecha(fechaStr){
-  const fecha = new Date(fechaStr);
-  const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-  const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-  return `${dias[fecha.getDay()]} - ${fecha.getDate()} ${meses[fecha.getMonth()]} - ${fecha.getHours().toString().padStart(2,'0')}:${fecha.getMinutes().toString().padStart(2,'0')} hs`;
-}
+/* ----------------------
+   CARGAR SALIDAS
+----------------------- */
+onValue(salidasRef, snap => {
+    lista.innerHTML = "";
 
-/* CARGAR SALIDAS */
-onValue(salidasRef, snapshot => {
-  lista.innerHTML = "";
-
-  const data = snapshot.val();
-  if(!data) return;
-
-  /* Convertir a array y ordenar */
-  const arr = Object.entries(data).map(([id, salida]) => ({id, ...salida}));
-
-  arr.sort((a,b)=> new Date(a.fecha) - new Date(b.fecha));
-
-  arr.forEach(item => {
-    if(!item.fecha) return;
-
-    /* Eliminar automáticos si pasaron 24h */
-    const fechaSalida = new Date(item.fecha);
-    const ahora = new Date();
-    const diff = ahora - fechaSalida;
-
-    if(diff > 24 * 60 * 60 * 1000){
-      remove(dbRef(db,"salidas_asignadas/"+item.id));
-      return;
+    if (!snap.exists()) {
+        lista.innerHTML = "<p>No hay salidas programadas.</p>";
+        return;
     }
 
-    const card = document.createElement("div");
-    card.className = "card";
+    const arr = [];
 
-    card.innerHTML = `
-      <div class="card-header">📅 ${formatearFecha(item.fecha)}</div>
+    snap.forEach(child => {
+        arr.push({ id: child.key, ...child.val() });
+    });
 
-      <div class="row">
-        <div class="label">📍 Dirección:</div>
-        <div class="value">${item.direccion || "-"}</div>
-      </div>
+    // Orden: fechas más próximas primero (sin romper nada)
+    arr.sort((a,b) => {
+        const fa = new Date(`${a.fecha} ${a.hora}`);
+        const fb = new Date(`${b.fecha} ${b.hora}`);
+        return fa - fb;
+    });
 
-      <div class="row">
-        <div class="label">🗺️ Territorio:</div>
-        <div class="value">${item.territorio || "-"}</div>
-      </div>
+    arr.forEach(item => lista.appendChild(renderCard(item)));
+});
 
-      <div class="row">
-        <div class="label">🔲 Manzanas:</div>
-        <div class="value">${item.manzanas || "-"}</div>
-      </div>
+/* ----------------------
+   RENDER TARJETA
+----------------------- */
+function renderCard(data){
+    const div = document.createElement("div");
+    div.className = "card";
 
-      <div class="row">
-        <div class="label">🚗 Conductor:</div>
-        <div class="value">${item.conductor || "-"}</div>
-      </div>
+    const fecha = formatFecha(data.fecha);
+    const hora = data.hora || "Sin horario";
+    const tipo = data.tipo || "Salida";
 
-      <div class="obs">📝 ${item.observaciones || "Sin observaciones"}</div>
+    div.innerHTML = `
+        <h3>${fecha} • ${hora}</h3>
+        <div class="info">
+            <strong>Lugar:</strong> ${data.lugar || "Sin lugar"} <br>
+            <strong>Notas:</strong> ${data.notas || "Sin notas"}
+        </div>
+
+        <span class="tag">${tipo}</span>
+
+        <div class="admin-btns">
+            <button class="edit">Editar</button>
+            <button class="undo">Deshacer</button>
+            <button class="del">Eliminar</button>
+        </div>
     `;
 
-    /* Botones ADMIN */
-    if(rol === "admin"){
-      const btns = document.createElement("div");
-      btns.className = "admin-buttons";
+    /* Mostrar botones si es admin */
+    if (esAdmin) {
+        const adminBox = div.querySelector(".admin-btns");
+        adminBox.style.display = "flex";
 
-      const btnEditar = document.createElement("button");
-      btnEditar.className = "btn editar";
-      btnEditar.innerHTML = "✏️ Editar";
-      btnEditar.onclick = ()=> alert("Función editar lista para conectar al formulario.");
+        adminBox.querySelector(".del").onclick = () => {
+            if (confirm("¿Eliminar esta salida?")) {
+                remove(dbRef(db, `salidas_asignadas/${data.id}`));
+            }
+        };
 
-      const btnDeshacer = document.createElement("button");
-      btnDeshacer.className = "btn deshacer";
-      btnDeshacer.innerHTML = "↩️ Deshacer";
-      btnDeshacer.onclick = ()=>{
-        if(confirm("¿Desea DESHACER esta salida?")){
-          const pendRef = dbRef(db,"pendientes");
-          push(pendRef,{
-            territorio:item.territorio,
-            manzanas:item.manzanas,
-            conductor:item.conductor,
-            fecha:item.fecha,
-            direccion:item.direccion,
-            observaciones:item.observaciones
-          });
-          remove(dbRef(db,"salidas_asignadas/"+item.id));
-        }
-      };
+        adminBox.querySelector(".undo").onclick = () => {
+            update(dbRef(db, `salidas_asignadas/${data.id}`), { estado: "pendiente" });
+        };
 
-      const btnEliminar = document.createElement("button");
-      btnEliminar.className = "btn eliminar";
-      btnEliminar.innerHTML = "🗑️ Eliminar";
-      btnEliminar.onclick = ()=>{
-        if(confirm("¿Desea ELIMINAR esta salida permanentemente?")){
-          remove(dbRef(db,"salidas_asignadas/"+item.id));
-        }
-      };
-
-      btns.appendChild(btnEditar);
-      btns.appendChild(btnDeshacer);
-      btns.appendChild(btnEliminar);
-      card.appendChild(btns);
+        adminBox.querySelector(".edit").onclick = () => {
+            const nuevoLugar = prompt("Nuevo lugar:", data.lugar || "");
+            if (nuevoLugar !== null) {
+                update(dbRef(db, `salidas_asignadas/${data.id}`), { lugar: nuevoLugar });
+            }
+        };
     }
 
-    lista.appendChild(card);
-  });
-});
+    return div;
+}
+
+/* ----------------------
+   FORMATEAR FECHA LINDO
+----------------------- */
+function formatFecha(f){
+    const d = new Date(f);
+    if (isNaN(d.getTime())) return f;
+
+    const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+    const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+    return `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}`;
+}
 </script>
 
 </body>
