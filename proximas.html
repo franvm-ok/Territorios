@@ -1,383 +1,357 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Próximas Salidas</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Próximas salidas</title>
 
 <style>
-    body{
-        margin:0;background:#f0f0f5;font-family:Arial, sans-serif;
-    }
-    header{
-        background:#2e7d32;color:white;padding:18px;font-size:22px;
-        text-align:center;font-weight:bold;
-    }
-    #lista{
-        padding:14px;
-        display:flex;
-        flex-direction:column;
-        gap:14px;
+    body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, Arial;
+        background: #f2f2f7;
+        color: #333;
     }
 
-    .card{
-        position:relative;
-        background:#ffffff;
-        border-radius:14px;
-        padding:14px 16px;
-        box-shadow:0 3px 8px rgba(0,0,0,0.15);
-        font-size:16px;
-        line-height:1.4;
-        border-left:6px solid #2e7d32;
+    header {
+        background: #1a4b27;
+        color: white;
+        padding: 18px;
+        text-align: center;
+        font-size: 22px;
+        font-weight: 600;
     }
 
-    .more-btn{
-        position:absolute;
-        top:10px;
-        right:12px;
-        border:none;
-        background:none;
-        font-size:22px;
-        cursor:pointer;
-        color:#333;
+    .container {
+        padding: 16px;
+        max-width: 700px;
+        margin: auto;
     }
 
-    .menu{
-        display:none;
-        position:absolute;
-        top:42px;
-        right:12px;
-        background:#fff;
-        box-shadow:0 4px 12px rgba(0,0,0,0.2);
-        border-radius:8px;
-        padding:6px 0;
-        width:140px;
-        z-index:50;
-        flex-direction:column;
-    }
-    .menu button{
-        width:100%;
-        padding:10px 14px;
-        background:none;
-        border:none;
-        text-align:left;
-        cursor:pointer;
-        font-size:15px;
-    }
-    .menu button:hover{
-        background:#f0f0f0;
+    /* Tarjeta */
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
 
-    .fecha-line{
-        font-size:18px;
-        font-weight:bold;
-        color:#1b5e20;
-        margin-bottom:10px;
-        text-align:center;
+    .fecha-principal {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a4b27;
+        margin-bottom: 10px;
     }
 
-    .row{
-        display:flex;
-        justify-content:space-between;
-        margin-bottom:6px;
+    .info {
+        font-size: 17px;
+        line-height: 1.4;
+        margin-bottom: 12px;
     }
 
-    .row div{
-        flex:1;
+    .label {
+        font-weight: 600;
+        color: #444;
     }
 
-    .label{
-        font-size:14px;
-        font-weight:bold;
-        color:#333;
+    /* Botones de acción */
+    .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        flex-wrap: wrap;
     }
 
-    .value{
-        font-size:16px;
-        color:#111;
+    .btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        flex: 1;
+        justify-content: center;
     }
 
-    .observaciones{
-        margin-top:8px;
-        font-size:15px;
-        color:#222;
-        background:#f4f4f8;
-        padding:6px 10px;
-        border-radius:8px;
+    .btn svg {
+        width: 18px;
+        height: 18px;
     }
 
-    .empty{
-        padding:28px;text-align:center;color:#555;font-size:17px;
+    .editar { background: #e8f0fe; color:#1a3d8f; }
+    .deshacer { background: #fff4d8; color:#8a5a00; }
+    .eliminar { background: #fde4e4; color:#a10000; }
+
+    /* Modal */
+    .modal-bg {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.40);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
     }
 
-    /* MODAL */
-    #modal{
-        display:none;position:fixed;top:0;left:0;width:100%;height:100%;
-        background:rgba(0,0,0,0.55);justify-content:center;align-items:center;
-        padding:20px;z-index:100;
+    .modal {
+        background: white;
+        width: 100%;
+        max-width: 480px;
+        border-radius: 16px;
+        padding: 20px;
+        animation: fadeIn .2s;
     }
-    .modal-box{
-        background:white;padding:20px;border-radius:12px;width:100%;
-        max-width:420px;display:flex;flex-direction:column;gap:12px;
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-    .modal-box input, .modal-box textarea{
-        width:100%;padding:10px;border:1px solid #ccc;
-        border-radius:8px;font-size:16px;
+
+    .modal h2 {
+        font-size: 20px;
+        margin-bottom: 14px;
+        font-weight: 700;
+        color: #1a4b27;
     }
-    .modal-btns{
-        display:flex;gap:10px;margin-top:8px;
+
+    .group {
+        margin-bottom: 12px;
     }
-    .modal-btns button{
-        flex:1;padding:12px;font-size:16px;border:none;border-radius:8px;
-        cursor:pointer;font-weight:bold;
+
+    label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 5px;
     }
-    .save{ background:#2e7d32;color:white; }
-    .cancel{ background:#ccc; }
+
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        outline: none;
+    }
+
+    textarea {
+        resize: none;
+        height: 70px;
+    }
+
+    .fila {
+        display: flex;
+        gap: 10px;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 12px;
+        background: #ccc;
+        color: #333;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .btn-save {
+        flex: 1;
+        padding: 12px;
+        background: #1a4b27;
+        color: white;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+    }
+
 </style>
 </head>
 
 <body>
 
-<header>Próximas Salidas</header>
+<header>Próximas salidas</header>
 
-<div id="lista"></div>
+<div class="container" id="lista">
 
-<!-- MODAL -->
-<div id="modal">
-    <div class="modal-box">
-        <h3>Editar salida</h3>
+    <!-- Tarjetas generadas dinámicamente desde JS / Firebase -->
 
-        <input id="e_fecha" type="date">
-        <input id="e_hora" type="time">
-        <input id="e_calle" placeholder="Calle">
-        <input id="e_inter" placeholder="Intersección">
-        <input id="e_territorio" placeholder="Territorio">
-        <input id="e_manzanas" placeholder="Manzanas separadas por coma">
-        <input id="e_conductor" placeholder="Conductor">
-        <textarea id="e_obs" rows="2" placeholder="Observaciones"></textarea>
+</div>
 
-        <div class="modal-btns">
-            <button id="cancelEdit" class="cancel">Cancelar</button>
-            <button id="saveEdit" class="save">Guardar</button>
+<!-- Modal edición -->
+<div class="modal-bg" id="modalEditar">
+    <div class="modal">
+        <h2>Editar salida</h2>
+
+        <div class="group">
+            <label>Territorio</label>
+            <input id="editTerritorio">
+        </div>
+
+        <div class="group">
+            <label>Manzana</label>
+            <input id="editManzana">
+        </div>
+
+        <div class="group">
+            <label>Conductor</label>
+            <input id="editConductor">
+        </div>
+
+        <div class="fila">
+            <div class="group" style="flex:1">
+                <label>Fecha</label>
+                <input type="date" id="editFecha">
+            </div>
+            <div class="group" style="flex:1">
+                <label>Hora</label>
+                <input type="time" id="editHora">
+            </div>
+        </div>
+
+        <div class="group">
+            <label>Calle / intersección</label>
+            <input id="editDireccion">
+        </div>
+
+        <div class="group">
+            <label>Observaciones</label>
+            <textarea id="editObs"></textarea>
+        </div>
+
+        <div class="modal-buttons">
+            <div class="btn-cancel" onclick="cerrarModal()">Cancelar</div>
+            <div class="btn-save" onclick="guardarCambios()">Guardar</div>
         </div>
     </div>
 </div>
 
 <script type="module">
+/* ============================
+   IMPORTS FIREBASE
+============================ */
 import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
 
 const lista = document.getElementById("lista");
 const salidasRef = dbRef(db, "salidas_asignadas");
 const pendientesRef = dbRef(db, "pendientes");
 
-const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
-let rol = (sesion.rol || "invitado").toLowerCase();
-if (rol === "invitado") rol = "conductor";
+/* ID temporal para edición */
+let editId = null;
 
-const modal = document.getElementById("modal");
-const e_territorio = document.getElementById("e_territorio");
-const e_manzanas = document.getElementById("e_manzanas");
-const e_conductor = document.getElementById("e_conductor");
-const e_fecha = document.getElementById("e_fecha");
-const e_hora = document.getElementById("e_hora");
-const e_calle = document.getElementById("e_calle");
-const e_inter = document.getElementById("e_inter");
-const e_obs = document.getElementById("e_obs");
-
-const saveEdit = document.getElementById("saveEdit");
-const cancelEdit = document.getElementById("cancelEdit");
-
-let salidas = [];
-let activeMenuId = null;
-let editingId = null;
-
-/* FECHA */
-function ddmmaa(fechaISO){
-    if(!fechaISO) return "";
-    const f = new Date(fechaISO);
-    const dias = ["DOM","LUN","MAR","MIÉ","JUE","VIE","SÁB"];
-    const dia = dias[f.getDay()];
-    const [y,m,d] = fechaISO.split("-");
-    return {dia, texto:`${dia} • ${d} ${mesCorto(m)} •`};
-}
-function mesCorto(m){
-    return ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"][Number(m)-1];
-}
-
-function esValida(fecha, hora){
-    if(!fecha || !hora) return true;
-    const dt = new Date(`${fecha}T${hora}:00`);
-    return (Date.now() - dt.getTime()) <= 24*60*60*1000;
-}
-
-/* RENDER */
-function render(){
+/* ============================
+   CARGAR TARJETAS
+============================ */
+onValue(salidasRef, (snapshot) => {
     lista.innerHTML = "";
-    const futuras = salidas.filter(s => esValida(s.fecha, s.hora));
 
-    if(futuras.length === 0){
-        lista.innerHTML = `<div class="empty">No hay salidas</div>`;
-        return;
-    }
+    snapshot.forEach((child) => {
+        const data = child.val();
+        const id = child.key;
 
-    futuras.forEach(s=>{
-        const f = ddmmaa(s.fecha || "");
         const card = document.createElement("div");
         card.className = "card";
 
+        const fecha = data.fecha || "";
+        const hora = data.hora || "";
+        const dia = new Date(fecha + " " + hora).toLocaleDateString("es-AR", { weekday:"long" });
+
         card.innerHTML = `
-            ${rol==="admin" ? `<button class="more-btn" data-id="${s.id}">⋮</button>` : ""}
+            <div class="fecha-principal">${dia.toUpperCase()} - ${fecha} ${hora}</div>
 
-            <div class="fecha-line">🗓️ ${f.texto} ${s.hora||""} h</div>
+            <div class="info"><span class="label">Dirección:</span> ${data.direccion || ""}</div>
+            <div class="info"><span class="label">Territorio:</span> ${data.territorio || ""}</div>
+            <div class="info"><span class="label">Manzana:</span> ${data.manzana || ""}</div>
+            <div class="info"><span class="label">Conductor:</span> ${data.conductor || ""}</div>
+            <div class="info"><span class="label">Observaciones:</span> ${data.observaciones || ""}</div>
 
-            <div class="row">
-                <div><span class="label">📍 Dirección</span>
-                     <div class="value">${s.calle||""} ${s.interseccion? "— " + s.interseccion : ""}</div>
-                </div>
-                <div><span class="label">🚗 Conductor</span>
-                     <div class="value">${s.conductor||"—"}</div>
-                </div>
+            <div class="actions">
+                <button class="btn editar" onclick="editar('${id}')">
+                    ✏️ Editar
+                </button>
+
+                <button class="btn deshacer" onclick="deshacer('${id}')">
+                    ↩️ Deshacer
+                </button>
+
+                <button class="btn eliminar" onclick="eliminarSalida('${id}')">
+                    🗑️ Eliminar
+                </button>
             </div>
-
-            <div class="row">
-                <div><span class="label">🗺️ Territorio</span>
-                     <div class="value">${s.territorio||"—"}</div>
-                </div>
-                <div><span class="label">🔲 Manzanas</span>
-                     <div class="value">${(s.pendientes||[]).join(", ")}</div>
-                </div>
-            </div>
-
-            <div class="observaciones"><span class="label">📝 Observaciones</span>
-                <div class="value">${s.observaciones||"—"}</div>
-            </div>
-
-            ${rol==="admin" ? `
-                <div class="menu" id="menu-${s.id}">
-                    <button data-action="edit" data-id="${s.id}">✎ Editar</button>
-                    <button data-action="undo" data-id="${s.id}">⮌ Deshacer</button>
-                    <button data-action="delete" data-id="${s.id}" style="color:#b91c1c">🗑️ Eliminar</button>
-                </div>
-            ` : ""}
         `;
 
         lista.appendChild(card);
     });
-
-    if(rol==="admin"){
-        document.querySelectorAll(".more-btn").forEach(btn=>{
-            btn.onclick = (e)=>{
-                e.stopPropagation();
-                toggleMenu(btn.dataset.id);
-            };
-        });
-        document.querySelectorAll(".menu button").forEach(b=>{
-            b.onclick = ()=>{
-                const id = b.dataset.id;
-                const action = b.dataset.action;
-                closeMenu();
-                if(action==="edit") openEditModal(id);
-                if(action==="undo") undoToPendientes(id);
-                if(action==="delete") deleteSalida(id);
-            };
-        });
-    }
-}
-
-function toggleMenu(id){
-    closeMenu();
-    const m = document.getElementById("menu-"+id);
-    if(m){ m.style.display="flex"; activeMenuId=id; }
-}
-function closeMenu(){
-    if(activeMenuId){
-        const m = document.getElementById("menu-"+activeMenuId);
-        if(m) m.style.display="none";
-        activeMenuId=null;
-    }
-}
-
-/* EDITAR */
-function openEditModal(id){
-    const s = salidas.find(x=>x.id===id);
-    if(!s) return;
-    editingId = id;
-
-    e_fecha.value = s.fecha || "";
-    e_hora.value = s.hora || "";
-    e_calle.value = s.calle || "";
-    e_inter.value = s.interseccion || "";
-    e_territorio.value = s.territorio || "";
-    e_manzanas.value = (s.pendientes||[]).join(", ");
-    e_conductor.value = s.conductor || "";
-    e_obs.value = s.observaciones || "";
-
-    modal.style.display = "flex";
-}
-
-cancelEdit.onclick = ()=>{
-    modal.style.display="none";
-    editingId=null;
-};
-
-saveEdit.onclick = async ()=>{
-    if(!editingId) return;
-
-    const manArr = e_manzanas.value.trim()
-                   ? e_manzanas.value.split(",").map(x=>x.trim()).filter(x=>x)
-                   : [];
-
-    await update(dbRef(db,"salidas_asignadas/"+editingId),{
-        fecha: e_fecha.value,
-        hora: e_hora.value,
-        calle: e_calle.value.trim(),
-        interseccion: e_inter.value.trim(),
-        territorio: e_territorio.value.trim(),
-        pendientes: manArr,
-        conductor: e_conductor.value.trim(),
-        observaciones: e_obs.value.trim()
-    });
-
-    modal.style.display="none";
-    editingId=null;
-};
-
-/* DESHACER */
-async function undoToPendientes(id){
-    const s = salidas.find(x=>x.id===id);
-    if(!s) return;
-
-    await push(pendientesRef,{
-        territorio:s.territorio,
-        pendientes:s.pendientes||[],
-        calle:s.calle||"",
-        interseccion:s.interseccion||"",
-        observaciones:s.observaciones||""
-    });
-
-    await remove(dbRef(db,"salidas_asignadas/"+id));
-}
-
-/* ELIMINAR */
-async function deleteSalida(id){
-    if(confirm("¿Eliminar esta salida?")){
-        await remove(dbRef(db,"salidas_asignadas/"+id));
-    }
-}
-
-/* REALTIME */
-onValue(salidasRef, snap=>{
-    const data = snap.val() || {};
-    salidas = Object.keys(data).map(id=>({id,...data[id]}));
-
-    salidas.sort((a,b)=>{
-        const fa = (a.fecha||"") + " " + (a.hora||"");
-        const fb = (b.fecha||"") + " " + (b.hora||"");
-        return fa.localeCompare(fb);
-    });
-
-    render();
 });
+
+/* ============================
+   EDITAR
+============================ */
+window.editar = (id) => {
+    editId = id;
+    const ref = dbRef(db, "salidas_asignadas/" + id);
+
+    onValue(ref, (snap) => {
+        const d = snap.val();
+        document.getElementById("editTerritorio").value = d.territorio || "";
+        document.getElementById("editManzana").value = d.manzana || "";
+        document.getElementById("editConductor").value = d.conductor || "";
+        document.getElementById("editFecha").value = d.fecha || "";
+        document.getElementById("editHora").value = d.hora || "";
+        document.getElementById("editDireccion").value = d.direccion || "";
+        document.getElementById("editObs").value = d.observaciones || "";
+    }, { onlyOnce:true });
+
+    document.getElementById("modalEditar").style.display = "flex";
+};
+
+window.cerrarModal = () => {
+    document.getElementById("modalEditar").style.display = "none";
+    editId = null;
+};
+
+window.guardarCambios = () => {
+    if (!editId) return;
+
+    update(dbRef(db, "salidas_asignadas/" + editId), {
+        territorio: document.getElementById("editTerritorio").value,
+        manzana: document.getElementById("editManzana").value,
+        conductor: document.getElementById("editConductor").value,
+        fecha: document.getElementById("editFecha").value,
+        hora: document.getElementById("editHora").value,
+        direccion: document.getElementById("editDireccion").value,
+        observaciones: document.getElementById("editObs").value,
+    });
+
+    cerrarModal();
+};
+
+/* ============================
+   DESHACER → vuelve a pendientes
+============================ */
+window.deshacer = (id) => {
+    const ref = dbRef(db, "salidas_asignadas/" + id);
+
+    onValue(ref, (snap) => {
+        const data = snap.val();
+        push(pendientesRef, data);
+        remove(ref);
+    }, { onlyOnce:true });
+};
+
+/* ============================
+   ELIMINAR
+============================ */
+window.eliminarSalida = (id) => {
+    remove(dbRef(db, "salidas_asignadas/" + id));
+};
 </script>
 
 </body>
