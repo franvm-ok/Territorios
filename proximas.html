@@ -2,312 +2,209 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Próximas salidas</title>
 
-<!-- ======== ESTILOS MEJORADOS Y COMPACTOS ======== -->
 <style>
-  body{
-    margin:0;
-    font-family:Arial;
-    background:#f4f4f4;
-    color:#333;
-  }
+:root{
+  --verde:#1a4b27;
+  --bg:#f4f4f4;
+  --card:#ffffff;
+  --muted:#666;
+  --radius:14px;
+}
 
-  header{
-    background:#1a4b27;
-    color:#fff;
-    padding:18px;
-    text-align:center;
-    font-size:22px;
-    font-weight:bold;
-  }
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--bg);
+  color:#222;
+}
 
-  .container{
-    padding:16px;
-    max-width:720px;
-    margin:auto;
-  }
+header{
+  background:var(--verde);
+  color:#fff;
+  text-align:center;
+  padding:16px;
+  font-size:20px;
+  font-weight:700;
+}
 
-  /* TARJETA COMPACTA */
-  .card{
-    background:white;
-    padding:14px 16px;
-    margin-bottom:14px;
-    border-radius:14px;
-    box-shadow:0 3px 8px rgba(0,0,0,0.12);
-    border-left:6px solid #1a4b27;
-  }
+.container{
+  max-width:1100px;
+  margin:14px auto;
+  padding:12px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;
+}
 
-  /* Fecha grande */
-  .fecha{
-    font-size:18px;
-    font-weight:bold;
-    color:#1a4b27;
-    margin-bottom:6px;
-  }
+/* ---------- TARJETA ---------- */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
 
-  .campo{
-    font-size:15px;
-    margin:3px 0;
-  }
+/* FECHA PRIORIDAD */
+.fecha{
+  background:#eef6f0;
+  border-radius:12px;
+  padding:10px;
+  text-align:center;
+  font-size:18px;
+  font-weight:700;
+  color:var(--verde);
+}
 
-  .campo b{
-    color:#1a4b27;
-  }
+/* DATOS */
+.dato{
+  font-size:15px;
+}
+.muted{color:var(--muted)}
 
-  /* Botones admin */
-  .btns{
-    display:flex;
-    gap:8px;
-    margin-top:10px;
-  }
+/* BOTONES ADMIN */
+.admin-actions{
+  display:flex;
+  gap:8px;
+  margin-top:6px;
+}
+.admin-actions button{
+  flex:1;
+  border:none;
+  border-radius:10px;
+  padding:10px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+}
+.edit{background:#1976d2;color:#fff}
+.undo{background:#f9a825;color:#222}
+.del{background:#c62828;color:#fff}
 
-  button{
-    flex:1;
-    padding:10px;
-    border:none;
-    border-radius:10px;
-    font-weight:bold;
-    cursor:pointer;
-  }
-
-  .edit{background:#ffd966;}
-  .undo{background:#b6d7a8;}
-  .delete{background:#ea9999;}
-
-  /* DIALOGO (HOJA) */
-  #editSheet{
-    position:fixed;
-    left:0; right:0; bottom:0;
-    background:white;
-    padding:18px;
-    border-radius:18px 18px 0 0;
-    box-shadow:0 -4px 14px rgba(0,0,0,0.2);
-    display:none;
-  }
-
-  #editSheet h2{
-    margin-top:0;
-    text-align:center;
-    color:#1a4b27;
-  }
-
-  .input-group{
-    margin-bottom:10px;
-  }
-
-  input, textarea, select{
-    width:100%;
-    padding:10px;
-    box-sizing:border-box;
-    border-radius:8px;
-    border:1px solid #ccc;
-  }
-
-  .save-btn{
-    background:#1a4b27;
-    color:white;
-    width:100%;
-    margin-top:10px;
-  }
-
-  .cancel-btn{
-    background:#ccc;
-    width:100%;
-    margin-top:10px;
-  }
+/* BACK */
+.back{
+  position:fixed;
+  left:14px;
+  bottom:18px;
+  background:#fff;
+  color:var(--verde);
+  border:1px solid #e6e6e6;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 6px 16px rgba(0,0,0,0.08);
+}
 </style>
 </head>
+
 <body>
 
-<header>Próximas salidas</header>
+<header>📅 Próximas salidas</header>
 
-<div class="container" id="lista"></div>
+<div class="container" id="lista">Cargando…</div>
 
-<!-- ============= HOJA DE EDICIÓN ============= -->
-<div id="editSheet">
-  <h2>Editar salida</h2>
+<button class="back" onclick="location.href='index.html'">⬅ Volver</button>
 
-  <div class="input-group">
-    <label>Territorio</label>
-    <input id="editTerritorio"/>
-  </div>
-
-  <div class="input-group">
-    <label>Manzana</label>
-    <input id="editManzana"/>
-  </div>
-
-  <div class="input-group">
-    <label>Conductor</label>
-    <input id="editConductor"/>
-  </div>
-
-  <div class="input-group">
-    <label>Fecha</label>
-    <input type="date" id="editFecha"/>
-  </div>
-
-  <div class="input-group">
-    <label>Hora</label>
-    <input type="time" id="editHora"/>
-  </div>
-
-  <div class="input-group">
-    <label>Calle / Intersección</label>
-    <input id="editDireccion"/>
-  </div>
-
-  <div class="input-group">
-    <label>Observaciones</label>
-    <textarea id="editObs"></textarea>
-  </div>
-
-  <button class="save-btn" id="btnGuardar">Guardar</button>
-  <button class="cancel-btn" id="btnCancelar">Cancelar</button>
-</div>
-
-<!-- ============= FIREBASE Y SCRIPT ============= -->
 <script type="module">
-import { db, ref as dbRef, onValue, update, remove, push } from "./firebase.js";
+import { db, ref as dbRef, onValue, remove, push } from "./firebase.js";
 
+/* -------- SESIÓN -------- */
+const sesion = JSON.parse(localStorage.getItem("sesion") || "{}");
+const esAdmin = (sesion.rol || "").toLowerCase() === "admin";
+
+/* -------- REFS -------- */
 const lista = document.getElementById("lista");
-const editSheet = document.getElementById("editSheet");
-let editId = null;
+const salidasRef = dbRef(db,"salidas_asignadas");
+const pendientesRef = dbRef(db,"pendientes");
 
-const sesion = JSON.parse(localStorage.getItem("sesion"));
-const rol = sesion ? sesion.rol : "invitado";
+/* -------- FECHAS -------- */
+const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
-const salidasRef = dbRef(db, "salidas_asignadas");
-const pendientesRef = dbRef(db, "pendientes");
-
-/* ============================
-   ABRIR HOJA DE EDICIÓN
-============================ */
-function abrirEdicion(id, data){
-  editId = id;
-  editTerritorio.value = data.territorio || "";
-  editManzana.value = data.manzana || "";
-  editConductor.value = data.conductor || "";
-  editFecha.value = data.fecha || "";
-  editHora.value = data.hora || "";
-  editDireccion.value = data.direccion || "";
-  editObs.value = data.observaciones || "";
-  editSheet.style.display = "block";
+function formatFecha(fecha,hora){
+  const d = new Date(fecha+"T"+hora);
+  return `${dias[d.getDay()]} - ${d.getDate()} ${meses[d.getMonth()]} - ${hora} hs`;
 }
 
-/* ============================
-   GUARDAR EDICIÓN
-============================ */
-btnGuardar.onclick = async ()=>{
-  if(!editId) return;
-
-  await update(dbRef(db, "salidas_asignadas/" + editId),{
-    territorio: editTerritorio.value.trim(),
-    manzana: editManzana.value.trim(),
-    conductor: editConductor.value.trim(),
-    fecha: editFecha.value,
-    hora: editHora.value,
-    direccion: editDireccion.value.trim(),
-    observaciones: editObs.value.trim()
-  });
-
-  editSheet.style.display="none";
-};
-
-/* ============================
-   CANCELAR
-============================ */
-btnCancelar.onclick = ()=> editSheet.style.display="none";
-
-/* ============================
-   CONFIRMACIONES
-============================ */
-function confirmar(msg){
-  return window.confirm(msg);
-}
-
-/* ============================
-   LISTAR TARJETAS
-============================ */
-onValue(salidasRef, snapshot => {
+/* -------- RENDER -------- */
+onValue(salidasRef, snap=>{
   lista.innerHTML = "";
-  const data = snapshot.val() || {};
-
-  const items = Object.entries(data)
-    .map(([id, s]) => ({id, ...s}))
-    .sort((a,b)=>{
-      const da = new Date(a.fecha+" "+a.hora);
-      const db = new Date(b.fecha+" "+b.hora);
-      return da - db;
-    });
-
   const ahora = Date.now();
 
-  items.forEach(s => {
-    const fechaCompleta = new Date(s.fecha+" "+s.hora);
-    const dif = ahora - fechaCompleta.getTime();
+  let arr = [];
+  snap.forEach(x=>{
+    const o = x.val();
+    o.id = x.key;
+    arr.push(o);
+  });
 
-    if(dif > 86400000){ 
-      remove(dbRef(db, "salidas_asignadas/"+s.id));
+  arr.sort((a,b)=> new Date(a.fecha+"T"+a.hora) - new Date(b.fecha+"T"+b.hora));
+
+  arr.forEach(salida=>{
+    const fechaHora = new Date(salida.fecha+"T"+salida.hora).getTime();
+
+    // eliminar automáticamente si pasaron 24hs
+    if(ahora - fechaHora > 24*60*60*1000){
+      remove(dbRef(db,"salidas_asignadas/"+salida.id));
       return;
     }
 
-    const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-    const dia = dias[fechaCompleta.getDay()];
-    const opciones = { month:"short", day:"numeric" };
-    const fechaFmt = fechaCompleta.toLocaleDateString("es-AR", opciones);
-
-    const horaFmt = s.hora ? s.hora.substring(0,5) : "";
-
     const card = document.createElement("div");
-    card.className = "card";
+    card.className="card";
 
     card.innerHTML = `
-      <div class="fecha">📅 ${dia} - ${fechaFmt} - ${horaFmt} hs</div>
-      <div class="campo"><b>Dirección:</b> ${s.direccion || ""}</div>
-      <div class="campo"><b>Territorio:</b> ${s.territorio || ""} | <b>Manzanas:</b> ${s.manzana || ""}</div>
-      <div class="campo"><b>Conductor:</b> ${s.conductor || ""}</div>
-      <div class="campo"><b>Obs.:</b> ${s.observaciones || ""}</div>
+      <div class="fecha">📆 ${formatFecha(salida.fecha,salida.hora)}</div>
+
+      <div class="dato">📍 <strong>${salida.calle_inter || "—"}</strong></div>
+      <div class="dato">🧱 Territorio: <strong>${salida.territorio || "—"}</strong></div>
+      <div class="dato">🧩 Manzanas: ${Array.isArray(salida.pendientes) ? salida.pendientes.join(", ") : "—"}</div>
+      <div class="dato">👤 Conductor: ${salida.conductor || "—"}</div>
+      ${salida.observaciones ? `<div class="dato muted">📝 ${salida.observaciones}</div>` : "" }
     `;
 
-    if(rol === "admin"){
-      const btns = document.createElement("div");
-      btns.className = "btns";
+    if(esAdmin){
+      const acciones = document.createElement("div");
+      acciones.className="admin-actions";
 
-      const b1 = document.createElement("button");
-      b1.className="edit";
-      b1.textContent="✏️ Editar";
-      b1.onclick=()=>abrirEdicion(s.id, s);
+      acciones.innerHTML = `
+        <button class="edit">✏️ Editar</button>
+        <button class="undo">↩️ Deshacer</button>
+        <button class="del">🗑 Eliminar</button>
+      `;
 
-      const b2 = document.createElement("button");
-      b2.className="undo";
-      b2.textContent="↩ Deshacer";
-      b2.onclick=async()=>{
-        if(!confirmar("¿Desea deshacer la salida?")) return;
-        await push(pendientesRef, s);
-        await remove(dbRef(db, "salidas_asignadas/"+s.id));
+      acciones.children[1].onclick = ()=>{
+        if(confirm("¿Seguro que desea deshacer esta salida?")){
+          push(pendientesRef,{
+            territorio: salida.territorio,
+            pendientes: salida.pendientes || [],
+            conductor: salida.conductor || ""
+          });
+          remove(dbRef(db,"salidas_asignadas/"+salida.id));
+        }
       };
 
-      const b3 = document.createElement("button");
-      b3.className="delete";
-      b3.textContent="🗑 Eliminar";
-      b3.onclick=async()=>{
-        if(!confirmar("¿Eliminar permanentemente?")) return;
-        await remove(dbRef(db, "salidas_asignadas/"+s.id));
+      acciones.children[2].onclick = ()=>{
+        if(confirm("¿Seguro que desea eliminar esta salida?")){
+          remove(dbRef(db,"salidas_asignadas/"+salida.id));
+        }
       };
 
-      btns.appendChild(b1);
-      btns.appendChild(b2);
-      btns.appendChild(b3);
-
-      card.appendChild(btns);
+      card.appendChild(acciones);
     }
 
     lista.appendChild(card);
   });
 
+  if(!lista.children.length){
+    lista.innerHTML = `<div class="card"><strong>No hay salidas próximas</strong></div>`;
+  }
 });
 </script>
 
